@@ -21,7 +21,7 @@ ansible/       Inventory, host contracts, playbooks, and ordered host roles
 compose/       Future home-only stacks: media, books, platform, productivity
 docs/          Architecture and migration policies
 scripts/       Optional local helper scripts
-.github/       Validation-only CI
+.github/       Centralized-release consumer configuration
 ```
 
 ## Workflow
@@ -71,6 +71,39 @@ Dashy, Wiki, ntfy, and qBittorrent were decommissioned and are intentionally abs
 Portable infrastructure workloads, including Dagster, Keycloak, Infisical, Open WebUI,
 infrastructure Postgres, CloudBeaver, and wood-data-platform are intentionally absent.
 
+## Release model
+
+```text
+MacBook
+  ↓
+pre-commit
+  ↓
+GitHub main
+  ↓
+SpencerRWood/workflows@v1
+  ↓
+validation
+  ↓
+semantic-release
+  ↓
+homelab vX.Y.Z
+```
+
+The thin [release workflow](.github/workflows/release.yml) runs only for pushes to
+`main` and delegates validation and release creation to the stable centralized
+workflow contract. Pull requests do not run privileged or self-hosted workloads.
+Releases are semantic versions of the deployable repository configuration state, not
+application-image versions: `v0.1.0` is the foundation, `v0.2.0` may add Ansible
+storage management, `v0.3.0` may add a media-stack migration, and `v0.3.1` may fix a
+mount or configuration defect. Conventional commits determine release bumps.
+
+Release is not deployment. A release may create tags, GitHub releases, changelog
+metadata, and versioned source/configuration artifacts, but it never SSHes to the
+Beelink, runs Ansible against it, runs Docker Compose, restarts containers, or changes
+mounts. Deployment automation remains a separate future concern, introduced only after
+the Ansible host baseline is validated, the persistent-state strategy is proven,
+retained-service migration is stable, and rollback mechanisms exist.
+
 ## Validation
 
 Run from the repository root:
@@ -85,3 +118,10 @@ pre-commit run --all-files
 `--check` is the only permitted evaluation mode for the provisioning playbook until a
 reviewed implementation is ready; do not apply it during this repository-initialization
 phase.
+
+## Template compatibility
+
+This is primarily an Ansible, Docker Compose, YAML, shell/helper tooling, and
+documentation repository—not a Python package. It adopts the shared release and
+repository-tooling conventions without force-fitting a Python application template.
+Potential future template: `template-infrastructure` or `template-ansible`.

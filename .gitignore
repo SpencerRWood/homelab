@@ -1,5 +1,6 @@
 .DS_Store
 .venv/
+uv.lock.bak
 *.egg-info/
 __pycache__/
 .ruff_cache/
