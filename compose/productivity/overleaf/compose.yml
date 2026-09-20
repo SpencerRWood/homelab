@@ -1,0 +1,102 @@
+---
+name: docs
+
+# Fresh Overleaf deployment. The prior legacy state is intentionally removed
+# during the attended cutover; this file preserves its running image contract.
+services:
+  overleaf:
+    restart: always
+    image: ${OVERLEAF_IMAGE}
+    container_name: overleaf
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    ports:
+      - "${OVERLEAF_BIND_ADDRESS:-127.0.0.1}:8065:80"
+    links:
+      - mongo
+      - redis
+    volumes:
+      - /srv/docker/docs/overleaf_data:/var/lib/overleaf
+    environment:
+      OVERLEAF_APP_NAME: "${OVERLEAF_APP_NAME:-Overleaf Community Edition}"
+      OVERLEAF_SITE_URL: "${OVERLEAF_SITE_URL:-https://overleaf.woodhost.cloud}"
+      OVERLEAF_ADMIN_EMAIL: "${OVERLEAF_ADMIN_EMAIL:-}"
+      OVERLEAF_ALLOW_SIGNUPS: "${OVERLEAF_ALLOW_SIGNUPS:-false}"
+      OVERLEAF_RESTRICT_INVITES_TO_EXISTING_ACCOUNTS:
+        "${OVERLEAF_RESTRICT_INVITES_TO_EXISTING_ACCOUNTS:-true}"
+      OVERLEAF_MONGO_URL: "${OVERLEAF_MONGO_URL:-mongodb://mongo/sharelatex}"
+      OVERLEAF_REDIS_HOST: "${OVERLEAF_REDIS_HOST:-redis}"
+      REDIS_HOST: "${REDIS_HOST:-redis}"
+      OVERLEAF_PROXY_LEARN: "${OVERLEAF_PROXY_LEARN:-true}"
+      ENABLED_LINKED_FILE_TYPES:
+        "${ENABLED_LINKED_FILE_TYPES:-project_file,project_output_file}"
+      ENABLE_CONVERSIONS: "${ENABLE_CONVERSIONS:-true}"
+      EMAIL_CONFIRMATION_DISABLED: "${EMAIL_CONFIRMATION_DISABLED:-true}"
+      TEXMFVAR: "${TEXMFVAR:-/var/lib/overleaf/tmp/texmf-var}"
+    networks:
+      - default
+      - proxy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  mongo:
+    image: mongo:${MONGO_IMAGE_TAG:-8}
+    container_name: overleaf-mongo
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    restart: unless-stopped
+    volumes:
+      - /srv/docker/docs/mongo_data:/data/db
+    networks:
+      - default
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mongosh --quiet --eval 'db.adminCommand("ping").ok' | grep -q 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  mongo-init:
+    image: mongo:${MONGO_IMAGE_TAG:-8}
+    container_name: overleaf-mongo-init
+    restart: "no"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command:
+      - /bin/sh
+      - -c
+      - >-
+        mongosh --host mongo --quiet --eval
+        "try { rs.status().ok } catch (error) {
+        rs.initiate({_id: 'rs0', members: [{_id: 0, host: 'mongo:27017'}]}) }"
+    networks:
+      - default
+
+  redis:
+    restart: always
+    image: redis:${REDIS_IMAGE_TAG:-5}
+    container_name: overleaf-redis
+    expose:
+      - "6379"
+    volumes:
+      - /srv/docker/docs/redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  proxy:
+    external: true
+    name: proxy

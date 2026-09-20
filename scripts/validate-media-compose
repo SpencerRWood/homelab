@@ -5,3 +5,8 @@ set -eu
 docker compose -f compose/media/plex.yml config --quiet
 docker compose -f compose/media/acquisition.yml config --quiet
 docker compose -f compose/books/compose.yml config --quiet
+docker compose -f compose/productivity/recipes/compose.yml config --quiet
+docker compose -f compose/productivity/vikunja/compose.yml config --quiet
+docker compose -f compose/productivity/openproject/compose.yml config --quiet
+OVERLEAF_IMAGE=sharelatex/sharelatex:latest \
+  docker compose -f compose/productivity/overleaf/compose.yml config --quiet

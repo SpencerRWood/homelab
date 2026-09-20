@@ -1,0 +1,49 @@
+---
+name: recipes
+
+# Canonical Mealie definition. Render with the external
+# /srv/homelab/secrets/homelab.env file; secret values are not in Git.
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:${MEALIE_IMAGE_TAG:-latest}
+    container_name: mealie
+    restart: unless-stopped
+    environment:
+      ALLOW_SIGNUP: "${ALLOW_SIGNUP:-false}"
+      BASE_URL: "${BASE_URL:-https://recipes.woodhost.cloud}"
+      PUID: "${PUID:-1000}"
+      PGID: "${PGID:-1000}"
+      TZ: "${TZ:-America/New_York}"
+      DB_ENGINE: "${DB_ENGINE:-postgres}"
+      POSTGRES_USER: mealie
+      POSTGRES_PASSWORD: "${MEALIE_POSTGRES_PASSWORD}"
+      POSTGRES_SERVER: wood-data-postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: mealie
+    expose:
+      - "9000"
+    volumes:
+      - /srv/docker/recipes/config/data:/app/data
+    networks:
+      - proxy
+      - platform-database
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - |-
+          python -c "import urllib.request; \
+          urllib.request.urlopen( \
+          'http://127.0.0.1:9000' \
+          '/api/app/about', timeout=5)"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+networks:
+  proxy:
+    external: true
+    name: proxy
+  platform-database:
+    external: true
+    name: wood-data-platform-db

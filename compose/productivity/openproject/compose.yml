@@ -1,0 +1,125 @@
+---
+name: projects
+
+x-app-environment: &app-environment
+  OPENPROJECT_HTTPS: "${OPENPROJECT_HTTPS:-true}"
+  OPENPROJECT_HOST__NAME: "${OPENPROJECT_HOST__NAME:-projects.woodhost.cloud}"
+  OPENPROJECT_ADDITIONAL__HOST__NAMES:
+    "${OPENPROJECT_ADDITIONAL__HOST__NAMES:-projects-web}"
+  OPENPROJECT_HSTS: "${OPENPROJECT_HSTS:-true}"
+  OPENPROJECT_RAILS__CACHE__STORE: memcache
+  OPENPROJECT_CACHE__MEMCACHE__SERVER: projects-cache:11211
+  OPENPROJECT_RAILS__RELATIVE__URL__ROOT:
+    "${OPENPROJECT_RAILS__RELATIVE__URL__ROOT:-}"
+  OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__URL:
+    "${COLLABORATIVE_SERVER_URL:-wss://projects.woodhost.cloud/hocuspocus}"
+  OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET:
+    "${COLLABORATIVE_SERVER_SECRET}"
+  DATABASE_URL: "${DATABASE_URL}"
+  RAILS_MIN_THREADS: "${RAILS_MIN_THREADS:-4}"
+  RAILS_MAX_THREADS: "${RAILS_MAX_THREADS:-16}"
+  IMAP_ENABLED: "${IMAP_ENABLED:-false}"
+  SECRET_KEY_BASE: "${SECRET_KEY_BASE}"
+
+services:
+  projects-cache:
+    image: memcached:1.6
+    container_name: projects-cache
+    restart: unless-stopped
+
+  projects-seeder:
+    image: openproject/openproject:${TAG:-17-slim}
+    container_name: projects-seeder
+    restart: on-failure
+    depends_on:
+      - projects-cache
+    environment: *app-environment
+    command: ./docker/prod/seeder
+    volumes:
+      - projects_opdata:/var/openproject/assets
+    networks:
+      - default
+      - platform-database
+      - legacy-database
+
+  projects-web:
+    image: openproject/openproject:${TAG:-17-slim}
+    container_name: projects-web
+    restart: unless-stopped
+    depends_on:
+      - projects-cache
+      - projects-seeder
+    environment: *app-environment
+    command: ./docker/prod/web
+    hostname: "${OPENPROJECT_HOST__NAME:-projects.woodhost.cloud}"
+    volumes:
+      - projects_opdata:/var/openproject/assets
+      - type: bind
+        source: ${OPENPROJECT_THEME_SOURCE}/_common_head.html.erb
+        target: ${OPENPROJECT_THEME_TARGET}/_common_head.html.erb
+        read_only: true
+      - type: bind
+        source: ${OPENPROJECT_THEME_SOURCE}/_paid_features_patch.html.erb
+        target: ${OPENPROJECT_THEME_TARGET}/_paid_features_patch.html.erb
+        read_only: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health_checks/default"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    networks:
+      - default
+      - platform-database
+      - proxy
+      - legacy-database
+
+  projects-worker:
+    image: openproject/openproject:${TAG:-17-slim}
+    container_name: projects-worker
+    restart: unless-stopped
+    depends_on: [projects-cache, projects-seeder]
+    environment: *app-environment
+    command: ./docker/prod/worker
+    volumes:
+      - projects_opdata:/var/openproject/assets
+    networks: [default, platform-database, legacy-database]
+
+  projects-cron:
+    image: openproject/openproject:${TAG:-17-slim}
+    container_name: projects-cron
+    restart: unless-stopped
+    depends_on: [projects-cache, projects-seeder]
+    environment: *app-environment
+    command: ./docker/prod/cron
+    volumes:
+      - projects_opdata:/var/openproject/assets
+    networks: [default, platform-database, legacy-database]
+
+  projects-hocuspocus:
+    image: openproject/hocuspocus:17.3.0
+    container_name: projects-hocuspocus
+    restart: unless-stopped
+    environment:
+      SECRET: "${COLLABORATIVE_SERVER_SECRET}"
+      OPENPROJECT_URL: "${OPENPROJECT_URL:-https://projects.woodhost.cloud}"
+      OPENPROJECT_HTTPS: "${OPENPROJECT_HTTPS:-true}"
+    depends_on: [projects-web]
+    networks: [default, proxy]
+
+volumes:
+  projects_opdata:
+    driver: local
+
+networks:
+  proxy:
+    external: true
+    name: proxy
+  platform-database:
+    external: true
+    name: wood-data-platform-db
+  # Live runtime drift: these services also use the shared legacy database
+  # network. It remains external until broader infrastructure cleanup.
+  legacy-database:
+    external: true
+    name: database_default
