@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.3.0 (2026-09-20)
+
+### Features
+
+- Gate media startup on NAS storage
+  ([`dd19c6e`](https://github.com/SpencerRWood/homelab/commit/dd19c6eecb695a378808705e156948382d41aa73))
+
+
 ## v0.2.1 (2026-09-20)
 
 ### Bug Fixes
