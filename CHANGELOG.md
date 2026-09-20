@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.5.0 (2026-09-20)
+
+### Features
+
+- Migrate books services to canonical Compose
+  ([`2bce930`](https://github.com/SpencerRWood/homelab/commit/2bce930dcf25ba806817dad83cba1eceb3e0f0f4))
+
+
 ## v0.4.0 (2026-09-20)
 
 ### Features
