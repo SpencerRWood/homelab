@@ -30,7 +30,8 @@ repos:
       - id: ansible-syntax
         name: Ansible playbook syntax
         entry: >-
-          uv run ansible-playbook --syntax-check ansible/playbooks/beelink.yml
+          uv run ansible-playbook --syntax-check
+          ansible/playbooks/homelab-host.yml
         language: system
         pass_filenames: false
       - id: ansible-lint
