@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.2.1 (2026-09-20)
+
+### Bug Fixes
+
+- Format storage fstab backup filename
+  ([`d3af6c2`](https://github.com/SpencerRWood/homelab/commit/d3af6c241d92b7bc7f57e29cff822cbd363d482d))
+
+
 ## v0.2.0 (2026-09-20)
 
 ### Features
