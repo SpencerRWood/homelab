@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.6.0 (2026-09-20)
+
+### Features
+
+- Migrate productivity services to canonical Compose
+  ([`8f053ad`](https://github.com/SpencerRWood/homelab/commit/8f053ad2672ca6755b71c8e64c875327a66cb429))
+
+
 ## v0.5.0 (2026-09-20)
 
 ### Features
