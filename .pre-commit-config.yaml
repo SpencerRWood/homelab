@@ -1,0 +1,26 @@
+---
+default_language_version:
+  python: python3.11
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: detect-private-key
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v25.1.3
+    hooks:
+      - id: ansible-lint
+        files: ^ansible/.*\.(yml|yaml)$
+        additional_dependencies: [ansible-core==2.18.8]

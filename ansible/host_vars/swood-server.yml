@@ -1,0 +1,43 @@
+---
+# `swood` is the local SSH-config alias.
+# Keep connection details in SSH config. Change only after review.
+ansible_host: swood
+
+# Non-secret contracts. Set values before an implementing role uses them.
+# Null means this repository does not assert a value yet.
+homelab_administrative_user: null
+homelab_deployment_user: null
+homelab_administrative_uid: null
+homelab_administrative_gid: null
+homelab_deployment_uid: null
+homelab_deployment_gid: null
+homelab_beelink_lan_address: null
+
+homelab_nas_hostname: null
+homelab_nas_address: null
+
+homelab_mounts:
+  media:
+    export: null
+    path: /mnt/wood-server-nas/media
+    options: "rw,_netdev"
+    preflight_requirements:
+      - NAS hostname/address is resolvable or reachable
+      - NFS client packages are installed
+      - target directory exists
+  database:
+    export: null
+    path: /mnt/wood-server-nas/database
+    options: "rw,_netdev"
+    preflight_requirements:
+      - NAS hostname/address is resolvable or reachable
+      - NFS client packages are installed
+      - target directory exists
+  backup_server:
+    export: null
+    path: /mnt/wood-server-nas/backup_server
+    options: "rw,_netdev"
+    preflight_requirements:
+      - NAS hostname/address is resolvable or reachable
+      - NFS client packages are installed
+      - target directory exists

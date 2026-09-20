@@ -1,0 +1,17 @@
+---
+- name: Configure the Beelink homelab host
+  hosts: homelab
+  become: true
+  gather_facts: false
+  roles:
+    - role: base
+    - role: users
+    - role: storage
+    - role: docker
+    - role: directories
+    - role: permissions
+    - role: networking
+    - role: security
+    - role: systemd
+    - role: github_runner
+    - role: backup

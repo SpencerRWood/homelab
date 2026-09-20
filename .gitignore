@@ -1,0 +1,22 @@
+.DS_Store
+.venv/
+*.egg-info/
+__pycache__/
+.ruff_cache/
+.pytest_cache/
+*.py[cod]
+
+# Runtime secrets remain on the managed host and are never committed.
+homelab.env
+*.env
+!homelab.env.example
+secrets/
+ansible/**/*.vault
+ansible/**/vault.yml
+ansible/**/secrets.yml
+
+# Private keys and Ansible retry files.
+*.pem
+*.key
+id_rsa*
+*.retry

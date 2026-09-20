@@ -1,0 +1,6 @@
+---
+all:
+  children:
+    homelab:
+      hosts:
+        swood-server:

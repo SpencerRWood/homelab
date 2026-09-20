@@ -1,0 +1,12 @@
+---
+# Non-secret, fleet-level contracts. Host-specific values belong in host_vars.
+homelab_timezone: America/New_York
+homelab_compose_root: /srv/homelab/compose
+homelab_secrets_file: /srv/homelab/secrets/homelab.env
+homelab_srv_root: /srv/homelab
+homelab_docker_group: docker
+homelab_docker_manage_group_membership: false
+
+# Preserve audited service UID/GID mappings during first Compose migration.
+# Do not normalize these values until each service is migrated and verified.
+homelab_preserve_existing_service_ids: true
