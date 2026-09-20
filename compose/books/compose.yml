@@ -1,0 +1,127 @@
+---
+name: media-acquisition
+
+# Canonical books payload. This shares the existing Compose project identity
+# with the migrated acquisition services but declares shared networks external.
+services:
+  calibre:
+    container_name: calibre
+    image: lscr.io/linuxserver/calibre:latest
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+    volumes:
+      - /srv/docker/media-acquisition/config/services/calibre:/config
+      - /mnt/wood-server-nas/media/books/calibre:/config/Calibre Library
+    networks:
+      - media-network
+    logging:
+      driver: json-file
+    restart: unless-stopped
+
+  calibre-web:
+    container_name: calibre-web
+    image: lscr.io/linuxserver/calibre-web:latest
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+      DOCKER_MODS: linuxserver/mods:universal-calibre
+    volumes:
+      - /srv/docker/media-acquisition/config/services/calibre-web:/config
+      - /mnt/wood-server-nas/media/books/calibre:/books
+    networks:
+      - media-network
+      - proxy
+    logging:
+      driver: json-file
+    restart: unless-stopped
+
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:2.35.0
+    user: "1026:100"
+    environment:
+      TZ: America/New_York
+    volumes:
+      - /srv/docker/media-acquisition/config/services/audiobookshelf/config:/config
+      - /srv/docker/media-acquisition/config/services/audiobookshelf/metadata:/metadata
+      - /mnt/wood-server-nas/media/books/audiobooks:/audiobooks
+    networks:
+      - media-network
+      - proxy
+    logging:
+      driver: json-file
+    restart: unless-stopped
+
+  bookshelf-audiobooks:
+    container_name: bookshelf-audiobooks
+    image: ghcr.io/pennydreadful/bookshelf:softcover
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+    volumes:
+      - /srv/docker/media-acquisition/config/services/bookshelf-audiobooks:/config
+      - /mnt/wood-server-nas/media:/media
+      - /mnt/wood-server-nas/media:/data
+    networks:
+      - media-network
+    logging:
+      driver: json-file
+    restart: unless-stopped
+
+  bookshelf-ebooks:
+    container_name: bookshelf-ebooks
+    image: ghcr.io/pennydreadful/bookshelf:softcover
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+    volumes:
+      - /srv/docker/media-acquisition/config/services/bookshelf-ebooks:/config
+      - /mnt/wood-server-nas/media:/media
+      - /mnt/wood-server-nas/media:/data
+    networks:
+      - media-network
+      - proxy
+    logging:
+      driver: json-file
+    restart: unless-stopped
+
+  ebook-importer:
+    container_name: ebook-importer
+    image: lscr.io/linuxserver/calibre:latest
+    user: "1026:100"
+    environment:
+      TZ: America/New_York
+      IMPORT_SCAN_SECONDS: "300"
+      IMPORT_STABLE_SECONDS: "120"
+    entrypoint:
+      - /bin/bash
+      - /automation/ebook-importer.sh
+    volumes:
+      - /srv/docker/scripts/ebook-importer.sh:/automation/ebook-importer.sh:ro
+      - /srv/docker/media-acquisition/config/services/ebook-importer:/state
+      - /mnt/wood-server-nas/media/books/ebooks:/incoming:ro
+      - /mnt/wood-server-nas/media/books/calibre:/library
+      - ebook-importer-config:/config
+    networks:
+      - media-network
+    logging:
+      driver: json-file
+    restart: unless-stopped
+
+networks:
+  media-network:
+    external: true
+    name: media-acquisition_media-network
+  proxy:
+    external: true
+    name: proxy
+
+volumes:
+  ebook-importer-config:
+    external: true
+    name: "5c22ba6009ba9e53444afb615fed0e154b0f453c5132bd7633202875d6998a4a"
