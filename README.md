@@ -57,7 +57,8 @@ see [media-startup.md](docs/media-startup.md).
 ## Compose and migration
 
 `compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
-and Prowlarr. Ansible deploys them to `/srv/homelab/compose/media/`; the legacy
+and Prowlarr; `compose/books/` owns Calibre, Calibre-Web, Audiobookshelf, bookshelf
+services, and ebook-importer. Ansible deploys them under `/srv/homelab/compose/`; legacy
 `/srv/docker` files remain rollback artifacts and are not deleted. Initial migrations
 preserve images/tags, paths, volumes, UID/GID, ports, networks, configuration sources,
 and database dependencies. They reuse current server state paths; state normalization to
@@ -125,6 +126,7 @@ ansible-playbook ansible/playbooks/homelab-host.yml --tags storage --check --dif
 ansible-playbook ansible/playbooks/homelab-host.yml --tags media_startup --check --diff
 docker compose -f compose/media/plex.yml config
 docker compose -f compose/media/acquisition.yml config
+docker compose -f compose/books/compose.yml config
 pre-commit run --all-files
 ```
 

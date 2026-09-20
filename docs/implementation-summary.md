@@ -15,16 +15,14 @@ the selected media workloads. Its attended reboot validation passed.
 
 ## Next steps
 
-1. Migrate the books stack only after explicitly resolving the ebook importer's
-   anonymous `/config` volume.
-2. Transition retained services one at a time, preserving their existing runtime
-   contracts and testing a rollback before each cutover.
+1. Transition remaining retained services one at a time, preserving their existing
+   runtime contracts and testing a rollback before each cutover.
 
 ## Explicit non-actions
 
 The canonical media Compose cutover and its attended reboot validation passed. The
-current implementation does not migrate book services or normalize persistent state.
-The legacy Compose files remain rollback artifacts for the known-good v0.3.0
-legacy-path architecture.
+canonical books Compose cutover also passed, with the ebook importer's existing
+anonymous `/config` volume preserved explicitly as an external volume. Persistent state
+normalization remains out of scope. Legacy Compose files remain rollback artifacts.
 Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent) and portable
 infrastructure workloads remain outside this repository.
