@@ -1,0 +1,30 @@
+---
+name: media
+
+# Canonical definition for the existing Plex deployment. Persistent state
+# remains in its audited legacy paths until a later normalization migration.
+services:
+  plex:
+    container_name: plex
+    image: linuxserver/plex:latest
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      VERSION: docker
+      PLEX_CLAIM: "${PLEX_CLAIM:-}"
+    ports:
+      - "32400:32400"
+      - "3005:3005"
+      - "8324:8324"
+      - "32410:32410/udp"
+      - "32412:32412/udp"
+      - "32413:32413/udp"
+      - "32414:32414/udp"
+      - "32469:32469"
+    volumes:
+      - /srv/docker/media/config/plex:/config
+      - /srv/docker/media/transcode:/transcode
+      - /mnt/wood-server-nas/media/library:/media
+    devices:
+      - /dev/dri:/dev/dri
+    restart: "no"

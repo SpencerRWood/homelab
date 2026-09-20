@@ -39,3 +39,8 @@ repos:
         entry: uv run ansible-lint
         language: system
         pass_filenames: false
+      - id: media-compose-config
+        name: Media Compose validation
+        entry: scripts/validate-media-compose
+        language: system
+        pass_filenames: false

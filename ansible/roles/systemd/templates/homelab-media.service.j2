@@ -9,6 +9,7 @@ RequiresMountsFor={{ systemd_media_startup.mount_path }}
 Type=oneshot
 RemainAfterExit=yes
 TimeoutStartSec=infinity
+EnvironmentFile={{ systemd_media_env_file }}
 ExecStartPre={{ systemd_media_wait_script }}
 {% for project in systemd_media_startup.compose_projects %}
 ExecStart=/usr/bin/docker compose -f {{ project.file }} up -d {{ project.services | join(' ') }}

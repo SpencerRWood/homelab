@@ -11,19 +11,20 @@ validation.
 The v0.2.x releases take declarative ownership of the three existing NFS mount records
 while preserving their active runtime mounts. v0.3.0 adds
 [`homelab-media.service`](media-startup.md), which owns mount-gated boot startup for
-the selected media workloads.
+the selected media workloads. Its attended reboot validation passed.
 
 ## Next steps
 
-1. Schedule a separately attended reboot test for `homelab-media.service`.
-2. After reboot validation, migrate the canonical media Compose definition into this
-   repository while preserving its runtime contract.
-3. Transition retained services one at a time, preserving their existing runtime
+1. Migrate the books stack only after explicitly resolving the ebook importer's
+   anonymous `/config` volume.
+2. Transition retained services one at a time, preserving their existing runtime
    contracts and testing a rollback before each cutover.
 
 ## Explicit non-actions
 
-The current implementation does not migrate canonical media Compose files or reboot
-the host. `homelab-media.service` is enabled but awaits attended reboot validation.
+The canonical media Compose cutover and its attended reboot validation passed. The
+current implementation does not migrate book services or normalize persistent state.
+The legacy Compose files remain rollback artifacts for the known-good v0.3.0
+legacy-path architecture.
 Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent) and portable
 infrastructure workloads remain outside this repository.
