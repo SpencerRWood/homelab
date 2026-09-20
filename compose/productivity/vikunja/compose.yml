@@ -1,0 +1,54 @@
+---
+name: tasks
+
+services:
+  vikunja-init:
+    image: busybox:1.37
+    container_name: vikunja-init
+    command: ["sh", "-c", "chown -R 1000:0 /db /files"]
+    restart: "no"
+    volumes:
+      - vikunja_db:/db
+      - vikunja_files:/files
+
+  vikunja:
+    image: vikunja/vikunja:${VIKUNJA_IMAGE_TAG:-latest}
+    container_name: vikunja
+    restart: unless-stopped
+    environment:
+      VIKUNJA_SERVICE_PUBLICURL:
+        "${VIKUNJA_SERVICE_PUBLICURL:-https://tasks.woodhost.cloud}"
+      VIKUNJA_SERVICE_TIMEZONE: "${VIKUNJA_SERVICE_TIMEZONE:-America/New_York}"
+      VIKUNJA_SERVICE_ENABLEREGISTRATION:
+        "${VIKUNJA_SERVICE_ENABLEREGISTRATION:-false}"
+      VIKUNJA_DATABASE_TYPE: "${VIKUNJA_DATABASE_TYPE:-postgres}"
+      VIKUNJA_DATABASE_HOST:
+        "${VIKUNJA_DATABASE_HOST:-wood-data-postgres}"
+      VIKUNJA_DATABASE_USER: "${VIKUNJA_DATABASE_USER:-vikunja}"
+      VIKUNJA_DATABASE_PASSWORD: "${VIKUNJA_DATABASE_PASSWORD}"
+      VIKUNJA_DATABASE_DATABASE: "${VIKUNJA_DATABASE_DATABASE:-vikunja}"
+      VIKUNJA_DATABASE_PORT: "${VIKUNJA_DATABASE_PORT:-5432}"
+      VIKUNJA_DATABASE_SSLMODE: "${VIKUNJA_DATABASE_SSLMODE:-disable}"
+    expose:
+      - "3456"
+    volumes:
+      - vikunja_db:/db
+      - vikunja_files:/app/vikunja/files
+    depends_on:
+      vikunja-init:
+        condition: service_completed_successfully
+    networks:
+      - proxy
+      - platform-database
+
+volumes:
+  vikunja_db:
+  vikunja_files:
+
+networks:
+  proxy:
+    external: true
+    name: proxy
+  platform-database:
+    external: true
+    name: wood-data-platform-db

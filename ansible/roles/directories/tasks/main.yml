@@ -26,3 +26,47 @@
   check_mode: false
   when: not ansible_check_mode
   tags: [books_compose]
+
+- name: Create canonical productivity Compose project directories
+  ansible.builtin.file:
+    path: "{{ homelab_compose_root }}/productivity/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - recipes
+    - vikunja
+    - overleaf
+    - openproject
+  tags: [productivity_compose]
+
+- name: Deploy canonical productivity Compose payloads
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../compose/productivity/{{ item }}/compose.yml"
+    dest: "{{ homelab_compose_root }}/productivity/{{ item }}/compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - recipes
+    - vikunja
+    - overleaf
+    - openproject
+  tags: [productivity_compose]
+
+- name: Verify canonical productivity Compose payloads
+  ansible.builtin.command:
+    cmd: >-
+      docker compose --env-file {{ homelab_secrets_file }}
+      -f {{ homelab_compose_root }}/productivity/{{ item }}/compose.yml
+      config --quiet
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode
+  loop:
+    - recipes
+    - vikunja
+    - overleaf
+    - openproject
+  tags: [productivity_compose]

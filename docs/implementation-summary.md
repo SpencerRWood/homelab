@@ -20,9 +20,9 @@ the selected media workloads. Its attended reboot validation passed.
 
 ## Explicit non-actions
 
-The canonical media Compose cutover and its attended reboot validation passed. The
-canonical books Compose cutover also passed, with the ebook importer's existing
-anonymous `/config` volume preserved explicitly as an external volume. Persistent state
-normalization remains out of scope. Legacy Compose files remain rollback artifacts.
+The canonical media and books Compose cutovers passed. The productivity cutover also
+passed its attended reboot validation: Mealie, Vikunja, OpenProject, and a fresh
+Overleaf stack returned with Caddy ingress intact. Persistent state normalization remains
+out of scope; existing state paths and legacy Compose files remain rollback artifacts.
 Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent) and portable
 infrastructure workloads remain outside this repository.

@@ -58,10 +58,11 @@ see [media-startup.md](docs/media-startup.md).
 
 `compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
 and Prowlarr; `compose/books/` owns Calibre, Calibre-Web, Audiobookshelf, bookshelf
-services, and ebook-importer. Ansible deploys them under `/srv/homelab/compose/`; legacy
-`/srv/docker` files remain rollback artifacts and are not deleted. Initial migrations
-preserve images/tags, paths, volumes, UID/GID, ports, networks, configuration sources,
-and database dependencies. They reuse current server state paths; state normalization to
+services, and ebook-importer; `compose/productivity/` owns Mealie, Vikunja, OpenProject,
+and Overleaf. Ansible deploys them under `/srv/homelab/compose/`; legacy `/srv/docker`
+files remain rollback artifacts and are not deleted. Initial migrations preserve
+images/tags, paths, volumes, UID/GID, ports, networks, configuration sources, and
+database dependencies. They reuse current server state paths; state normalization to
 `/srv/homelab/state/` is a later, separately validated action.
 See [persistent-state.md](docs/persistent-state.md) and
 [service-migration-policy.md](docs/service-migration-policy.md).
@@ -127,6 +128,10 @@ ansible-playbook ansible/playbooks/homelab-host.yml --tags media_startup --check
 docker compose -f compose/media/plex.yml config
 docker compose -f compose/media/acquisition.yml config
 docker compose -f compose/books/compose.yml config
+docker compose -f compose/productivity/recipes/compose.yml config
+docker compose -f compose/productivity/vikunja/compose.yml config
+docker compose -f compose/productivity/openproject/compose.yml config
+docker compose -f compose/productivity/overleaf/compose.yml config
 pre-commit run --all-files
 ```
 
