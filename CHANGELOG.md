@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.4.0 (2026-09-20)
+
+### Features
+
+- Migrate media services to canonical Compose
+  ([`4187637`](https://github.com/SpencerRWood/homelab/commit/418763714b81cb56a09db352de0a625642b0e42f))
+
+
 ## v0.3.0 (2026-09-20)
 
 ### Features
