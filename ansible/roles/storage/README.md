@@ -17,6 +17,5 @@ automation if a deployment must be rolled back.
 Run the ownership transition with:
 
 ```bash
-ansible-playbook ansible/playbooks/beelink.yml --tags storage --check --diff
-ansible-playbook ansible/playbooks/beelink.yml --tags storage
+ansible-playbook ansible/playbooks/homelab-host.yml --tags storage --check --diff
 ```

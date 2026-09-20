@@ -8,21 +8,22 @@ foundation release succeeded. The repository defines the safe ownership boundary
 Ansible inventory and role order, runtime-secret policy, migration policies, and
 validation.
 
-The storage audit is complete and the storage policy is finalized. The current feature
-release takes declarative ownership of the three existing NFS mount records while
-preserving their active runtime mounts. See [storage.md](storage.md).
+The v0.2.x releases take declarative ownership of the three existing NFS mount records
+while preserving their active runtime mounts. v0.3.0 adds
+[`homelab-media.service`](media-startup.md), which owns mount-gated boot startup for
+the selected media workloads.
 
 ## Next steps
 
 1. Schedule a separately attended reboot test for `homelab-media.service`.
-2. Transition retained services one at a time to repository-managed Compose definitions
-   and service-specific systemd startup ownership.
-3. Migrate retained services one at a time, preserving their existing runtime contracts
-   and testing a rollback before each cutover.
+2. After reboot validation, migrate the canonical media Compose definition into this
+   repository while preserving its runtime contract.
+3. Transition retained services one at a time, preserving their existing runtime
+   contracts and testing a rollback before each cutover.
 
 ## Explicit non-actions
 
-This feature does not migrate Docker Compose services, introduce a media systemd
-service, modify container restart policies, or change the Plex media-wait workaround.
+The current implementation does not migrate canonical media Compose files or reboot
+the host. `homelab-media.service` is enabled but awaits attended reboot validation.
 Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent) and portable
 infrastructure workloads remain outside this repository.

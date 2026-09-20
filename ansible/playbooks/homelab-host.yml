@@ -1,10 +1,8 @@
 ---
-- name: Configure the Beelink homelab host
+- name: Configure the homelab host
   hosts: homelab
   become: true
   gather_facts: false
-  vars_files:
-    - ../host_vars/swood-server.yml
   roles:
     - role: base
     - role: users

@@ -40,7 +40,9 @@ The managed host alias is `swood-server`. Its non-secret inventory connection ta
 `192.168.1.21` as `spencerwood`; authentication remains outside Git. The top-level
 playbook establishes this stable role order:
 base, users, storage, docker, directories, permissions, networking, security, systemd,
-github_runner, and backup. Roles are intentionally interfaces only at this stage.
+github_runner, and backup. The playbook defines the intended host-baseline role order.
+Roles are implemented incrementally: storage and media startup ownership are currently
+managed declaratively, while other roles may still be interface placeholders.
 
 The storage role declaratively owns the audited `media`, `database`, and
 `backup_server` NFS fstab contracts. It validates the already-active mounts before
@@ -98,9 +100,9 @@ The thin [release workflow](.github/workflows/release.yml) runs only for pushes 
 `main` and delegates validation and release creation to the stable centralized
 workflow contract. Pull requests do not run privileged or self-hosted workloads.
 Releases are semantic versions of the deployable repository configuration state, not
-application-image versions: `v0.1.0` is the foundation, `v0.2.0` may add Ansible
-storage management, `v0.3.0` may add a media-stack migration, and `v0.3.1` may fix a
-mount or configuration defect. Conventional commits determine release bumps.
+application-image versions: `v0.1.0` is the foundation, `v0.2.x` owns NFS storage,
+and `v0.3.0` owns mount-gated media startup. Conventional commits determine release
+bumps.
 
 Release is not deployment. A release may create tags, GitHub releases, changelog
 metadata, and versioned source/configuration artifacts, but it never SSHes to the
@@ -115,14 +117,15 @@ Run from the repository root:
 
 ```bash
 ansible-inventory --graph
-ansible-playbook ansible/playbooks/beelink.yml --syntax-check
-ansible-playbook ansible/playbooks/beelink.yml --check
+ansible-playbook ansible/playbooks/homelab-host.yml --syntax-check
+ansible-playbook ansible/playbooks/homelab-host.yml --tags storage --check --diff
+ansible-playbook ansible/playbooks/homelab-host.yml --tags media_startup --check --diff
 pre-commit run --all-files
 ```
 
-`--check` is the only permitted evaluation mode for the provisioning playbook until a
-reviewed implementation is ready; do not apply it during this repository-initialization
-phase.
+Do not run an unrestricted live apply from documentation. The next operational task is
+an attended reboot validation of `homelab-media.service`; canonical media Compose
+migration follows only after that succeeds.
 
 ## Template compatibility
 
