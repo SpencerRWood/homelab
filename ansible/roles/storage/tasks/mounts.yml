@@ -58,8 +58,8 @@
   ansible.builtin.copy:
     src: /etc/fstab
     dest: >-
-      {{ storage_fstab_backup_prefix }}-
-      {{ storage_fstab_backup_timestamp.stdout }}
+      {{ storage_fstab_backup_prefix ~ '-' ~
+         storage_fstab_backup_timestamp.stdout }}
     remote_src: true
     owner: "{{ storage_fstab_stat.stat.pw_name }}"
     group: "{{ storage_fstab_stat.stat.gr_name }}"
