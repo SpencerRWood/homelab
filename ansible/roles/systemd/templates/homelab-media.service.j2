@@ -1,0 +1,18 @@
+[Unit]
+Description=Start media workloads after NAS media storage is ready
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+RequiresMountsFor={{ systemd_media_startup.mount_path }}
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=infinity
+ExecStartPre={{ systemd_media_wait_script }}
+{% for project in systemd_media_startup.compose_projects %}
+ExecStart=/usr/bin/docker compose -f {{ project.file }} up -d {{ project.services | join(' ') }}
+{% endfor %}
+
+[Install]
+WantedBy=multi-user.target

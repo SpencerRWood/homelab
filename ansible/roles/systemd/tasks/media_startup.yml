@@ -1,0 +1,111 @@
+---
+- name: Assert that the media startup contract is complete
+  ansible.builtin.assert:
+    that:
+      - systemd_media_startup is mapping
+      - systemd_media_startup.mount_path is string
+      - systemd_media_startup.mount_path is match('^/')
+      - systemd_media_startup.readiness_paths | length > 0
+      - systemd_media_startup.containers | length > 0
+      - systemd_media_startup.compose_projects | length > 0
+    fail_msg: >-
+      Media startup requires mount, readiness, container, and Compose contracts.
+
+- name: Verify the media mount is active before taking startup ownership
+  ansible.builtin.command:
+    cmd: >-
+      findmnt --noheadings --raw --target {{ systemd_media_startup.mount_path }}
+  changed_when: false
+  check_mode: false
+
+- name: Verify the legacy Compose projects before managing their startup
+  ansible.builtin.command:
+    cmd: "docker compose -f {{ item.file }} config --quiet"
+  changed_when: false
+  check_mode: false
+  loop: "{{ systemd_media_startup.compose_projects }}"
+  loop_control:
+    label: "{{ item.file }}"
+
+- name: Inspect current media container restart policies
+  ansible.builtin.command:
+    argv:
+      - docker
+      - inspect
+      - --format
+      - "{% raw %}{{.HostConfig.RestartPolicy.Name}}{% endraw %}"
+      - "{{ item }}"
+  changed_when: false
+  check_mode: false
+  loop: "{{ systemd_media_startup.containers }}"
+  loop_control:
+    label: "{{ item }}"
+  register: systemd_media_restart_policies
+
+- name: Assert media containers use a supported restart policy
+  ansible.builtin.assert:
+    that:
+      - item.stdout in ['unless-stopped', 'no']
+    fail_msg: >-
+      {{ item.item }} uses unsupported restart policy {{ item.stdout }};
+      refusing
+      to alter startup ownership without review.
+  loop: "{{ systemd_media_restart_policies.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Create the systemd helper directory
+  ansible.builtin.file:
+    path: "{{ systemd_media_wait_script | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install the media readiness helper
+  ansible.builtin.template:
+    src: wait-for-media.sh.j2
+    dest: "{{ systemd_media_wait_script }}"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install the media startup unit
+  ansible.builtin.template:
+    src: homelab-media.service.j2
+    dest: "/etc/systemd/system/{{ systemd_media_unit_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload systemd daemon
+
+- name: Enable media startup ownership without starting current workloads
+  ansible.builtin.systemd_service:
+    name: "{{ systemd_media_unit_name }}"
+    enabled: true
+    daemon_reload: true
+  when: not ansible_check_mode
+
+- name: Disable Docker auto-restart for managed media containers
+  ansible.builtin.command:
+    argv:
+      - docker
+      - update
+      - --restart=no
+      - "{{ item.item }}"
+  changed_when: true
+  when:
+    - item.stdout != 'no'
+    - not ansible_check_mode
+  loop: "{{ systemd_media_restart_policies.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Remove the legacy Plex reboot workaround after enabling the unit
+  ansible.builtin.lineinfile:
+    path: >-
+      /var/spool/cron/crontabs/{{ systemd_media_startup.legacy_plex_cron_user }}
+    line: "{{ systemd_media_startup.legacy_plex_cron_line }}"
+    state: absent
+    backup: true
+  when: not ansible_check_mode

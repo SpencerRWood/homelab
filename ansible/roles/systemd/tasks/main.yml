@@ -1,2 +1,4 @@
 ---
-# Interface placeholder. Systemd changes are intentionally deferred.
+- name: Manage media workload startup ownership
+  ansible.builtin.import_tasks: media_startup.yml
+  tags: [media_startup]
