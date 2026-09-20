@@ -1,0 +1,129 @@
+---
+name: media-acquisition
+
+# This project intentionally contains only the four migrated acquisition
+# services.
+# Its project name and media-network identity are retained because book services
+# continue to use the same legacy project and are outside this migration.
+services:
+  sonarr:
+    container_name: sonarr
+    image: ghcr.io/hotio/sonarr:latest
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+    ports:
+      - "127.0.0.1:8989:8989"
+    volumes:
+      - /srv/docker/media-acquisition/config/services/sonarr:/config
+      - /srv/downloads:/downloads
+      - /mnt/wood-server-nas/media:/media
+    networks:
+      - media-network
+      - proxy
+    logging:
+      driver: json-file
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS http://127.0.0.1:8989/ping >/dev/null || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: "no"
+
+  radarr:
+    container_name: radarr
+    image: ghcr.io/hotio/radarr:latest
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+    ports:
+      - "127.0.0.1:7878:7878"
+    volumes:
+      - /srv/docker/media-acquisition/config/services/radarr:/config
+      - /srv/downloads:/downloads
+      - /mnt/wood-server-nas/media:/data
+      - /mnt/wood-server-nas/media:/media
+    networks:
+      - media-network
+      - proxy
+    logging:
+      driver: json-file
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS http://127.0.0.1:7878/ping >/dev/null || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: "no"
+
+  sabnzbd:
+    container_name: sabnzbd
+    image: lscr.io/linuxserver/sabnzbd:latest
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+      HOST_WHITELIST: 0.0.0.0
+    ports:
+      - "127.0.0.1:8181:8080"
+    volumes:
+      - /srv/docker/media-acquisition/config/services/sabnzbd:/config
+      - /srv/downloads:/downloads
+      - /mnt/wood-server-nas/media:/media
+    networks:
+      - media-network
+      - proxy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -fsS 'http://127.0.0.1:8080/api?mode=version'
+          >/dev/null || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: "no"
+
+  prowlarr:
+    container_name: prowlarr
+    image: ghcr.io/hotio/prowlarr:latest
+    environment:
+      PUID: "1026"
+      PGID: "100"
+      TZ: America/New_York
+    ports:
+      - "127.0.0.1:9696:9696"
+    volumes:
+      - /srv/docker/media-acquisition/config/services/prowlarr:/config
+      - /mnt/wood-server-nas/media/downloads:/downloads
+      - /mnt/wood-server-nas/media:/media
+    networks:
+      - media-network
+      - proxy
+    logging:
+      driver: json-file
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS http://127.0.0.1:9696/ping >/dev/null || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: "no"
+
+networks:
+  media-network:
+    external: true
+    name: media-acquisition_media-network
+  proxy:
+    external: true
+    name: proxy

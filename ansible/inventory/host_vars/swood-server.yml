@@ -1,6 +1,7 @@
 ---
 # The managed host connection is non-secret. Authentication remains outside Git.
-ansible_host: 192.168.1.21
+# The control node's SSH alias owns non-secret address and key selection.
+ansible_host: swood-server
 ansible_user: spencerwood
 
 # Non-secret contracts. Set values before an implementing role uses them.
@@ -51,10 +52,10 @@ homelab_media_startup:
     - "sabnzbd"
     - "prowlarr"
   compose_projects:
-    - file: "/srv/docker/media/docker-compose.yml"
+    - file: "/srv/homelab/compose/media/plex.yml"
       services:
         - "plex"
-    - file: "/srv/docker/media-acquisition/docker-compose.yml"
+    - file: "/srv/homelab/compose/media/acquisition.yml"
       services:
         - "sonarr"
         - "radarr"

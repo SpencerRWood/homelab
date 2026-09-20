@@ -3,7 +3,8 @@
 The source of truth for Beelink-specific host configuration and home-only services.
 The MacBook is the Ansible control node; the Beelink is a managed deployment target.
 Retained services are still running from the legacy Beelink deployment and are **not**
-managed by this repository yet.
+managed by this repository yet, except Plex, Sonarr, Radarr, SABnzbd, and Prowlarr,
+which are managed from the canonical media Compose payload.
 
 ## Boundary
 
@@ -36,9 +37,9 @@ over SSH and a Beelink checkout is not the source of truth.
 
 ## Ansible and inventory
 
-The managed host alias is `swood-server`. Its non-secret inventory connection targets
-`192.168.1.21` as `spencerwood`; authentication remains outside Git. The top-level
-playbook establishes this stable role order:
+The managed host alias is `swood-server`. Its non-secret inventory connection uses the
+MacBook SSH alias, which resolves to the Beelink LAN address; authentication remains
+outside Git. The top-level playbook establishes this stable role order:
 base, users, storage, docker, directories, permissions, networking, security, systemd,
 github_runner, and backup. The playbook defines the intended host-baseline role order.
 Roles are implemented incrementally: storage and media startup ownership are currently
@@ -55,10 +56,12 @@ see [media-startup.md](docs/media-startup.md).
 
 ## Compose and migration
 
-Compose directories document intended ownership; they contain no service definitions yet.
-Initial migrations preserve images/tags, paths, volumes, UID/GID, ports, networks,
-configuration sources, and database dependencies. They reuse current server state paths;
-state normalization to `/srv/homelab/state/` is a later, separately validated action.
+`compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
+and Prowlarr. Ansible deploys them to `/srv/homelab/compose/media/`; the legacy
+`/srv/docker` files remain rollback artifacts and are not deleted. Initial migrations
+preserve images/tags, paths, volumes, UID/GID, ports, networks, configuration sources,
+and database dependencies. They reuse current server state paths; state normalization to
+`/srv/homelab/state/` is a later, separately validated action.
 See [persistent-state.md](docs/persistent-state.md) and
 [service-migration-policy.md](docs/service-migration-policy.md).
 
@@ -101,8 +104,8 @@ The thin [release workflow](.github/workflows/release.yml) runs only for pushes 
 workflow contract. Pull requests do not run privileged or self-hosted workloads.
 Releases are semantic versions of the deployable repository configuration state, not
 application-image versions: `v0.1.0` is the foundation, `v0.2.x` owns NFS storage,
-and `v0.3.0` owns mount-gated media startup. Conventional commits determine release
-bumps.
+and `v0.3.0` owns mount-gated media startup, including its passed reboot validation.
+Conventional commits determine release bumps.
 
 Release is not deployment. A release may create tags, GitHub releases, changelog
 metadata, and versioned source/configuration artifacts, but it never SSHes to the
@@ -120,12 +123,14 @@ ansible-inventory --graph
 ansible-playbook ansible/playbooks/homelab-host.yml --syntax-check
 ansible-playbook ansible/playbooks/homelab-host.yml --tags storage --check --diff
 ansible-playbook ansible/playbooks/homelab-host.yml --tags media_startup --check --diff
+docker compose -f compose/media/plex.yml config
+docker compose -f compose/media/acquisition.yml config
 pre-commit run --all-files
 ```
 
-Do not run an unrestricted live apply from documentation. The next operational task is
-an attended reboot validation of `homelab-media.service`; canonical media Compose
-migration follows only after that succeeds.
+Do not run an unrestricted live apply from documentation. The media Compose cutover and
+post-cutover reboot validation have passed; subsequent service migrations remain
+attended maintenance actions with documented rollbacks.
 
 ## Template compatibility
 

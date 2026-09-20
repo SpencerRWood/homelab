@@ -2,3 +2,8 @@
 systemd_media_startup: "{{ homelab_media_startup | default({}) }}"
 systemd_media_unit_name: homelab-media.service
 systemd_media_wait_script: /usr/local/lib/homelab/wait-for-media
+systemd_media_compose_dir: "{{ homelab_compose_root }}/media"
+systemd_media_env_file: "{{ homelab_secrets_file }}"
+systemd_media_compose_payload:
+  - plex.yml
+  - acquisition.yml

@@ -18,7 +18,35 @@
   changed_when: false
   check_mode: false
 
-- name: Verify the legacy Compose projects before managing their startup
+- name: Verify the external media environment file is present
+  ansible.builtin.command:
+    argv:
+      - test
+      - -f
+      - "{{ systemd_media_env_file }}"
+  changed_when: false
+  check_mode: false
+
+- name: Create the canonical media Compose directory
+  ansible.builtin.file:
+    path: "{{ systemd_media_compose_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy the canonical media Compose payload
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../compose/media/{{ item }}"
+    dest: "{{ systemd_media_compose_dir }}/{{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ systemd_media_compose_payload }}"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Verify the canonical Compose projects before managing their startup
   ansible.builtin.command:
     cmd: "docker compose -f {{ item.file }} config --quiet"
   changed_when: false
@@ -26,6 +54,7 @@
   loop: "{{ systemd_media_startup.compose_projects }}"
   loop_control:
     label: "{{ item.file }}"
+  when: not ansible_check_mode
 
 - name: Inspect current media container restart policies
   ansible.builtin.command:

@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+set -eu
+
+docker compose -f compose/media/plex.yml config --quiet
+docker compose -f compose/media/acquisition.yml config --quiet
