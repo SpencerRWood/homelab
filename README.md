@@ -36,15 +36,16 @@ over SSH and a Beelink checkout is not the source of truth.
 
 ## Ansible and inventory
 
-The managed host alias is `swood-server`. Its inventory connection uses the existing
-local SSH-config alias `swood`, avoiding repository-stored credentials or duplicated
-connection information. The top-level playbook establishes this stable role order:
+The managed host alias is `swood-server`. Its non-secret inventory connection targets
+`192.168.1.21` as `spencerwood`; authentication remains outside Git. The top-level
+playbook establishes this stable role order:
 base, users, storage, docker, directories, permissions, networking, security, systemd,
 github_runner, and backup. Roles are intentionally interfaces only at this stage.
 
-The storage role is the next implementation priority. It models the `media`, `database`,
-and `backup_server` NFS mount contracts but deliberately does not discover, mount,
-unmount, or alter the currently active mounts.
+The storage role declaratively owns the audited `media`, `database`, and
+`backup_server` NFS fstab contracts. It validates the already-active mounts before
+adopting them and does not request a mount, unmount, or remount during the ownership
+transfer. See [storage.md](docs/storage.md).
 
 ## Compose and migration
 

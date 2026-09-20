@@ -1,0 +1,84 @@
+---
+- name: Assert that the NAS endpoint and mount definitions are complete
+  ansible.builtin.assert:
+    that:
+      - storage_nas_address is string
+      - storage_nas_address | length > 0
+      - storage_mounts is mapping
+      - storage_mounts | length > 0
+      - >-
+        storage_mounts | dict2items | map(attribute='value.export') |
+        select('string') | list | length == storage_mounts | length
+      - >-
+        storage_mounts | dict2items | map(attribute='value.path') |
+        select('string') | list | length == storage_mounts | length
+      - >-
+        storage_mounts | dict2items | map(attribute='value.fstype') |
+        select('string') | list | length == storage_mounts | length
+      - >-
+        storage_mounts | dict2items | map(attribute='value.options') |
+        select('string') | list | length == storage_mounts | length
+      - >-
+        storage_mounts | dict2items | map(attribute='value.path') | list |
+        unique | length == storage_mounts | length
+      - >-
+        storage_mounts | dict2items | map(attribute='value.export') | list |
+        unique | length == storage_mounts | length
+    fail_msg: >-
+      storage_nas_address and every storage_mounts record must define unique
+      string export, path, fstype, and options values.
+
+- name: Assert that every mount path is absolute
+  ansible.builtin.assert:
+    that:
+      - item.value.path is match('^/')
+    fail_msg: >-
+      Mount path for {{ item.key }} must be absolute: {{ item.value.path }}
+  loop: "{{ storage_mounts | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+
+- name: Check that the NAS NFS service is reachable
+  ansible.builtin.wait_for:
+    host: "{{ storage_nas_address }}"
+    port: 2049
+    state: started
+    timeout: 5
+  check_mode: false
+
+- name: Inspect existing mount sources without changing runtime state
+  ansible.builtin.command:
+    cmd: >-
+      findmnt --noheadings --raw --output SOURCE --target
+      {{ item.value.path }}
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  loop: "{{ storage_mounts | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  register: storage_existing_mounts
+
+- name: Refuse to take ownership of an unmounted mount path
+  ansible.builtin.assert:
+    that:
+      - item.rc == 0
+    fail_msg: >-
+      {{ item.item.value.path }} is not mounted. Refusing to manage its fstab
+      entry because workloads must not use an ordinary local directory.
+  loop: "{{ storage_existing_mounts.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+
+- name: Refuse to take ownership of an unexpected mounted source
+  ansible.builtin.assert:
+    that:
+      - item.stdout == storage_nas_address ~ ':' ~ item.item.value.export
+    fail_msg: >-
+      {{ item.item.value.path }} is mounted from
+      {{ item.stdout | default('nothing') }}; expected
+      {{ storage_nas_address }}:{{ item.item.value.export }}.
+      Refusing to replace an unexpected filesystem.
+  loop: "{{ storage_existing_mounts.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"

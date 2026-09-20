@@ -1,0 +1,83 @@
+---
+- name: Ensure the NFS client package is installed
+  ansible.builtin.package:
+    name: "{{ storage_nfs_client_package }}"
+    state: present
+
+# Preflight requires active paths. This keeps the file module away from the root
+# directory of an active NFS filesystem.
+- name: Create an unmounted mountpoint directory safely
+  ansible.builtin.file:
+    path: "{{ item.item.value.path }}"
+    state: directory
+    mode: "0755"
+  when: item.rc != 0
+  loop: "{{ storage_existing_mounts.results }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+
+- name: Preview declarative fstab ownership without changing runtime mounts
+  ansible.posix.mount:
+    src: "{{ storage_nas_address }}:{{ item.value.export }}"
+    path: "{{ item.value.path }}"
+    fstype: "{{ item.value.fstype }}"
+    opts: "{{ item.value.options }}"
+    dump: "0"
+    passno: "0"
+    state: present
+  check_mode: true
+  loop: "{{ storage_mounts | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  register: storage_fstab_preview
+
+- name: Determine whether an fstab backup is required
+  ansible.builtin.set_fact:
+    storage_fstab_will_change: >-
+      {{ storage_fstab_preview.results | selectattr('changed') | list |
+         length > 0 }}
+
+- name: Read fstab metadata before the first managed mutation
+  ansible.builtin.stat:
+    path: /etc/fstab
+  register: storage_fstab_stat
+  when:
+    - storage_fstab_will_change
+    - not ansible_check_mode
+
+- name: Generate a unique fstab backup timestamp
+  ansible.builtin.command:
+    cmd: date -u +%Y%m%dT%H%M%S%N
+  changed_when: false
+  register: storage_fstab_backup_timestamp
+  when:
+    - storage_fstab_will_change
+    - not ansible_check_mode
+
+- name: Back up fstab before changing managed NFS entries
+  ansible.builtin.copy:
+    src: /etc/fstab
+    dest: >-
+      {{ storage_fstab_backup_prefix }}-
+      {{ storage_fstab_backup_timestamp.stdout }}
+    remote_src: true
+    owner: "{{ storage_fstab_stat.stat.pw_name }}"
+    group: "{{ storage_fstab_stat.stat.gr_name }}"
+    mode: "{{ storage_fstab_stat.stat.mode }}"
+  when:
+    - storage_fstab_will_change
+    - not ansible_check_mode
+
+- name: Persist declarative NFS fstab entries without mounting or remounting
+  ansible.posix.mount:
+    src: "{{ storage_nas_address }}:{{ item.value.export }}"
+    path: "{{ item.value.path }}"
+    fstype: "{{ item.value.fstype }}"
+    opts: "{{ item.value.options }}"
+    dump: "0"
+    passno: "0"
+    state: present
+  when: not ansible_check_mode
+  loop: "{{ storage_mounts | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"

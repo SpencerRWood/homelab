@@ -1,7 +1,6 @@
 ---
-# This role intentionally has no mount tasks in the initial repository.
-# Supply audited NAS endpoint and export values before declarative mounts.
 storage_nas_hostname: "{{ homelab_nas_hostname }}"
 storage_nas_address: "{{ homelab_nas_address }}"
 storage_mounts: "{{ homelab_mounts }}"
-storage_manage_mounts: false
+storage_nfs_client_package: nfs-common
+storage_fstab_backup_prefix: /etc/fstab.pre-homelab
