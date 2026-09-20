@@ -38,3 +38,29 @@ homelab_mounts:
     options: "nfsvers=3,rw,hard,_netdev,nofail"
     required_for_runtime: false
     boot_policy: "nonblocking"
+
+homelab_media_startup:
+  mount_path: "/mnt/wood-server-nas/media"
+  readiness_paths:
+    - "/mnt/wood-server-nas/media/library/Movies"
+    - "/mnt/wood-server-nas/media/library/TV Shows"
+  containers:
+    - "plex"
+    - "sonarr"
+    - "radarr"
+    - "sabnzbd"
+    - "prowlarr"
+  compose_projects:
+    - file: "/srv/docker/media/docker-compose.yml"
+      services:
+        - "plex"
+    - file: "/srv/docker/media-acquisition/docker-compose.yml"
+      services:
+        - "sonarr"
+        - "radarr"
+        - "sabnzbd"
+        - "prowlarr"
+  legacy_plex_cron_user: "spencerwood"
+  legacy_plex_cron_line: >-
+    @reboot /srv/docker/scripts/plex-wait-for-media.sh >>
+    /srv/docker/media/config/plex-wait-for-media.log 2>&1

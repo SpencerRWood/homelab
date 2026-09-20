@@ -47,6 +47,10 @@ The storage role declaratively owns the audited `media`, `database`, and
 adopting them and does not request a mount, unmount, or remount during the ownership
 transfer. See [storage.md](docs/storage.md).
 
+Media workloads use a separate, mount-gated systemd startup unit. It controls Plex,
+Sonarr, Radarr, SABnzbd, and Prowlarr without coupling Docker globally to NAS storage;
+see [media-startup.md](docs/media-startup.md).
+
 ## Compose and migration
 
 Compose directories document intended ownership; they contain no service definitions yet.

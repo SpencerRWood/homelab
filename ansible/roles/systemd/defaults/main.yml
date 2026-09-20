@@ -1,0 +1,4 @@
+---
+systemd_media_startup: "{{ homelab_media_startup | default({}) }}"
+systemd_media_unit_name: homelab-media.service
+systemd_media_wait_script: /usr/local/lib/homelab/wait-for-media

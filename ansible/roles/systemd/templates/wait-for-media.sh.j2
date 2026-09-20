@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+mount_path="{{ systemd_media_startup.mount_path }}"
+
+until findmnt --noheadings --target "$mount_path" >/dev/null 2>&1; do
+  sleep 5
+done
+
+{% for path in systemd_media_startup.readiness_paths %}
+until [[ -d "{{ path }}" ]]; do
+  sleep 5
+done
+{% endfor %}

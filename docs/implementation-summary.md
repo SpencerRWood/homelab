@@ -14,10 +14,9 @@ preserving their active runtime mounts. See [storage.md](storage.md).
 
 ## Next steps
 
-1. Apply and observe the reviewed declarative NFS ownership transition on the Beelink.
-2. Implement the media startup ownership model with a repository-managed
-   `homelab-media.service`; it must gate only workloads that require media, not Docker
-   globally.
+1. Schedule a separately attended reboot test for `homelab-media.service`.
+2. Transition retained services one at a time to repository-managed Compose definitions
+   and service-specific systemd startup ownership.
 3. Migrate retained services one at a time, preserving their existing runtime contracts
    and testing a rollback before each cutover.
 
