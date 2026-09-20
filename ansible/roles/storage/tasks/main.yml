@@ -1,2 +1,12 @@
 ---
-# Interface placeholder. Mount discovery and changes are intentionally deferred.
+- name: Validate storage inputs and the existing runtime topology
+  ansible.builtin.import_tasks: preflight.yml
+  tags: [storage]
+
+- name: Manage the NFS client and persistent mount definitions
+  ansible.builtin.import_tasks: mounts.yml
+  tags: [storage]
+
+- name: Validate the converged NFS mount topology
+  ansible.builtin.import_tasks: validate.yml
+  tags: [storage]

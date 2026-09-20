@@ -1,25 +1,29 @@
 # Initial implementation summary
 
-## Completed scope
+## Current state
 
-This repository establishes the MacBook-authored source of truth for the Beelink
-homelab. It defines the safe ownership boundary, Ansible inventory and role order,
-non-secret storage and host contracts, runtime-secret policy, migration policies, and
-validation-only continuous integration.
+The private `SpencerRWood/homelab` repository is the MacBook-authored source of truth
+for the Beelink homelab. The centralized release workflow is active and the v0.1.0
+foundation release succeeded. The repository defines the safe ownership boundary,
+Ansible inventory and role order, runtime-secret policy, migration policies, and
+validation.
+
+The storage audit is complete and the storage policy is finalized. The current feature
+release takes declarative ownership of the three existing NFS mount records while
+preserving their active runtime mounts. See [storage.md](storage.md).
 
 ## Next steps
 
-1. Restore GitHub authentication, create the private `SpencerRWood/homelab` repository,
-   add it as `origin`, and push `main`.
-2. Review the audited values for users, UID/GID mappings, LAN addressing, NAS addressing,
-   and NFS exports before assigning values in `ansible/host_vars/swood-server.yml`.
-3. Implement and review the storage role's preflight checks before any declarative mount
-   management; do not alter the currently active mounts during that work.
-4. Migrate retained services one at a time, preserving their existing runtime contracts
+1. Apply and observe the reviewed declarative NFS ownership transition on the Beelink.
+2. Implement the media startup ownership model with a repository-managed
+   `homelab-media.service`; it must gate only workloads that require media, not Docker
+   globally.
+3. Migrate retained services one at a time, preserving their existing runtime contracts
    and testing a rollback before each cutover.
 
 ## Explicit non-actions
 
-No Beelink services, mounts, Docker workloads, infrastructure resources, DNS, or real
-credentials were modified. Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent)
-and portable infrastructure workloads remain outside this repository.
+This feature does not migrate Docker Compose services, introduce a media systemd
+service, modify container restart policies, or change the Plex media-wait workaround.
+Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent) and portable
+infrastructure workloads remain outside this repository.
