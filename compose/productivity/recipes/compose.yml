@@ -17,7 +17,7 @@ services:
       DB_ENGINE: "${DB_ENGINE:-postgres}"
       POSTGRES_USER: mealie
       POSTGRES_PASSWORD: "${MEALIE_POSTGRES_PASSWORD}"
-      POSTGRES_SERVER: wood-data-postgres
+      POSTGRES_SERVER: homelab-postgres
       POSTGRES_PORT: "5432"
       POSTGRES_DB: mealie
     expose:
@@ -26,7 +26,7 @@ services:
       - /srv/docker/recipes/config/data:/app/data
     networks:
       - proxy
-      - platform-database
+      - homelab-postgres
     healthcheck:
       test:
         - CMD-SHELL
@@ -44,6 +44,6 @@ networks:
   proxy:
     external: true
     name: proxy
-  platform-database:
+  homelab-postgres:
     external: true
-    name: wood-data-platform-db
+    name: homelab-postgres

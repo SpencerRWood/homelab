@@ -94,3 +94,34 @@ is attended and recorded only if performed. The migration release records per-se
 HTTP/read/write/permission evidence and verifies that the shared instance no longer
 receives that service's connections. Source database deletion is explicitly deferred
 to a later cleanup release after observation and backup/restore validation.
+
+### First-release validation — 2026-09-21
+
+The empty target was deployed through `ansible-playbook ... --tags postgres` after
+its bootstrap secrets were supplied. It reported `healthy`, PostgreSQL 16.14,
+`unless-stopped`, an empty host-port binding set, and an internal-only
+`homelab-postgres` network. Its bind mount is
+`/srv/homelab/state/postgres/data` to `/var/lib/postgresql/data`; the host directory
+is `999:999`, mode `0700`. A dedicated container restart returned to healthy status
+and retained the expected empty database list (`postgres`). The subsequent Ansible
+`--tags postgres --check --diff` run reported zero changes. No host reboot was
+performed outside an attended maintenance window.
+
+### Logical backup preparation — 2026-09-21
+
+Before any restore, protected custom-format dumps, checksums, role metadata, and
+per-database size/table-count/extension inventories were created at
+`/mnt/wood-server-nas/backup_server/homelab-migration/20260921T090024EDT-postgres-phase5`.
+Artifacts exist for `mealie`, `openproject`, `vaultwarden`, `vikunja`, and `grafana`.
+They are mode `0600` in a mode-`0700` directory and are deliberately outside Git.
+The shared source instance remains unchanged and is the rollback source.
+
+### Mealie target restore — 2026-09-21
+
+`mealie` was restored to the dedicated runtime from its protected custom-format
+backup. Its target role retains the source password hash and remains a non-superuser
+login role. Source and target both report `14 MB`, 66 public tables, and
+`pg_trgm 1.6` plus `plpgsql 1.0`; target database ownership is `mealie` and the role
+has `CONNECT`. The source-only `cloudbeaver_readonly` database grant was intentionally
+excluded from the target restore because CloudBeaver is system/internal and outside
+the homelab boundary. The source `mealie` database remains unchanged for rollback.
