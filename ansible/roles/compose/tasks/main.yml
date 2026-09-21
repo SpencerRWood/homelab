@@ -56,6 +56,25 @@
     mode: "0755"
   tags: [postgres]
 
+- name: Require dedicated Postgres bootstrap secrets
+  ansible.builtin.assert:
+    that:
+      - >-
+        lookup('ansible.builtin.file', homelab_local_secrets_file)
+        is regex('(?m)^HOMELAB_POSTGRES_SUPERUSER=.+$')
+      - >-
+        lookup('ansible.builtin.file', homelab_local_secrets_file)
+        is regex('(?m)^HOMELAB_POSTGRES_SUPERUSER_PASSWORD=.+$')
+    fail_msg: >-
+      Populate HOMELAB_POSTGRES_SUPERUSER and
+      HOMELAB_POSTGRES_SUPERUSER_PASSWORD in the ignored local homelab.env
+      through the canonical secret workflow before deploying Postgres.
+  delegate_to: localhost
+  become: false
+  run_once: true
+  no_log: true
+  tags: [postgres]
+
 - name: Create the dedicated Postgres persistent-state directory
   ansible.builtin.file:
     path: "{{ homelab_postgres_data_dir }}"

@@ -19,7 +19,8 @@ Secrets flow only through the ignored control-node `homelab.env`, loaded by dire
 then Ansible to `/srv/homelab/secrets/homelab.env` (`root:root`, `0600`). The target
 requires `HOMELAB_POSTGRES_SUPERUSER` and
 `HOMELAB_POSTGRES_SUPERUSER_PASSWORD`; this document intentionally contains no
-credential values.
+credential values. The Postgres-tagged Ansible run refuses to start the service if
+either value is absent or blank.
 
 ## Shared-instance audit — 2026-09-21
 
