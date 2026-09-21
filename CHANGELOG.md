@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.8.0 (2026-09-21)
+
+### Features
+
+- Migrate caddy to canonical compose
+  ([`600c115`](https://github.com/SpencerRWood/homelab/commit/600c1156da9006fdef86c20678d93f12481eba40))
+
+
 ## v0.7.0 (2026-09-21)
 
 ### Features
