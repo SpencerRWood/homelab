@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.11.0 (2026-09-21)
+
+### Features
+
+- Migrate remaining homelab services to postgres
+  ([`edd33e8`](https://github.com/SpencerRWood/homelab/commit/edd33e8f09a3732f97bfe8aa982623d16ae64721))
+
+
 ## v0.10.0 (2026-09-21)
 
 ### Features
