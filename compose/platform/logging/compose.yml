@@ -25,7 +25,7 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
       GF_USERS_ALLOW_SIGN_UP: "${GF_USERS_ALLOW_SIGN_UP:-false}"
       GF_DATABASE_TYPE: "${GF_DATABASE_TYPE:-postgres}"
-      GF_DATABASE_HOST: "${GF_DATABASE_HOST:-wood-data-postgres:5432}"
+      GF_DATABASE_HOST: "${GF_DATABASE_HOST:-homelab-postgres:5432}"
       GF_DATABASE_NAME: "${GF_DATABASE_NAME:-grafana}"
       GF_DATABASE_USER: "${GF_DATABASE_USER:-grafana}"
       GF_DATABASE_PASSWORD: "${GRAFANA_POSTGRES_PASSWORD}"
@@ -34,7 +34,7 @@ services:
       - /srv/docker/logging/data/grafana:/var/lib/grafana
       - /srv/docker/logging/config/grafana/provisioning:/etc/grafana/provisioning:ro
     depends_on: [loki]
-    networks: [logging, proxy, platform-database]
+    networks: [logging, proxy, homelab-postgres]
     healthcheck:
       test:
         - CMD-SHELL
@@ -68,6 +68,6 @@ networks:
   proxy:
     external: true
     name: proxy
-  platform-database:
+  homelab-postgres:
     external: true
-    name: wood-data-platform-db
+    name: homelab-postgres

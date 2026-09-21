@@ -51,7 +51,7 @@ new runtime. Never use `docker compose down -v`, raw PGDATA copying, or a dual m
 | `openproject` | active OpenProject web/worker connections; canonical homelab Compose | homelab | `openproject` | logical backup/restore; cut over alone |
 | `vaultwarden` | active Vaultwarden connection; canonical homelab Compose | homelab | `vaultwarden` | logical backup/restore; cut over alone |
 | `vikunja` | canonical homelab Compose; no active connection during audit | homelab | `vikunja` | logical backup/restore before its cutover |
-| `grafana` | homelab-owned staged configuration, container currently stopped | homelab | `grafana` | retain source; migrate only with its later attended recreation |
+| `grafana` | homelab-owned staged configuration, container currently stopped | homelab | `grafana` | logically restored; application cutover deferred until later recreation |
 | `dagster`, `infisical`, `keycloak`, `openwebui` | active portable-infrastructure services excluded by homelab boundary | infrastructure-dev | matching role | leave on shared instance |
 | `portfolio_website` | website-portfolio explicitly excluded | infrastructure-dev | `portfolio_migrator`, `portfolio_runtime` | leave on shared instance |
 | `synthetic_website_data` | portable development-data workload | infrastructure-dev | `wood`, `synthetic_website_editor`, `dbt_editor` | leave on shared instance |
@@ -136,3 +136,29 @@ connections; the shared source reported none. No database-permission or migratio
 error was logged. An authenticated create/update check is deferred to an attended
 user session; rollback remains the retained `/srv/docker/recipes/docker-compose.yml`
 configuration and unchanged shared source database.
+
+### Grouped remaining-service restore and cutover — 2026-09-21
+
+During the approved maintenance window, `vikunja`, `openproject`, and `vaultwarden`
+were restored from their protected custom-format backups to the dedicated runtime.
+All retain their original non-superuser application roles and source credentials.
+The source-only CloudBeaver ACL was excluded. Source and target table counts and
+extensions match: Vikunja 37/`plpgsql`; OpenProject 210/`btree_gist`, `pg_trgm`,
+`plpgsql`, `unaccent`; Vaultwarden 29/`plpgsql`.
+
+The canonical Vikunja, OpenProject, and Vaultwarden payloads now attach to
+`homelab-postgres`; OpenProject retains its separate `legacy-database` network
+unchanged. The three workloads were recreated during one attended window. OpenProject
+and Vaultwarden reached healthy status, Vikunja remained running and logged successful
+migrations, and no database permission or migration error was observed. Active
+OpenProject connections are present on the dedicated database and none of the three
+applications had an active connection on the shared source during the post-cutover
+inspection. Authenticated create/update checks remain attended user-session work.
+
+### Grafana staged database migration — 2026-09-21
+
+The stopped Grafana workload was not recreated. Its database and dedicated role were
+logically restored to the target, where source and target both report 13 MB, 87 public
+tables, and `plpgsql 1.0`. Its staged Compose definition now defaults to
+`homelab-postgres:5432` and attaches to the dedicated network, so a later attended
+Grafana recreation does not restore the shared-Postgres dependency.
