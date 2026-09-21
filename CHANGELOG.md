@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.12.0 (2026-09-21)
+
+### Features
+
+- Migrate grafana database to homelab postgres
+  ([`1a9333d`](https://github.com/SpencerRWood/homelab/commit/1a9333dcf9190563fb8a24cdbee3d3c6b7821843))
+
+
 ## v0.11.0 (2026-09-21)
 
 ### Features
