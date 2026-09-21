@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.7.0 (2026-09-21)
+
+### Features
+
+- Add canonical platform compose payloads
+  ([`a9fb1a6`](https://github.com/SpencerRWood/homelab/commit/a9fb1a6d284b2925df843fe165b103b863fe0dbd))
+
+
 ## v0.6.0 (2026-09-20)
 
 ### Features
