@@ -3,6 +3,10 @@
 homelab_timezone: America/New_York
 homelab_compose_root: /srv/homelab/compose
 homelab_secrets_file: /srv/homelab/secrets/homelab.env
+# Control-node source, deliberately ignored by Git and loaded through direnv.
+# The Ansible task which reads this value is delegated to localhost and no_logs
+# its content before it can reach task output.
+homelab_local_secrets_file: "{{ playbook_dir }}/../../homelab.env"
 homelab_srv_root: /srv/homelab
 homelab_docker_group: docker
 homelab_docker_manage_group_membership: false

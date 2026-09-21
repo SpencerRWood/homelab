@@ -1,0 +1,54 @@
+---
+name: code
+
+services:
+  code-server-init:
+    image: busybox:1.37
+    container_name: code-server-init
+    command:
+      - sh
+      - -c
+      - >-
+        chown -R ${CODE_SERVER_UID:-1000}:${CODE_SERVER_GID:-1000}
+        /home/coder /workspace
+    restart: "no"
+    volumes:
+      - code_server_home:/home/coder/.local/share/code-server
+      - /srv/docker/code/workspace:/workspace
+
+  code-server:
+    image: code-server-codex:${CODE_SERVER_IMAGE_TAG:-latest}
+    build: .
+    container_name: code-server
+    restart: unless-stopped
+    depends_on:
+      code-server-init:
+        condition: service_completed_successfully
+    environment:
+      PASSWORD: "${CODE_SERVER_PASSWORD}"
+      TZ: "${TZ:-America/New_York}"
+    user: "${CODE_SERVER_UID:-1000}:${CODE_SERVER_GID:-1000}"
+    working_dir: /home/coder/projects
+    command:
+      - --bind-addr
+      - 0.0.0.0:8080
+      - --auth
+      - password
+      - /home/coder/projects
+    expose:
+      - "8080"
+    volumes:
+      - code_server_home:/home/coder/.local/share/code-server
+      - /srv/docker/code/workspace:/home/coder/workspace
+      - /home/spencerwood/projects:/home/coder/projects
+    networks:
+      - proxy
+
+volumes:
+  code_server_home:
+    driver: local
+
+networks:
+  proxy:
+    external: true
+    name: proxy

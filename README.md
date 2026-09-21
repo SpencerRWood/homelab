@@ -59,7 +59,8 @@ see [media-startup.md](docs/media-startup.md).
 `compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
 and Prowlarr; `compose/books/` owns Calibre, Calibre-Web, Audiobookshelf, bookshelf
 services, and ebook-importer; `compose/productivity/` owns Mealie, Vikunja, OpenProject,
-and Overleaf. Ansible deploys them under `/srv/homelab/compose/`; legacy `/srv/docker`
+and Overleaf; and `compose/platform/` owns Grafana, Loki, Alloy, code-server, and
+Vaultwarden. Ansible deploys them under `/srv/homelab/compose/`; legacy `/srv/docker`
 files remain rollback artifacts and are not deleted. Initial migrations preserve
 images/tags, paths, volumes, UID/GID, ports, networks, configuration sources, and
 database dependencies. They reuse current server state paths; state normalization to
@@ -69,9 +70,13 @@ See [persistent-state.md](docs/persistent-state.md) and
 
 ## Secrets
 
-Runtime secrets live outside Git, by default at `/srv/homelab/secrets/homelab.env`.
-Use [homelab.env.example](homelab.env.example) as a names-only contract; never commit
-the runtime file, vault material, private keys, or API tokens.
+Runtime secrets originate in the control-node `homelab.env`, which is ignored by Git
+and loaded with direnv. Ansible copies that exact file without logging values to
+`/srv/homelab/secrets/homelab.env` (root:root, `0600`); canonical Compose projects
+read that server-side file. Use [homelab.env.example](homelab.env.example) as a
+names-only contract; never commit the runtime file, vault material, private keys, or
+API tokens. Legacy `/srv/docker` secret files remain rollback material until their
+corresponding cutovers are validated.
 
 ## Status and exclusions
 
@@ -132,6 +137,9 @@ docker compose -f compose/productivity/recipes/compose.yml config
 docker compose -f compose/productivity/vikunja/compose.yml config
 docker compose -f compose/productivity/openproject/compose.yml config
 docker compose -f compose/productivity/overleaf/compose.yml config
+docker compose -f compose/platform/logging/compose.yml config
+docker compose -f compose/platform/code-server/compose.yml config
+docker compose -f compose/platform/vaultwarden/compose.yml config
 pre-commit run --all-files
 ```
 
