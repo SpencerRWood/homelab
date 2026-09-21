@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.9.1 (2026-09-21)
+
+### Bug Fixes
+
+- Require postgres bootstrap secrets
+  ([`c08b766`](https://github.com/SpencerRWood/homelab/commit/c08b766e3b2a1768d1f996c0f8c408c339ee5e75))
+
+
 ## v0.9.0 (2026-09-21)
 
 ### Features
