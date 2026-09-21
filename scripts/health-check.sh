@@ -4,7 +4,7 @@
 # deployment failure.
 set -euo pipefail
 
-ansible -i ansible/inventory/homelab.yml homelab -b -m shell -a '
+uv run ansible -i ansible/inventory/homelab.yml homelab -b -m shell -a '
 set -euo pipefail
 for container in caddy plex sonarr radarr sabnzbd prowlarr mealie vikunja projects-web vaultwarden; do
   if ! docker inspect "$container" >/dev/null 2>&1; then
