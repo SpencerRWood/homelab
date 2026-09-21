@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.10.0 (2026-09-21)
+
+### Features
+
+- Migrate mealie to homelab postgres
+  ([`c69ab4d`](https://github.com/SpencerRWood/homelab/commit/c69ab4d9c7a11290b30bd3dd59e5cd2f991acf09))
+
+
 ## v0.9.1 (2026-09-21)
 
 ### Bug Fixes
