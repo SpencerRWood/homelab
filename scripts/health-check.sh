@@ -11,9 +11,9 @@ for container in caddy plex sonarr radarr sabnzbd prowlarr mealie vikunja projec
     echo "SKIP $container (not deployed)"
     continue
   fi
-  state=$(docker inspect --format '{% raw %}{{.State.Running}} {{if .Config.Healthcheck}}{{.State.Health.Status}}{{else}}none{{end}}{% endraw %}' "$container")
-  test "${state%% *}" = true
-  test "${state##* }" != unhealthy
-  echo "OK $container $state"
+  inspection=$(docker inspect "$container")
+  grep -q '"Running": true' <<<"$inspection"
+  ! grep -q '"Status": "unhealthy"' <<<"$inspection"
+  echo "OK $container"
 done
 '
