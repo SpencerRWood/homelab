@@ -125,3 +125,14 @@ login role. Source and target both report `14 MB`, 66 public tables, and
 has `CONNECT`. The source-only `cloudbeaver_readonly` database grant was intentionally
 excluded from the target restore because CloudBeaver is system/internal and outside
 the homelab boundary. The source `mealie` database remains unchanged for rollback.
+
+### Mealie cutover validation — 2026-09-21
+
+The canonical Mealie payload now uses hostname `homelab-postgres` and only the
+internal `homelab-postgres` plus existing `proxy` networks. Mealie was recreated by
+itself, reached `healthy`, returned HTTP 200 from `/api/app/about`, and logged a
+successful PostgreSQL initialization. The dedicated database reported two Mealie
+connections; the shared source reported none. No database-permission or migration
+error was logged. An authenticated create/update check is deferred to an attended
+user session; rollback remains the retained `/srv/docker/recipes/docker-compose.yml`
+configuration and unchanged shared source database.
