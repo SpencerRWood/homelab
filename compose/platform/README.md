@@ -11,7 +11,8 @@ bind mounts. Its legacy `/srv/docker/proxy` tree remains the rollback source unt
 attended ingress cutover succeeds.
 
 Vaultwarden's canonical cutover passed on 2026-09-21. Its `/data` bind, image, and
-`private_default`, `proxy`, and `wood-data-platform-db` networks remain unchanged.
+`private_default` and `proxy` remain unchanged; Vaultwarden now uses the dedicated
+internal `homelab-postgres` network.
 The legacy `/srv/docker/private` project and pre-cutover image tag remain rollback
 artifacts; Keycloak and Infisical remain outside this repository.
 

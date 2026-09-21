@@ -5,8 +5,8 @@
 Homelab owns the `homelab-postgres` Docker Compose runtime for home-only services.
 The first release deploys an empty PostgreSQL 16 instance only. It does not create
 application schemas, change connection strings, or alter the shared instance.
-The shared `wood-data-platform` instance remains the interim owner of
-infrastructure-development databases and must not be decommissioned by this work.
+The shared `wood-data-platform` instance now owns only infrastructure-development
+and system/internal databases and must not be decommissioned by this work.
 
 The target image is `pgvector/pgvector:0.8.2-pg16-bookworm`, intentionally matching
 the live shared instance's PostgreSQL 16 major version (live runtime reported
@@ -47,10 +47,10 @@ new runtime. Never use `docker compose down -v`, raw PGDATA copying, or a dual m
 
 | Database | Owner/service evidence | Classification | Current role | Target action |
 | --- | --- | --- | --- | --- |
-| `mealie` | active Mealie connection; canonical homelab Compose | homelab | `mealie` | logical backup/restore; cut over alone |
-| `openproject` | active OpenProject web/worker connections; canonical homelab Compose | homelab | `openproject` | logical backup/restore; cut over alone |
-| `vaultwarden` | active Vaultwarden connection; canonical homelab Compose | homelab | `vaultwarden` | logical backup/restore; cut over alone |
-| `vikunja` | canonical homelab Compose; no active connection during audit | homelab | `vikunja` | logical backup/restore before its cutover |
+| `mealie` | active Mealie connection; canonical homelab Compose | homelab | `mealie` | migrated; source database/role removed 2026-09-21 |
+| `openproject` | active OpenProject web/worker connections; canonical homelab Compose | homelab | `openproject` | migrated; source database/role removed 2026-09-21 |
+| `vaultwarden` | active Vaultwarden connection; canonical homelab Compose | homelab | `vaultwarden` | migrated; source database/role removed 2026-09-21 |
+| `vikunja` | canonical homelab Compose; no active connection during audit | homelab | `vikunja` | migrated; source database/role removed 2026-09-21 |
 | `grafana` | homelab-owned staged configuration, container currently stopped | homelab | `grafana` | logically restored; application cutover deferred until later recreation |
 | `dagster`, `infisical`, `keycloak`, `openwebui` | active portable-infrastructure services excluded by homelab boundary | infrastructure-dev | matching role | leave on shared instance |
 | `portfolio_website` | website-portfolio explicitly excluded | infrastructure-dev | `portfolio_migrator`, `portfolio_runtime` | leave on shared instance |
@@ -58,7 +58,7 @@ new runtime. Never use `docker compose down -v`, raw PGDATA copying, or a dual m
 | `wood_data` | data-platform default database | system/internal | `wood` | leave on shared instance |
 | `postgres` | administrative default database | system/internal | `wood` | leave on shared instance |
 
-`cloudbeaver_readonly` is a system/internal utility role and must not be migrated.
+`cloudbeaver_readonly` is a system/internal utility role and was not migrated.
 No obsolete/unknown database had evidence sufficient for migration.
 
 ## Roles, grants, extensions, and connection contract
@@ -92,8 +92,7 @@ reported PG16 version, target mount inspection, no published target port, contai
 restart survival, and an idempotent Ansible `--check --diff`. Host reboot validation
 is attended and recorded only if performed. The migration release records per-service
 HTTP/read/write/permission evidence and verifies that the shared instance no longer
-receives that service's connections. Source database deletion is explicitly deferred
-to a later cleanup release after observation and backup/restore validation.
+receives that service's connections.
 
 ### First-release validation — 2026-09-21
 
@@ -162,3 +161,15 @@ logically restored to the target, where source and target both report 13 MB, 87 
 tables, and `plpgsql 1.0`. Its staged Compose definition now defaults to
 `homelab-postgres:5432` and attaches to the dedicated network, so a later attended
 Grafana recreation does not restore the shared-Postgres dependency.
+
+### Legacy shared-source cleanup — 2026-09-21
+
+After explicit application-data confirmation, all five custom-format backups and
+inventories were checksum-verified. The shared instance had no active connections for
+the homelab applications. Only then were its obsolete `mealie`, `vikunja`,
+`openproject`, `vaultwarden`, and `grafana` databases and matching roles removed.
+The remaining non-template databases are `dagster`, `infisical`, `keycloak`,
+`openwebui`, `portfolio_website`, `postgres`, `synthetic_website_data`, and
+`wood_data`; none were altered. The obsolete ignored local `POSTGRES_*` connection
+variables were removed. Rollback after this cleanup requires restoring the protected
+logical dumps, rather than reconnecting to a retained source database.
