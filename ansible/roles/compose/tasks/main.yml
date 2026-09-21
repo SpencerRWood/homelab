@@ -5,16 +5,16 @@
   delegate_to: localhost
   become: false
   run_once: true
-  register: directories_local_secrets_file
+  register: compose_local_secrets_file
   changed_when: false
   tags: [books_compose, productivity_compose, platform_compose, secrets]
 
 - name: Require the local canonical secret source
   ansible.builtin.assert:
     that:
-      - directories_local_secrets_file.stat.exists
-      - directories_local_secrets_file.stat.isreg
-      - directories_local_secrets_file.stat.readable
+      - compose_local_secrets_file.stat.exists
+      - compose_local_secrets_file.stat.isreg
+      - compose_local_secrets_file.stat.readable
     fail_msg: >-
       Canonical Compose deployment requires the control-node secret source at
       {{ homelab_local_secrets_file }}. Copy homelab.env.example outside Git,
@@ -88,7 +88,7 @@
 - name: Check the deployed platform Compose secrets file
   ansible.builtin.stat:
     path: "{{ homelab_secrets_file }}"
-  register: directories_platform_compose_secrets_file
+  register: compose_platform_secrets_file
   changed_when: false
   check_mode: false
   when: not ansible_check_mode
@@ -97,8 +97,8 @@
 - name: Require the deployed platform Compose secrets file
   ansible.builtin.assert:
     that:
-      - directories_platform_compose_secrets_file.stat.exists
-      - directories_platform_compose_secrets_file.stat.readable
+      - compose_platform_secrets_file.stat.exists
+      - compose_platform_secrets_file.stat.readable
     fail_msg: >-
       Platform Compose deployment requires {{ homelab_secrets_file }}.
       Create it from the names-only homelab.env.example contract without

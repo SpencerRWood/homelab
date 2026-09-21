@@ -39,11 +39,10 @@ over SSH and a Beelink checkout is not the source of truth.
 
 The managed host alias is `swood-server`. Its non-secret inventory connection uses the
 MacBook SSH alias, which resolves to the Beelink LAN address; authentication remains
-outside Git. The top-level playbook establishes this stable role order:
-base, users, storage, docker, directories, permissions, networking, security, systemd,
-github_runner, and backup. The playbook defines the intended host-baseline role order.
-Roles are implemented incrementally: storage and media startup ownership are currently
-managed declaratively, while other roles may still be interface placeholders.
+outside Git. The top-level playbook contains only implemented roles, in this order:
+storage, compose, and systemd. Storage manages the adopted NFS contracts; compose
+deploys and validates canonical Compose payloads and their server-side secret file; and
+systemd manages the mount-gated media startup unit.
 
 The storage role declaratively owns the audited `media`, `database`, and
 `backup_server` NFS fstab contracts. It validates the already-active mounts before
