@@ -1,0 +1,42 @@
+---
+# Keep the legacy project identity so existing Caddy volumes remain attached.
+name: proxy
+
+services:
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CADDY_VERSION: ${CADDY_VERSION:-2.11.2}
+    image: local/caddy-cloudflare:${CADDY_VERSION:-2.11.2}
+    container_name: caddy
+    restart: unless-stopped
+    environment:
+      ACME_EMAIL: "${ACME_EMAIL}"
+      CADDY_PROXY_NETWORK: "${CADDY_PROXY_NETWORK:-proxy}"
+      CADDY_VERSION: "${CADDY_VERSION:-2.11.2}"
+      CLOUDFLARE_API_TOKEN: "${CLOUDFLARE_API_TOKEN}"
+    ports:
+      - "192.168.1.21:80:80"
+      - "192.168.1.21:443:443"
+    volumes:
+      - /srv/docker/proxy/config/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/docker/proxy/config/sites:/etc/caddy/sites:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - proxy
+
+volumes:
+  caddy_data:
+    name: proxy_caddy_data
+    external: true
+  caddy_config:
+    name: proxy_caddy_config
+    external: true
+
+networks:
+  proxy:
+    name: ${CADDY_PROXY_NETWORK:-proxy}
+    external: true
