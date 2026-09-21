@@ -4,16 +4,5 @@
 # deployment failure.
 set -euo pipefail
 
-uv run ansible -i ansible/inventory/homelab.yml homelab -b -m shell -a '
-set -euo pipefail
-for container in caddy plex sonarr radarr sabnzbd prowlarr mealie vikunja projects-web vaultwarden; do
-  if ! docker inspect "$container" >/dev/null 2>&1; then
-    echo "SKIP $container (not deployed)"
-    continue
-  fi
-  inspection=$(docker inspect "$container")
-  grep -q '"Running": true' <<<"$inspection"
-  ! grep -q '"Status": "unhealthy"' <<<"$inspection"
-  echo "OK $container"
-done
-'
+uv run ansible -i ansible/inventory/homelab.yml homelab -b \
+  -m script -a scripts/health-check-remote.sh
