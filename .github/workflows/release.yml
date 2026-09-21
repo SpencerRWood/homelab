@@ -27,7 +27,10 @@ jobs:
       deployment_working_directory: .
       concurrency_group: deploy-homelab
       runner: self-hosted
-      ansible_extra_vars: homelab_local_secrets_file=/Users/spencerwood/.config/wood/homelab/homelab.env
+      ansible_extra_vars: >-
+        homelab_local_secrets_file=/Users/spencerwood/.config/wood/homelab/homelab.env
       validation_command: scripts/validate-media-compose
-      check_command: ansible-playbook -i ansible/inventory/homelab.yml ansible/playbooks/homelab-host.yml --tags storage --check --diff
+      check_command: >-
+        ansible-playbook -i ansible/inventory/homelab.yml
+        ansible/playbooks/homelab-host.yml --tags storage --check --diff
       health_check_command: bash scripts/health-check.sh

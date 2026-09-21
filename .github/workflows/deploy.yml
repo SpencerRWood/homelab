@@ -5,7 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       release:
-        description: Existing release tag to deploy; leave empty to deploy the latest release.
+        description: >-
+          Existing release tag to deploy; leave empty to deploy the latest
+          release.
         required: false
         type: string
 
@@ -26,7 +28,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           ref="${EVENT_RELEASE:-${REQUESTED_RELEASE:-}}"
-          if [[ -z "$ref" ]]; then ref=$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name); fi
+          if [[ -z "$ref" ]]; then
+            latest_endpoint="repos/${GITHUB_REPOSITORY}/releases/latest"
+            ref=$(gh api "$latest_endpoint" --jq .tag_name)
+          fi
           printf 'ref=%s\n' "$ref" >> "$GITHUB_OUTPUT"
 
   deploy:
@@ -41,8 +46,11 @@ jobs:
       deployment_working_directory: .
       concurrency_group: deploy-homelab
       runner: self-hosted
-      # This stays outside the Actions checkout so checkout cleanup cannot remove it.
-      ansible_extra_vars: homelab_local_secrets_file=/Users/spencerwood/.config/wood/homelab/homelab.env
+      # This stays outside Actions checkout, so cleanup cannot remove it.
+      ansible_extra_vars: >-
+        homelab_local_secrets_file=/Users/spencerwood/.config/wood/homelab/homelab.env
       validation_command: scripts/validate-media-compose
-      check_command: ansible-playbook -i ansible/inventory/homelab.yml ansible/playbooks/homelab-host.yml --tags storage --check --diff
+      check_command: >-
+        ansible-playbook -i ansible/inventory/homelab.yml
+        ansible/playbooks/homelab-host.yml --tags storage --check --diff
       health_check_command: bash scripts/health-check.sh
