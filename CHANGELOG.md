@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.13.4 (2026-09-21)
+
+### Bug Fixes
+
+- Run homelab health checks as remote script
+  ([`45eaf62`](https://github.com/SpencerRWood/homelab/commit/45eaf62105256e085f6607680bd1e44302d562b2))
+
+
 ## v0.13.3 (2026-09-21)
 
 ### Bug Fixes
