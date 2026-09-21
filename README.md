@@ -59,8 +59,8 @@ see [media-startup.md](docs/media-startup.md).
 `compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
 and Prowlarr; `compose/books/` owns Calibre, Calibre-Web, Audiobookshelf, bookshelf
 services, and ebook-importer; `compose/productivity/` owns Mealie, Vikunja, OpenProject,
-and Overleaf; and `compose/platform/` owns Caddy, code-server, and Vaultwarden, with
-staged definitions for Grafana, Loki, and Alloy. The observability containers are
+and Overleaf; and `compose/platform/` owns Caddy and Vaultwarden, with staged
+definitions for code-server, Grafana, Loki, and Alloy. Those containers are
 intentionally stopped pending later recreation. Ansible deploys the payloads under
 `/srv/homelab/compose/`; legacy `/srv/docker`
 files remain rollback artifacts and are not deleted. Initial migrations preserve
