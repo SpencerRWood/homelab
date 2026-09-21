@@ -2,11 +2,18 @@
 
 set -eu
 
-docker compose -f compose/media/plex.yml config --quiet
-docker compose -f compose/media/acquisition.yml config --quiet
-docker compose -f compose/books/compose.yml config --quiet
-docker compose -f compose/productivity/recipes/compose.yml config --quiet
-docker compose -f compose/productivity/vikunja/compose.yml config --quiet
-docker compose -f compose/productivity/openproject/compose.yml config --quiet
-OVERLEAF_IMAGE=sharelatex/sharelatex:latest \
-  docker compose -f compose/productivity/overleaf/compose.yml config --quiet
+# Use the names-only contract in CI. Developers can override this with their ignored
+# control-node source, without exporting values into the shell or command output.
+secret_contract="${HOMELAB_ENV_FILE:-homelab.env.example}"
+
+docker compose --env-file "$secret_contract" -f compose/media/plex.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/media/acquisition.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/books/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/productivity/recipes/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/productivity/vikunja/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/productivity/openproject/compose.yml config --quiet
+OVERLEAF_IMAGE="${OVERLEAF_IMAGE:-sharelatex/sharelatex:latest}" \
+  docker compose --env-file "$secret_contract" -f compose/productivity/overleaf/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/platform/logging/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/platform/code-server/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f compose/platform/vaultwarden/compose.yml config --quiet

@@ -1,4 +1,48 @@
 ---
+- name: Check the local canonical secret source
+  ansible.builtin.stat:
+    path: "{{ homelab_local_secrets_file }}"
+  delegate_to: localhost
+  become: false
+  run_once: true
+  register: directories_local_secrets_file
+  changed_when: false
+  tags: [books_compose, productivity_compose, platform_compose, secrets]
+
+- name: Require the local canonical secret source
+  ansible.builtin.assert:
+    that:
+      - directories_local_secrets_file.stat.exists
+      - directories_local_secrets_file.stat.isreg
+      - directories_local_secrets_file.stat.readable
+    fail_msg: >-
+      Canonical Compose deployment requires the control-node secret source at
+      {{ homelab_local_secrets_file }}. Copy homelab.env.example outside Git,
+      populate it through the approved secret workflow, and load it with direnv.
+  delegate_to: localhost
+  become: false
+  run_once: true
+  tags: [books_compose, productivity_compose, platform_compose, secrets]
+
+- name: Create the canonical server-side secret directory
+  ansible.builtin.file:
+    path: "{{ homelab_secrets_file | dirname }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  tags: [books_compose, productivity_compose, platform_compose, secrets]
+
+- name: Deploy the canonical server-side secret file
+  ansible.builtin.copy:
+    content: "{{ lookup('ansible.builtin.file', homelab_local_secrets_file) }}"
+    dest: "{{ homelab_secrets_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  tags: [books_compose, productivity_compose, platform_compose, secrets]
+
 - name: Create the canonical books Compose directory
   ansible.builtin.file:
     path: "{{ homelab_compose_root }}/books"
@@ -40,6 +84,89 @@
     - overleaf
     - openproject
   tags: [productivity_compose]
+
+- name: Check the deployed platform Compose secrets file
+  ansible.builtin.stat:
+    path: "{{ homelab_secrets_file }}"
+  register: directories_platform_compose_secrets_file
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode
+  tags: [platform_compose]
+
+- name: Require the deployed platform Compose secrets file
+  ansible.builtin.assert:
+    that:
+      - directories_platform_compose_secrets_file.stat.exists
+      - directories_platform_compose_secrets_file.stat.readable
+    fail_msg: >-
+      Platform Compose deployment requires {{ homelab_secrets_file }}.
+      Create it from the names-only homelab.env.example contract without
+      committing secret values.
+  check_mode: false
+  when: not ansible_check_mode
+  tags: [platform_compose]
+
+- name: Create canonical platform Compose project directories
+  ansible.builtin.file:
+    path: "{{ homelab_compose_root }}/platform/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - logging
+    - code-server
+    - vaultwarden
+  tags: [platform_compose]
+
+- name: Link canonical platform Compose projects to centralized secrets
+  ansible.builtin.file:
+    src: "{{ homelab_secrets_file }}"
+    dest: "{{ homelab_compose_root }}/platform/{{ item }}/.env"
+    state: link
+  loop:
+    - logging
+    - code-server
+    - vaultwarden
+  tags: [platform_compose]
+
+- name: Deploy canonical platform Compose payloads
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../compose/platform/{{ item }}/compose.yml"
+    dest: "{{ homelab_compose_root }}/platform/{{ item }}/compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - logging
+    - code-server
+    - vaultwarden
+  tags: [platform_compose]
+
+- name: Deploy the canonical code-server Dockerfile
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../compose/platform/code-server/Dockerfile"
+    dest: "{{ homelab_compose_root }}/platform/code-server/Dockerfile"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [platform_compose]
+
+- name: Verify canonical platform Compose payloads
+  ansible.builtin.command:
+    cmd: >-
+      docker compose --env-file {{ homelab_secrets_file }}
+      -f {{ homelab_compose_root }}/platform/{{ item }}/compose.yml
+      config --quiet
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode
+  loop:
+    - logging
+    - code-server
+    - vaultwarden
+  tags: [platform_compose]
 
 - name: Deploy canonical productivity Compose payloads
   ansible.builtin.copy:
