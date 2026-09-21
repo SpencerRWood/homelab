@@ -119,12 +119,23 @@ application-image versions: `v0.1.0` is the foundation, `v0.2.x` owns NFS storag
 and `v0.3.0` owns mount-gated media startup, including its passed reboot validation.
 Conventional commits determine release bumps.
 
-Release is not deployment. A release may create tags, GitHub releases, changelog
-metadata, and versioned source/configuration artifacts, but it never SSHes to the
-Beelink, runs Ansible against it, runs Docker Compose, restarts containers, or changes
-mounts. Deployment automation remains a separate future concern, introduced only after
-the Ansible host baseline is validated, the persistent-state strategy is proven,
-retained-service migration is stable, and rollback mechanisms exist.
+Each published GitHub Release starts the deployment workflow. It checks out the
+exact `vX.Y.Z` release on the trusted MacBook self-hosted runner, runs validation
+and the canonical homelab playbook against the Beelink, then runs
+`scripts/health-check.sh`. Deployments are serialized by `deploy-homelab`; a newer
+release never cancels an active configuration run. A failed apply or health check
+applies the previously successful `homelab` Environment release once and rechecks
+it. This restores configuration only; it never attempts a blind database rollback.
+
+Use **Actions → Deploy released homelab configuration → Run workflow** to deploy a
+specific existing release, or leave the release input empty to redeploy the latest.
+The self-hosted runner retains the protected local secret file at
+`/Users/spencerwood/.config/wood/homelab/homelab.env`, outside the Actions checkout.
+
+Renovate uses the same PR → validation → main → semantic-release → release-tag
+deployment path as human changes. Docker patch, minor, major, and security image
+updates auto-merge through GitHub only after required checks pass. A pgvector tag
+that changes PostgreSQL compatibility (for example `pg16` to `pg17`) remains manual.
 
 ## Validation
 

@@ -1,0 +1,48 @@
+---
+name: Deploy released homelab configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Existing release tag to deploy; leave empty to deploy the latest release.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  resolve-release:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.release.outputs.ref }}
+    steps:
+      - id: release
+        env:
+          EVENT_RELEASE: ${{ github.event.release.tag_name }}
+          REQUESTED_RELEASE: ${{ inputs.release }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ref="${EVENT_RELEASE:-${REQUESTED_RELEASE:-}}"
+          if [[ -z "$ref" ]]; then ref=$(gh api "repos/${GITHUB_REPOSITORY}/releases/latest" --jq .tag_name); fi
+          printf 'ref=%s\n' "$ref" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: resolve-release
+    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@v1
+    with:
+      repository: ${{ github.repository }}
+      ref: ${{ needs.resolve-release.outputs.ref }}
+      inventory_path: ansible/inventory/homelab.yml
+      playbook_path: ansible/playbooks/homelab-host.yml
+      environment_name: homelab
+      deployment_working_directory: .
+      concurrency_group: deploy-homelab
+      runner: self-hosted
+      # This stays outside the Actions checkout so checkout cleanup cannot remove it.
+      ansible_extra_vars: homelab_local_secrets_file=/Users/spencerwood/.config/wood/homelab/homelab.env
+      validation_command: scripts/validate-media-compose
+      check_command: ansible-playbook -i ansible/inventory/homelab.yml ansible/playbooks/homelab-host.yml --tags storage --check --diff
+      health_check_command: bash scripts/health-check.sh

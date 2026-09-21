@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["docker-compose"],
+  "semanticCommits": "enabled",
+  "semanticCommitType": "fix",
+  "semanticCommitScope": "deps",
+  "pinDigests": true,
+  "platformAutomerge": true,
+  "automergeStrategy": "squash",
+  "packageRules": [
+    {
+      "description": "Homelab image updates share the normal validated release-and-deploy path.",
+      "matchDatasources": ["docker"],
+      "automerge": true,
+      "groupName": "{{depName}} image update"
+    },
+    {
+      "description": "A pgvector tag changing PostgreSQL compatibility is always attended.",
+      "matchPackageNames": ["pgvector/pgvector"],
+      "matchNewValue": "/-pg(?:17|[2-9][0-9]+)-/",
+      "automerge": false
+    }
+  ]
+}
