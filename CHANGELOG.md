@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.13.3 (2026-09-21)
+
+### Bug Fixes
+
+- Avoid templating in container health checks
+  ([`1fed3d3`](https://github.com/SpencerRWood/homelab/commit/1fed3d3a6472a3f94361ec1c5d9d5c127f28ffc3))
+
+
 ## v0.13.2 (2026-09-21)
 
 ### Bug Fixes
