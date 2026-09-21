@@ -39,7 +39,7 @@ services:
       - projects_opdata:/var/openproject/assets
     networks:
       - default
-      - platform-database
+      - homelab-postgres
       - legacy-database
 
   projects-web:
@@ -70,7 +70,7 @@ services:
       start_period: 30s
     networks:
       - default
-      - platform-database
+      - homelab-postgres
       - proxy
       - legacy-database
 
@@ -83,7 +83,7 @@ services:
     command: ./docker/prod/worker
     volumes:
       - projects_opdata:/var/openproject/assets
-    networks: [default, platform-database, legacy-database]
+    networks: [default, homelab-postgres, legacy-database]
 
   projects-cron:
     image: openproject/openproject:${TAG:-17-slim}
@@ -94,7 +94,7 @@ services:
     command: ./docker/prod/cron
     volumes:
       - projects_opdata:/var/openproject/assets
-    networks: [default, platform-database, legacy-database]
+    networks: [default, homelab-postgres, legacy-database]
 
   projects-hocuspocus:
     image: openproject/hocuspocus:17.3.0
@@ -115,9 +115,9 @@ networks:
   proxy:
     external: true
     name: proxy
-  platform-database:
+  homelab-postgres:
     external: true
-    name: wood-data-platform-db
+    name: homelab-postgres
   # Live runtime drift: these services also use the shared legacy database
   # network. It remains external until broader infrastructure cleanup.
   legacy-database:

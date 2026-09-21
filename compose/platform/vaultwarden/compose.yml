@@ -22,7 +22,7 @@ services:
     networks:
       - private-default
       - proxy
-      - platform-database
+      - homelab-postgres
     healthcheck:
       test: ["CMD", "/healthcheck.sh"]
       interval: 60s
@@ -35,6 +35,6 @@ networks:
   proxy:
     external: true
     name: proxy
-  platform-database:
+  homelab-postgres:
     external: true
-    name: wood-data-platform-db
+    name: homelab-postgres

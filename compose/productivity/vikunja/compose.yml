@@ -22,8 +22,7 @@ services:
       VIKUNJA_SERVICE_ENABLEREGISTRATION:
         "${VIKUNJA_SERVICE_ENABLEREGISTRATION:-false}"
       VIKUNJA_DATABASE_TYPE: "${VIKUNJA_DATABASE_TYPE:-postgres}"
-      VIKUNJA_DATABASE_HOST:
-        "${VIKUNJA_DATABASE_HOST:-wood-data-postgres}"
+      VIKUNJA_DATABASE_HOST: homelab-postgres
       VIKUNJA_DATABASE_USER: "${VIKUNJA_DATABASE_USER:-vikunja}"
       VIKUNJA_DATABASE_PASSWORD: "${VIKUNJA_DATABASE_PASSWORD}"
       VIKUNJA_DATABASE_DATABASE: "${VIKUNJA_DATABASE_DATABASE:-vikunja}"
@@ -39,7 +38,7 @@ services:
         condition: service_completed_successfully
     networks:
       - proxy
-      - platform-database
+      - homelab-postgres
 
 volumes:
   vikunja_db:
@@ -49,6 +48,6 @@ networks:
   proxy:
     external: true
     name: proxy
-  platform-database:
+  homelab-postgres:
     external: true
-    name: wood-data-platform-db
+    name: homelab-postgres
