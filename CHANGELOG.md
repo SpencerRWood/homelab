@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.13.1 (2026-09-21)
+
+### Bug Fixes
+
+- Run deployment Ansible through uv
+  ([`14c96f5`](https://github.com/SpencerRWood/homelab/commit/14c96f56e3aae14c9fefc458a79a08e094b9d08d))
+
+
 ## v0.13.0 (2026-09-21)
 
 ### Bug Fixes
