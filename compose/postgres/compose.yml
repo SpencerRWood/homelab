@@ -1,0 +1,35 @@
+---
+name: homelab-postgres
+
+# Dedicated runtime for home-only application databases.  This is deliberately
+# empty on first deployment; database roles, extensions, and schemas are
+# restored in the attended migration release, never by Compose init scripts.
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.2-pg16-bookworm
+    container_name: homelab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: "${HOMELAB_POSTGRES_SUPERUSER}"
+      POSTGRES_PASSWORD: "${HOMELAB_POSTGRES_SUPERUSER_PASSWORD}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    expose:
+      - "5432"
+    volumes:
+      - /srv/homelab/state/postgres/data:/var/lib/postgresql/data
+    networks:
+      - postgres
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  postgres:
+    name: homelab-postgres
+    internal: true

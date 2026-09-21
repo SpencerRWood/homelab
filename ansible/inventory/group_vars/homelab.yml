@@ -8,6 +8,7 @@ homelab_secrets_file: /srv/homelab/secrets/homelab.env
 # its content before it can reach task output.
 homelab_local_secrets_file: "{{ playbook_dir }}/../../homelab.env"
 homelab_srv_root: /srv/homelab
+homelab_postgres_data_dir: /srv/homelab/state/postgres/data
 homelab_docker_group: docker
 homelab_docker_manage_group_membership: false
 

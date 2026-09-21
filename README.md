@@ -55,7 +55,8 @@ see [media-startup.md](docs/media-startup.md).
 
 ## Compose and migration
 
-`compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
+`compose/postgres/` owns the dedicated, internal-only Postgres runtime for home-only
+application databases. `compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
 and Prowlarr; `compose/books/` owns Calibre, Calibre-Web, Audiobookshelf, bookshelf
 services, and ebook-importer; `compose/productivity/` owns Mealie, Vikunja, OpenProject,
 and Overleaf; and `compose/platform/` owns Caddy and Vaultwarden, with staged
@@ -67,7 +68,10 @@ images/tags, paths, volumes, UID/GID, ports, networks, configuration sources, an
 database dependencies. They reuse current server state paths; state normalization to
 `/srv/homelab/state/` is a later, separately validated action.
 See [persistent-state.md](docs/persistent-state.md) and
-[service-migration-policy.md](docs/service-migration-policy.md).
+[service-migration-policy.md](docs/service-migration-policy.md). The attended
+[Postgres migration inventory](docs/postgres-migration.md) records ownership,
+backup/rollback, and validation boundaries; infrastructure-development databases stay
+on the shared wood-data-platform Postgres.
 
 ## Secrets
 
@@ -132,6 +136,7 @@ ansible-playbook ansible/playbooks/homelab-host.yml --syntax-check
 ansible-playbook ansible/playbooks/homelab-host.yml --tags storage --check --diff
 ansible-playbook ansible/playbooks/homelab-host.yml --tags media_startup --check --diff
 docker compose -f compose/media/plex.yml config
+docker compose --env-file homelab.env -f compose/postgres/compose.yml config
 docker compose -f compose/media/acquisition.yml config
 docker compose -f compose/books/compose.yml config
 docker compose -f compose/productivity/recipes/compose.yml config

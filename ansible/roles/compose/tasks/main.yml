@@ -7,7 +7,8 @@
   run_once: true
   register: compose_local_secrets_file
   changed_when: false
-  tags: [books_compose, productivity_compose, platform_compose, secrets]
+  tags:
+    [books_compose, productivity_compose, platform_compose, postgres, secrets]
 
 - name: Require the local canonical secret source
   ansible.builtin.assert:
@@ -22,7 +23,8 @@
   delegate_to: localhost
   become: false
   run_once: true
-  tags: [books_compose, productivity_compose, platform_compose, secrets]
+  tags:
+    [books_compose, productivity_compose, platform_compose, postgres, secrets]
 
 - name: Create the canonical server-side secret directory
   ansible.builtin.file:
@@ -31,7 +33,8 @@
     owner: root
     group: root
     mode: "0700"
-  tags: [books_compose, productivity_compose, platform_compose, secrets]
+  tags:
+    [books_compose, productivity_compose, platform_compose, postgres, secrets]
 
 - name: Deploy the canonical server-side secret file
   ansible.builtin.copy:
@@ -41,7 +44,61 @@
     group: root
     mode: "0600"
   no_log: true
-  tags: [books_compose, productivity_compose, platform_compose, secrets]
+  tags:
+    [books_compose, productivity_compose, platform_compose, postgres, secrets]
+
+- name: Create the dedicated Postgres Compose directory
+  ansible.builtin.file:
+    path: "{{ homelab_compose_root }}/postgres"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  tags: [postgres]
+
+- name: Create the dedicated Postgres persistent-state directory
+  ansible.builtin.file:
+    path: "{{ homelab_postgres_data_dir }}"
+    state: directory
+    owner: "999"
+    group: "999"
+    mode: "0700"
+  tags: [postgres]
+
+- name: Deploy the dedicated Postgres Compose payload
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../compose/postgres/compose.yml"
+    dest: "{{ homelab_compose_root }}/postgres/compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [postgres]
+
+- name: Verify the dedicated Postgres Compose payload
+  ansible.builtin.command:
+    cmd: >-
+      docker compose --env-file {{ homelab_secrets_file }}
+      -f {{ homelab_compose_root }}/postgres/compose.yml config --quiet
+  changed_when: false
+  check_mode: false
+  no_log: true
+  when: not ansible_check_mode
+  tags: [postgres]
+
+- name: Start the dedicated Postgres service
+  ansible.builtin.command:
+    cmd: >-
+      docker compose --env-file {{ homelab_secrets_file }}
+      -f {{ homelab_compose_root }}/postgres/compose.yml up -d postgres
+  register: compose_postgres_up
+  changed_when: >-
+    'Created' in compose_postgres_up.stderr or
+    'Started' in compose_postgres_up.stderr or
+    'Recreated' in compose_postgres_up.stderr
+  check_mode: false
+  no_log: true
+  when: not ansible_check_mode
+  tags: [postgres]
 
 - name: Create the canonical books Compose directory
   ansible.builtin.file:
