@@ -115,6 +115,7 @@
     group: root
     mode: "0755"
   loop:
+    - caddy
     - logging
     - code-server
     - vaultwarden
@@ -126,6 +127,7 @@
     dest: "{{ homelab_compose_root }}/platform/{{ item }}/.env"
     state: link
   loop:
+    - caddy
     - logging
     - code-server
     - vaultwarden
@@ -139,9 +141,28 @@
     group: root
     mode: "0644"
   loop:
+    - caddy
     - logging
     - code-server
     - vaultwarden
+  tags: [platform_compose]
+
+- name: Deploy the canonical Caddy Dockerfile
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../compose/platform/caddy/Dockerfile"
+    dest: "{{ homelab_compose_root }}/platform/caddy/Dockerfile"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [platform_compose]
+
+- name: Deploy the canonical Caddy Cloudflare DNS module
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../compose/platform/caddy/modules/"
+    dest: "{{ homelab_compose_root }}/platform/caddy/modules/"
+    owner: root
+    group: root
+    mode: preserve
   tags: [platform_compose]
 
 - name: Deploy the canonical code-server Dockerfile
@@ -163,6 +184,7 @@
   check_mode: false
   when: not ansible_check_mode
   loop:
+    - caddy
     - logging
     - code-server
     - vaultwarden

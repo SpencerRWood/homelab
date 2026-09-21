@@ -22,9 +22,10 @@ the selected media workloads. Its attended reboot validation passed.
 
 The canonical media and books Compose cutovers passed. The productivity cutover also
 passed its attended reboot validation: Mealie, Vikunja, OpenProject, and a fresh
-Overleaf stack returned with Caddy ingress intact. Canonical platform payloads for
-Grafana, Loki, Alloy, code-server, and Vaultwarden are prepared for an attended cutover;
-Caddy remains separate because it owns ingress and certificate state. Persistent state
-normalization remains out of scope; existing state paths and legacy Compose files remain
+Overleaf stack returned with Caddy ingress intact. The Caddy canonical cutover passed
+on 2026-09-21, preserving its `proxy` project identity, certificate volumes, and
+legacy configuration binds. Canonical payloads for Grafana, Loki, Alloy, code-server,
+and Vaultwarden remain prepared for attended cutovers. Persistent state normalization
+remains out of scope; existing state paths and legacy Compose files remain
 rollback artifacts. Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent) and
 portable infrastructure workloads remain outside this repository.

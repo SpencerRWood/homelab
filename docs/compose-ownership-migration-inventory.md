@@ -13,7 +13,7 @@ secret values were not collected or copied.
 | Grafana, Loki, Alloy | `logging` / `/srv/docker/logging/docker-compose.yml` | Platform (`compose/platform/logging`) | `/srv/docker/logging/data/*` and audited config binds | Grafana uses external Postgres; Alloy depends on Loki | existing `logging`, `proxy`, external `wood-data-platform-db` | `unless-stopped` | Canonical payload is ready; retain external runtime environment values. |
 | code-server + init | `code` / `/srv/docker/code/docker-compose.yml` | Platform (`compose/platform/code-server`) | `code_code_server_home`, `/srv/docker/code/workspace`, `/home/spencerwood/projects` | `code-server-init` must run before the app; local image build | `proxy` | init `no`; app `unless-stopped` | Canonical payload retains project name `code` and its audited Dockerfile. |
 | Vaultwarden | `private` / `/srv/docker/private/docker-compose.yml` | Platform (`compose/platform/vaultwarden`) | `/srv/docker/private/config/vaultwarden` | External Postgres; `private` also contains excluded infrastructure services | existing `private_default`, `proxy`, external `wood-data-platform-db` | `unless-stopped` | Canonical payload isolates Vaultwarden while keeping Keycloak and Infisical outside this repository. |
-| Caddy | `proxy` / `/srv/docker/proxy/docker-compose.yml` | Platform | `proxy_caddy_data`, `proxy_caddy_config`; Caddyfile/site binds | Local Cloudflare-enabled image build | existing external `proxy`; host `192.168.1.21:80/443` | `unless-stopped` | Preserve exact build, ports, network, configuration, and external `.env.resolved`; validate Caddy before recreation. |
+| Caddy | `proxy` / `/srv/docker/proxy/docker-compose.yml` | Platform (`compose/platform/caddy`) | `proxy_caddy_data`, `proxy_caddy_config`; Caddyfile/site binds | Local Cloudflare-enabled image build | existing external `proxy`; host `192.168.1.21:80/443` | `unless-stopped` | Canonical cutover passed on 2026-09-21. It preserves the `proxy` project name, volumes, build module, ports, network, and legacy config binds; the legacy project and pre-cutover image tag remain rollback artifacts. |
 
 ## Excluded projects
 
@@ -36,3 +36,7 @@ qBittorrent are absent and must remain absent.
 - Before each attended cutover, compare the canonical rendered configuration with the
   audited Compose/runtime contract, run scoped Ansible check mode, and verify health,
   mounts, networks, restart policy, and proxy reachability afterward.
+- Caddy rollback: retag `local/caddy-cloudflare:pre-canonical-caddy-cutover` as
+  `local/caddy-cloudflare:2.11.2`, then run
+  `docker compose --env-file .env.resolved up -d --no-deps --force-recreate caddy`
+  from `/srv/docker/proxy`. Do not remove the legacy proxy tree or Caddy volumes.
