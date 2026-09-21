@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.9.0 (2026-09-21)
+
+### Features
+
+- Add dedicated homelab postgres
+  ([`fafa7fb`](https://github.com/SpencerRWood/homelab/commit/fafa7fb5d0c73497e2fef14baf95cc6b332c9cd5))
+
+
 ## v0.8.0 (2026-09-21)
 
 ### Features
