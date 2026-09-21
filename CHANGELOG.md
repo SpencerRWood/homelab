@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.13.2 (2026-09-21)
+
+### Bug Fixes
+
+- Escape Docker templates in health checks
+  ([`cad4ec0`](https://github.com/SpencerRWood/homelab/commit/cad4ec0e33223dcde668367cc8f9d0c619645cff))
+
+
 ## v0.13.1 (2026-09-21)
 
 ### Bug Fixes
