@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.13.0 (2026-09-21)
+
+### Bug Fixes
+
+- **ci**: Satisfy deployment workflow validation
+  ([`ce1c246`](https://github.com/SpencerRWood/homelab/commit/ce1c246ec0015994474b51a7bb80171b46f86cfb))
+
+### Features
+
+- Deploy released homelab configuration
+  ([`9d9cb1a`](https://github.com/SpencerRWood/homelab/commit/9d9cb1a46fd09e62865ae39d703364370f206d10))
+
+
 ## v0.12.0 (2026-09-21)
 
 ### Features
