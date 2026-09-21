@@ -16,9 +16,11 @@ homelab repo                  infrastructure repo
 Beelink home services         portable platform hosts
 ```
 
-On the Beelink, Ansible configures the host baseline, users/groups, NAS mounts, Docker,
-directories, permissions, networking/security, system services, and backup prerequisites.
-Docker Compose then runs the media, books, platform, and productivity services.
+On the Beelink, Ansible currently manages adopted NAS mounts, canonical Compose payloads
+and their server-side secret file, and mount-gated media startup. Host baseline,
+users/groups, Docker, networking/security, and backup changes remain outside the current
+implemented ownership boundary. Docker Compose then runs the media, books, platform,
+and productivity services.
 
 Terraform provisions cloud or otherwise provisionable infrastructure. Ansible configures
 hosts. Docker Compose runs application services. The Beelink is a managed deployment
