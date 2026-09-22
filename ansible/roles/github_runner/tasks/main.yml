@@ -22,17 +22,6 @@
     - {path: "{{ github_runner_root }}", mode: '0755'}
     - {path: "/home/{{ github_runner_user }}/.secrets", mode: '0700'}
 
-- name: Install local Ansible control dependencies
-  ansible.builtin.apt:
-    name:
-      - ansible
-      - ca-certificates
-      - curl
-      - git
-      - libicu74
-    state: present
-    update_cache: true
-
 - name: Create durable runner deployment metadata directory
   ansible.builtin.file:
     path: "{{ github_runner_deployment_state_dir }}"
@@ -45,6 +34,18 @@
   ansible.builtin.stat:
     path: "{{ github_runner_root }}/.runner"
   register: github_runner_registration
+
+- name: Install local Ansible control dependencies for runner bootstrap
+  ansible.builtin.apt:
+    name:
+      - ansible
+      - ca-certificates
+      - curl
+      - git
+      - libicu74
+    state: present
+    update_cache: true
+  when: not github_runner_registration.stat.exists
 
 - name: Install GitHub runner archive
   ansible.builtin.unarchive:
