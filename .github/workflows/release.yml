@@ -17,7 +17,8 @@ jobs:
   deploy:
     needs: release
     if: ${{ needs.release.outputs.released == 'true' }}
-    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@v1
+    # v1 predates the privileged-wrapper inputs used by the isolated runner.
+    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@31068c989a127377b82e59d0c31a7c4b374ebcd8  # yamllint disable-line rule:line-length
     with:
       repository: ${{ github.repository }}
       ref: ${{ needs.release.outputs.release_tag }}
@@ -34,10 +35,14 @@ jobs:
         uv run ansible-playbook -i ansible/inventory/homelab.yml
         ansible/playbooks/homelab-host.yml --tags storage --check --diff
       privileged_check_command: >-
-        sudo -n /usr/local/sbin/github-runner-homelab-deploy "$GITHUB_WORKSPACE" check
+        sudo -n /usr/local/sbin/github-runner-homelab-deploy
+        "$GITHUB_WORKSPACE" check
       health_check_command: bash scripts/health-check.sh
       privileged_deploy_command: >-
-        sudo -n /usr/local/sbin/github-runner-homelab-deploy "$GITHUB_WORKSPACE" apply
+        sudo -n /usr/local/sbin/github-runner-homelab-deploy
+        "$GITHUB_WORKSPACE" apply
       privileged_health_check_command: >-
-        sudo -n /usr/local/sbin/github-runner-homelab-deploy "$GITHUB_WORKSPACE" health
-      deployment_state_file: /var/lib/github-actions-deployments/github-runner-homelab/homelab.json
+        sudo -n /usr/local/sbin/github-runner-homelab-deploy
+        "$GITHUB_WORKSPACE" health
+      deployment_state_file: >-
+        /var/lib/github-actions-deployments/github-runner-homelab/homelab.json
