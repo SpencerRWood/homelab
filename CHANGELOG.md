@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.14.6 (2026-09-22)
+
+### Bug Fixes
+
+- **ci**: Allow immutable image references
+  ([`2ac5cab`](https://github.com/SpencerRWood/homelab/commit/2ac5cabf383fe52b5dd3961907a58c98067753b3))
+
+
 ## v0.14.5 (2026-09-22)
 
 ### Bug Fixes
