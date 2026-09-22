@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.14.7 (2026-09-22)
+
+### Bug Fixes
+
+- **release**: Deploy Renovate dependency patches
+  ([`02e24d3`](https://github.com/SpencerRWood/homelab/commit/02e24d35f9540fde82f8d78ebbb2433ce0db5f96))
+
+### Chores
+
+- **deps**: Pin dependencies ([#19](https://github.com/SpencerRWood/homelab/pull/19),
+  [`0a3dc90`](https://github.com/SpencerRWood/homelab/commit/0a3dc903850db645cefa9c4bc3709df160c4fa7f))
+
+
 ## v0.14.6 (2026-09-22)
 
 ### Bug Fixes
