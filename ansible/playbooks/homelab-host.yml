@@ -7,3 +7,4 @@
     - role: storage
     - role: compose
     - role: systemd
+    - role: github_runner

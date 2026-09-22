@@ -8,6 +8,11 @@
   "pinDigests": true,
   "platformAutomerge": true,
   "automergeStrategy": "squash",
+  "vulnerabilityAlerts": {
+    "automerge": true,
+    "semanticCommitType": "fix",
+    "semanticCommitScope": "deps"
+  },
   "packageRules": [
     {
       "description": "Homelab image updates share the normal validated release-and-deploy path.",
