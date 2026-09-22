@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.14.5 (2026-09-22)
+
+### Bug Fixes
+
+- **ci**: Validate pull requests
+  ([`71e073b`](https://github.com/SpencerRWood/homelab/commit/71e073b1890007d206854c2981cda1c79c9aed52))
+
+
 ## v0.14.4 (2026-09-22)
 
 ### Bug Fixes
