@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.14.1 (2026-09-22)
+
+### Bug Fixes
+
+- Treat homelab secrets as Compose env data
+  ([`71a50a5`](https://github.com/SpencerRWood/homelab/commit/71a50a5d6f5173e5c5bed950ca82523ccb9d95b2))
+
+
 ## v0.14.0 (2026-09-22)
 
 ### Bug Fixes
