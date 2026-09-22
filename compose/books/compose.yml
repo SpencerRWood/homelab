@@ -6,7 +6,7 @@ name: media-acquisition
 services:
   calibre:
     container_name: calibre
-    image: lscr.io/linuxserver/calibre:latest
+    image: lscr.io/linuxserver/calibre:latest@sha256:8c7b77ada7133cbac1519791035ac7e305e37adae5cd06038270a90f99f4b4d6
     environment:
       PUID: "1026"
       PGID: "100"
@@ -22,7 +22,7 @@ services:
 
   calibre-web:
     container_name: calibre-web
-    image: lscr.io/linuxserver/calibre-web:latest
+    image: lscr.io/linuxserver/calibre-web:latest@sha256:802729966faed5e32d671cd4f92ba6196e9e754a6c0f740ce1ee9acd86b10e55
     environment:
       PUID: "1026"
       PGID: "100"
@@ -40,7 +40,7 @@ services:
 
   audiobookshelf:
     container_name: audiobookshelf
-    image: ghcr.io/advplyr/audiobookshelf:2.35.0
+    image: ghcr.io/advplyr/audiobookshelf:2.35.0@sha256:89276ff2e0b3d2f07dd334b641f27a34ab7f02e1047c60b7b8a30126cb0813a5
     user: "1026:100"
     environment:
       TZ: America/New_York
@@ -57,7 +57,7 @@ services:
 
   bookshelf-audiobooks:
     container_name: bookshelf-audiobooks
-    image: ghcr.io/pennydreadful/bookshelf:softcover
+    image: ghcr.io/pennydreadful/bookshelf:softcover@sha256:23defe59522d0591ade31b2a59c674648f43be47fae769d93d32bb1e038c7170
     environment:
       PUID: "1026"
       PGID: "100"
@@ -74,7 +74,7 @@ services:
 
   bookshelf-ebooks:
     container_name: bookshelf-ebooks
-    image: ghcr.io/pennydreadful/bookshelf:softcover
+    image: ghcr.io/pennydreadful/bookshelf:softcover@sha256:23defe59522d0591ade31b2a59c674648f43be47fae769d93d32bb1e038c7170
     environment:
       PUID: "1026"
       PGID: "100"
@@ -92,7 +92,7 @@ services:
 
   ebook-importer:
     container_name: ebook-importer
-    image: lscr.io/linuxserver/calibre:latest
+    image: lscr.io/linuxserver/calibre:latest@sha256:8c7b77ada7133cbac1519791035ac7e305e37adae5cd06038270a90f99f4b4d6
     user: "1026:100"
     environment:
       TZ: America/New_York
