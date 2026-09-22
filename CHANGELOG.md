@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.14.4 (2026-09-22)
+
+### Bug Fixes
+
+- Run homelab health checks without uv
+  ([`f270694`](https://github.com/SpencerRWood/homelab/commit/f2706948c65ce1c760997eacfdf700f114d93ad4))
+
+
 ## v0.14.3 (2026-09-22)
 
 ### Bug Fixes
