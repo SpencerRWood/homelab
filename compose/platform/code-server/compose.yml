@@ -3,7 +3,7 @@ name: code
 
 services:
   code-server-init:
-    image: busybox:1.37
+    image: busybox:1.37@sha256:9db7b59979c38555a39def84a31fb98b5296952f9e3afd4f6f11f05b07adfab0
     container_name: code-server-init
     command:
       - sh

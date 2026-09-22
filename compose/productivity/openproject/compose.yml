@@ -23,7 +23,7 @@ x-app-environment: &app-environment
 
 services:
   projects-cache:
-    image: memcached:1.6
+    image: memcached:1.6@sha256:d956c0a57fd7a9f2903fa6d6f7fb4a3c4ed31857c8c22f52cbea3d0ae0bfe4f0
     container_name: projects-cache
     restart: unless-stopped
 
@@ -97,7 +97,7 @@ services:
     networks: [default, homelab-postgres, legacy-database]
 
   projects-hocuspocus:
-    image: openproject/hocuspocus:17.3.0
+    image: openproject/hocuspocus:17.3.0@sha256:3e05500df18eb0864975ff4f9f88ca42b86f0c163a711f749c5c5b48e6b42f5f
     container_name: projects-hocuspocus
     restart: unless-stopped
     environment:
