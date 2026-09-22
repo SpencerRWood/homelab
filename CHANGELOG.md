@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.14.3 (2026-09-22)
+
+### Bug Fixes
+
+- Refresh APT cache only for runner bootstrap
+  ([`3556166`](https://github.com/SpencerRWood/homelab/commit/3556166ef12f3bad68f51118e3240b16f59c34dd))
+
+
 ## v0.14.2 (2026-09-22)
 
 ### Bug Fixes
