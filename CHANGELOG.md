@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.14.2 (2026-09-22)
+
+### Bug Fixes
+
+- Run homelab deployment Ansible locally
+  ([`455be07`](https://github.com/SpencerRWood/homelab/commit/455be0711215b33885aad53e8ade1d5e791a8cb4))
+
+
 ## v0.14.1 (2026-09-22)
 
 ### Bug Fixes
