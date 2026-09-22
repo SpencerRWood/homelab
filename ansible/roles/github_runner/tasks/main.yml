@@ -49,7 +49,7 @@
 - name: Install GitHub runner archive
   ansible.builtin.unarchive:
     # noqa yaml[line-length]
-    src: "https://github.com/actions/runner/releases/download/v{{ github_runner_version }}/actions-runner-linux-x64-{{ github_runner_version }}.tar.gz"
+    src: "https://github.com/actions/runner/releases/download/v{{ github_runner_version }}/actions-runner-linux-x64-{{ github_runner_version }}.tar.gz"  # yamllint disable-line rule:line-length
     dest: "{{ github_runner_root }}"
     remote_src: true
     owner: "{{ github_runner_user }}"
@@ -106,7 +106,7 @@
 - name: Permit only the canonical deployment wrapper through sudo
   ansible.builtin.copy:
     # noqa yaml[line-length]
-    content: "{{ github_runner_user }} ALL=(root) NOPASSWD: {{ github_runner_deployment_wrapper }}\n"
+    content: "{{ github_runner_user }} ALL=(root) NOPASSWD: {{ github_runner_deployment_wrapper }}\n"  # yamllint disable-line rule:line-length
     dest: "/etc/sudoers.d/{{ github_runner_name }}"
     owner: root
     group: root
