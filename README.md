@@ -1,7 +1,9 @@
 # homelab
 
 The source of truth for Beelink-specific host configuration and home-only services.
-The MacBook is the Ansible control node; the Beelink is a managed deployment target.
+The Beelink is both the managed deployment target and the always-on execution host for
+the isolated homelab GitHub Actions runner. The MacBook can bootstrap or develop changes,
+but is not required for routine CI/CD.
 Retained services are still running from the legacy Beelink deployment and are **not**
 managed by this repository yet, except Plex, Sonarr, Radarr, SABnzbd, and Prowlarr,
 which are managed from the canonical media Compose payload.
@@ -28,7 +30,7 @@ scripts/       Optional local helper scripts
 ## Workflow
 
 ```text
-MacBook -> edit/test/commit -> GitHub -> Ansible/deployment automation -> Beelink
+feature branch -> PR validation -> main -> semantic-release tag -> Beelink runner -> Ansible -> Beelink
 ```
 
 Ansible configures hosts; Docker Compose runs applications; Terraform belongs to
@@ -120,7 +122,7 @@ and `v0.3.0` owns mount-gated media startup, including its passed reboot validat
 Conventional commits determine release bumps.
 
 Each published GitHub Release starts the deployment workflow. It checks out the
-exact `vX.Y.Z` release on the trusted MacBook self-hosted runner, runs validation
+exact `vX.Y.Z` release on the dedicated Beelink self-hosted runner, runs validation
 and the canonical homelab playbook against the Beelink, then runs
 `scripts/health-check.sh`. Deployments are serialized by `deploy-homelab`; a newer
 release never cancels an active configuration run. A failed apply or health check
@@ -129,8 +131,8 @@ it. This restores configuration only; it never attempts a blind database rollbac
 
 Use **Actions → Deploy released homelab configuration → Run workflow** to deploy a
 specific existing release, or leave the release input empty to redeploy the latest.
-The self-hosted runner retains the protected local secret file at
-`/Users/spencerwood/.config/wood/homelab/homelab.env`, outside the Actions checkout.
+The self-hosted runner retains a protected runner-local copy of the deployment input
+outside the Actions checkout; runtime secrets remain protected server-side.
 
 Renovate uses the same PR → validation → main → semantic-release → release-tag
 deployment path as human changes. Docker patch, minor, major, and security image
