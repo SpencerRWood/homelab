@@ -4,5 +4,5 @@
 # deployment failure.
 set -euo pipefail
 
-uv run ansible -i ansible/inventory/homelab.yml homelab -b \
+/usr/bin/ansible --connection=local -i ansible/inventory/homelab.yml homelab -b \
   -m script -a scripts/health-check-remote.sh
