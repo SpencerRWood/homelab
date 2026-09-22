@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v0.14.0 (2026-09-22)
+
+### Bug Fixes
+
+- Use compatible deployment workflow contract
+  ([`ff9545d`](https://github.com/SpencerRWood/homelab/commit/ff9545dd3764a8854360966f182a467667e64809))
+
+### Features
+
+- Provision isolated Beelink homelab runner ([#13](https://github.com/SpencerRWood/homelab/pull/13),
+  [`5029ef7`](https://github.com/SpencerRWood/homelab/commit/5029ef7e1986854ed5b1f03b7879e0267c12aa80))
+
+
 ## v0.13.4 (2026-09-21)
 
 ### Bug Fixes
