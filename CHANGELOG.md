@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.14.8 (2026-09-22)
+
+### Chores
+
+- **deps**: Update pgvector/pgvector docker tag to v0.8.6
+  ([#20](https://github.com/SpencerRWood/homelab/pull/20),
+  [`dea8925`](https://github.com/SpencerRWood/homelab/commit/dea8925aef8c29b96eae0c613203d8e35f511f8e))
+
+
 ## v0.14.7 (2026-09-22)
 
 ### Bug Fixes
