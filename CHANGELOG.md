@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.14.13 (2026-09-23)
+
+### Chores
+
+- **deps**: Update memcached:1.6 docker digest to 405a445
+  ([#30](https://github.com/SpencerRWood/homelab/pull/30),
+  [`e7e6097`](https://github.com/SpencerRWood/homelab/commit/e7e6097f6a07254e2823e7ae725b16c7b7ff39e5))
+
+
 ## v0.14.12 (2026-09-23)
 
 ### Chores
