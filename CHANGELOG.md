@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.14.9 (2026-09-23)
+
+### Chores
+
+- **deps**: Update busybox docker tag to v1.38
+  ([#23](https://github.com/SpencerRWood/homelab/pull/23),
+  [`b803c13`](https://github.com/SpencerRWood/homelab/commit/b803c13d1563e82edc0420245785414425059e1d))
+
+
 ## v0.14.8 (2026-09-22)
 
 ### Chores
