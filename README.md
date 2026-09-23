@@ -145,10 +145,10 @@ outside the Actions checkout; runtime secrets remain protected server-side.
 
 Renovate uses the same PR → validation → main → semantic-release → release-tag
 deployment path as human changes. Docker patch, minor, major, and security image
-updates are currently configured for GitHub auto-merge, including minor and major
+updates are currently configured for Renovate-managed PR auto-merge, including minor and major
 updates. This is the existing policy; changing it requires a separate decision.
 GitHub does not currently require the consumer `validation` check before a PR
-can merge. A pgvector tag
+can merge. Renovate-managed PR automerge waits for passing checks. A pgvector tag
 that changes PostgreSQL compatibility (for example `pg16` to `pg17`) remains manual.
 
 ## Validation
