@@ -98,11 +98,7 @@ infrastructure Postgres, CloudBeaver, and wood-data-platform are intentionally a
 ## Release model
 
 ```text
-MacBook
-  ↓
-pre-commit
-  ↓
-GitHub main
+MacBook branch → pre-commit → PR → centralized validation → main
   ↓
 SpencerRWood/workflows@v1
   ↓
@@ -118,10 +114,19 @@ The thin [release workflow](.github/workflows/release.yml) runs only for pushes 
 workflow contract. Pull requests do not run privileged or self-hosted workloads.
 The PR wrapper calls `validate.yml@v1` with the same `.github/release.toml`
 capabilities that gate semantic release.
+Run `uv run pre-commit install` in each local checkout. The installed hook
+blocks development commits directly to `main`. The prepared GitHub `main`
+ruleset is intentionally disabled for this single-developer
+repository, allowing semantic-release to write its version commit back to
+`main`; see the [shared branch policy](https://github.com/SpencerRWood/workflows/blob/main/docs/branch-rules.md).
+
 Releases are semantic versions of the deployable repository configuration state, not
 application-image versions: `v0.1.0` is the foundation, `v0.2.x` owns NFS storage,
 and `v0.3.0` owns mount-gated media startup, including its passed reboot validation.
 Conventional commits determine release bumps.
+The release job writes the new version to `pyproject.toml`, commits
+`chore(release): X.Y.Z`, tags that commit `vX.Y.Z`, and publishes the GitHub
+Release. The tag's checked-in project version matches the release version.
 
 Each published GitHub Release starts the deployment workflow. It checks out the
 exact `vX.Y.Z` release on the dedicated Beelink self-hosted runner, runs validation
@@ -142,8 +147,8 @@ Renovate uses the same PR → validation → main → semantic-release → relea
 deployment path as human changes. Docker patch, minor, major, and security image
 updates are currently configured for GitHub auto-merge, including minor and major
 updates. This is the existing policy; changing it requires a separate decision.
-Until `main` requires the `validation` check, GitHub cannot enforce that
-Renovate waits for validation. A pgvector tag
+GitHub does not currently require the consumer `validation` check before a PR
+can merge. A pgvector tag
 that changes PostgreSQL compatibility (for example `pg16` to `pg17`) remains manual.
 
 ## Validation
