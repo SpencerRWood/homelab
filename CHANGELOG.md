@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.14.10 (2026-09-23)
+
+### Chores
+
+- **deps**: Update ghcr.io/advplyr/audiobookshelf docker tag to v2.36.1
+  ([#24](https://github.com/SpencerRWood/homelab/pull/24),
+  [`6c49ebc`](https://github.com/SpencerRWood/homelab/commit/6c49ebc57b245f935197213dbcd498e1e4c4e42e))
+
+
 ## v0.14.9 (2026-09-23)
 
 ### Chores
