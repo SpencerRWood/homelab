@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.14.11 (2026-09-23)
+
+### Chores
+
+- **deps**: Update openproject/hocuspocus docker tag to v17.8.0
+  ([#27](https://github.com/SpencerRWood/homelab/pull/27),
+  [`65db56d`](https://github.com/SpencerRWood/homelab/commit/65db56d40c6dd74fc200bcc48b99a2a19f56abfc))
+
+
 ## v0.14.10 (2026-09-23)
 
 ### Chores
