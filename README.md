@@ -116,6 +116,8 @@ homelab vX.Y.Z
 The thin [release workflow](.github/workflows/release.yml) runs only for pushes to
 `main` and delegates validation and release creation to the stable centralized
 workflow contract. Pull requests do not run privileged or self-hosted workloads.
+The PR wrapper calls `validate.yml@v1` with the same `.github/release.toml`
+capabilities that gate semantic release.
 Releases are semantic versions of the deployable repository configuration state, not
 application-image versions: `v0.1.0` is the foundation, `v0.2.x` owns NFS storage,
 and `v0.3.0` owns mount-gated media startup, including its passed reboot validation.
@@ -128,6 +130,8 @@ and the canonical homelab playbook against the Beelink, then runs
 release never cancels an active configuration run. A failed apply or health check
 applies the previously successful `homelab` Environment release once and rechecks
 it. This restores configuration only; it never attempts a blind database rollback.
+Automatic and manual deployment entrypoints use the same
+`.github/workflows/deploy-target.yml` configuration.
 
 Use **Actions → Deploy released homelab configuration → Run workflow** to deploy a
 specific existing release, or leave the release input empty to redeploy the latest.
@@ -136,7 +140,10 @@ outside the Actions checkout; runtime secrets remain protected server-side.
 
 Renovate uses the same PR → validation → main → semantic-release → release-tag
 deployment path as human changes. Docker patch, minor, major, and security image
-updates auto-merge through GitHub only after required checks pass. A pgvector tag
+updates are currently configured for GitHub auto-merge, including minor and major
+updates. This is the existing policy; changing it requires a separate decision.
+Until `main` requires the `validation` check, GitHub cannot enforce that
+Renovate waits for validation. A pgvector tag
 that changes PostgreSQL compatibility (for example `pg16` to `pg17`) remains manual.
 
 ## Validation
