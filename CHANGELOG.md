@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.14.12 (2026-09-23)
+
+### Chores
+
+- **deps**: Update busybox:1.38 docker digest to fd7dc98
+  ([#28](https://github.com/SpencerRWood/homelab/pull/28),
+  [`d548b39`](https://github.com/SpencerRWood/homelab/commit/d548b3926cc4a6c4db7a8438506b09c547f51594))
+
+
 ## v0.14.11 (2026-09-23)
 
 ### Chores
