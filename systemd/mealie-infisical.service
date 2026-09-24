@@ -1,0 +1,16 @@
+[Unit]
+Description=Resolve Mealie secret from Infisical and start Mealie
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/deploy-mealie-infisical
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
