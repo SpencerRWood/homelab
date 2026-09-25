@@ -8,13 +8,14 @@ services:
     image: vaultwarden/server:${VAULTWARDEN_IMAGE_TAG:-latest}
     container_name: vaultwarden
     restart: unless-stopped
+    env_file:
+      - path: /srv/homelab/secrets/runtime/vaultwarden.env
+        format: raw
     environment:
       DOMAIN: "${VAULTWARDEN_DOMAIN}"
       SIGNUPS_ALLOWED: "${VAULTWARDEN_SIGNUPS_ALLOWED_RUNTIME}"
       WEBSOCKET_ENABLED: "${VAULTWARDEN_WEBSOCKET_ENABLED}"
-      DATABASE_URL: "${VAULTWARDEN_DATABASE_URL}"
       ROCKET_PORT: "${VAULTWARDEN_ROCKET_PORT}"
-      ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
     expose:
       - "80"
     volumes:

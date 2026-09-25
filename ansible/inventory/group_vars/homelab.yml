@@ -48,3 +48,17 @@ infisical_runtime_services:
       - projects-worker
       - projects-cron
       - projects-hocuspocus
+  caddy:
+    environment: homelab
+    path: /caddy
+    output: /srv/homelab/secrets/runtime/caddy.env
+    required_keys: [CLOUDFLARE_API_TOKEN]
+    compose_file: /srv/homelab/compose/platform/caddy/compose.yml
+    compose_services: [caddy]
+  vaultwarden:
+    environment: homelab
+    path: /vaultwarden
+    output: /srv/homelab/secrets/runtime/vaultwarden.env
+    required_keys: [ADMIN_TOKEN, DATABASE_URL]
+    compose_file: /srv/homelab/compose/platform/vaultwarden/compose.yml
+    compose_services: [vaultwarden]

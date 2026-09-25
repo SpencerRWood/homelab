@@ -12,11 +12,13 @@ services:
     image: local/caddy-cloudflare:${CADDY_VERSION:-2.11.2}
     container_name: caddy
     restart: unless-stopped
+    env_file:
+      - path: /srv/homelab/secrets/runtime/caddy.env
+        format: raw
     environment:
       ACME_EMAIL: "${ACME_EMAIL}"
       CADDY_PROXY_NETWORK: "${CADDY_PROXY_NETWORK:-proxy}"
       CADDY_VERSION: "${CADDY_VERSION:-2.11.2}"
-      CLOUDFLARE_API_TOKEN: "${CLOUDFLARE_API_TOKEN}"
     ports:
       - "192.168.1.21:80:80"
       - "192.168.1.21:443:443"

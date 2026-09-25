@@ -1,7 +1,8 @@
 # Infisical runtime secrets
 
 The `Homelab` project has one `homelab` environment and the service paths
-`/mealie`, `/vikunja`, and `/openproject`. `homelab-deployer` has Universal Auth,
+`/mealie`, `/vikunja`, `/openproject`, `/caddy`, and `/vaultwarden`.
+`homelab-deployer` has Universal Auth,
 organization `no-access`, and the built-in project `Viewer` role. Viewer is
 project-wide. The trusted root-owned deployment layer is the security boundary:
 application containers receive generated environment files and never receive
@@ -26,11 +27,11 @@ To deploy an individual migrated service from this checkout, run the
 `ansible/playbooks/homelab-infisical.yml` playbook with
 `infisical_selected_services` set to that service. The playbook retains the
 previous Compose definition before a first switch. `rollback-mealie-infisical`
-and `rollback-infisical-service vikunja|openproject` restore only the selected
-service from its retained Compose file and legacy `homelab.env`; rollback does
-not delete Infisical secrets.
+and `rollback-infisical-service vikunja|openproject|caddy|vaultwarden` restore
+only the selected service's Compose file and legacy `homelab.env`; rollback
+does not delete Infisical secrets.
 
-The legacy env file remains until a separate cleanup tranche. Caddy,
-Vaultwarden, PostgreSQL, dev infrastructure, GitHub Actions, media-managed
+The legacy env file remains until a separate cleanup tranche. PostgreSQL,
+dev infrastructure, GitHub Actions, media-managed
 settings, runner credentials, and stale or recovered instances are outside this
 migration.

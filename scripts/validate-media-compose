@@ -11,6 +11,9 @@ secret_contract="${HOMELAB_ENV_FILE:-homelab.env.example}"
 validation_dir="$(mktemp -d)"
 trap 'rm -rf "$validation_dir"' EXIT HUP INT TERM
 printf '%s\n' 'VIKUNJA_DATABASE_PASSWORD=validation-only' > "$validation_dir/vikunja.env"
+printf '%s\n' 'CLOUDFLARE_API_TOKEN=validation-only' > "$validation_dir/caddy.env"
+printf '%s\n' 'ADMIN_TOKEN=validation-only' 'DATABASE_URL=validation-only' \
+  > "$validation_dir/vaultwarden.env"
 printf '%s\n' 'DATABASE_URL=validation-only' \
   'OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET=validation-only' \
   'SECRET=validation-only' 'SECRET_KEY_BASE=validation-only' \
@@ -19,6 +22,10 @@ sed "s|/srv/homelab/secrets/runtime/vikunja.env|$validation_dir/vikunja.env|" \
   compose/productivity/vikunja/compose.yml > "$validation_dir/vikunja-compose.yml"
 sed "s|/srv/homelab/secrets/runtime/openproject.env|$validation_dir/openproject.env|" \
   compose/productivity/openproject/compose.yml > "$validation_dir/openproject-compose.yml"
+sed "s|/srv/homelab/secrets/runtime/caddy.env|$validation_dir/caddy.env|" \
+  compose/platform/caddy/compose.yml > "$validation_dir/caddy-compose.yml"
+sed "s|/srv/homelab/secrets/runtime/vaultwarden.env|$validation_dir/vaultwarden.env|" \
+  compose/platform/vaultwarden/compose.yml > "$validation_dir/vaultwarden-compose.yml"
 
 docker compose --env-file "$secret_contract" -f compose/media/plex.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/media/acquisition.yml config --quiet
@@ -28,7 +35,8 @@ docker compose --env-file "$secret_contract" -f "$validation_dir/vikunja-compose
 docker compose --env-file "$secret_contract" -f "$validation_dir/openproject-compose.yml" config --quiet
 OVERLEAF_IMAGE="${OVERLEAF_IMAGE:-sharelatex/sharelatex:latest}" \
   docker compose --env-file "$secret_contract" -f compose/productivity/overleaf/compose.yml config --quiet
-docker compose --env-file "$secret_contract" -f compose/platform/caddy/compose.yml config --quiet
+docker compose --project-directory compose/platform/caddy --env-file "$secret_contract" \
+  -f "$validation_dir/caddy-compose.yml" config --quiet
 docker compose --env-file "$secret_contract" -f compose/platform/logging/compose.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/platform/code-server/compose.yml config --quiet
-docker compose --env-file "$secret_contract" -f compose/platform/vaultwarden/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f "$validation_dir/vaultwarden-compose.yml" config --quiet

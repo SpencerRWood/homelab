@@ -5,18 +5,31 @@ import os
 import pathlib
 import subprocess
 import sys
+import tempfile
 
 def run():
-    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in ('vikunja','openproject'):
+    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in ('vikunja','openproject','caddy','vaultwarden'):
         raise ValueError('invalid rollback target')
     name=sys.argv[1]
     item=json.loads(pathlib.Path('/etc/homelab/infisical-runtime-services.json').read_text())[name]
     snapshot=pathlib.Path(item['compose_file']).with_name('compose.pre-infisical.yml')
+    active=pathlib.Path(item['compose_file'])
     legacy=pathlib.Path('/srv/homelab/secrets/homelab.env')
     if not snapshot.is_file() or not legacy.is_file():raise ValueError('rollback source unavailable')
     base=['docker','compose','--env-file',str(legacy),'-f',str(snapshot)]
     subprocess.run(base+['config','--quiet'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,check=True)
     subprocess.run(['systemctl','disable','--now','homelab-infisical@'+name+'.service'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,check=True)
+    fd,tmp=tempfile.mkstemp(prefix='.compose-rollback-',dir=active.parent)
+    try:
+        with os.fdopen(fd,'wb') as stream:
+            stream.write(snapshot.read_bytes())
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.chmod(tmp,0o644)
+        os.replace(tmp,active)
+    finally:
+        if os.path.exists(tmp):os.unlink(tmp)
+    base=['docker','compose','--env-file',str(legacy),'-f',str(active)]
     subprocess.run(base+['up','-d','--no-deps','--force-recreate']+item['compose_services'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,check=True)
     print(name+' restored from retained legacy source')
 if __name__=='__main__':
