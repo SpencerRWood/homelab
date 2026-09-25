@@ -62,3 +62,10 @@ infisical_runtime_services:
     required_keys: [ADMIN_TOKEN, DATABASE_URL]
     compose_file: /srv/homelab/compose/platform/vaultwarden/compose.yml
     compose_services: [vaultwarden]
+  postgres:
+    environment: homelab
+    path: /postgres
+    output: /srv/homelab/secrets/runtime/postgres.env
+    required_keys: [POSTGRES_PASSWORD]
+    compose_file: /srv/homelab/compose/postgres/compose.yml
+    compose_services: [postgres]

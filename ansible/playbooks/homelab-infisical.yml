@@ -12,6 +12,7 @@
       openproject: compose/productivity/openproject/compose.yml
       caddy: compose/platform/caddy/compose.yml
       vaultwarden: compose/platform/vaultwarden/compose.yml
+      postgres: compose/postgres/compose.yml
   tasks:
     - name: Verify permanent bootstrap credential
       ansible.builtin.stat:
@@ -116,6 +117,20 @@
         owner: root
         group: root
         mode: '0644'
+      loop: "{{ infisical_selected_services }}"
+    - name: Validate selected Compose definitions before reconciliation
+      ansible.builtin.command:
+        argv:
+          - docker
+          - compose
+          - --env-file
+          - /srv/homelab/secrets/homelab.env
+          - -f
+          - "{{ infisical_runtime_services[item].compose_file }}"
+          - config
+          - --quiet
+      changed_when: false
+      no_log: true
       loop: "{{ infisical_selected_services }}"
     - name: Resolve and reconcile selected services
       ansible.builtin.command:

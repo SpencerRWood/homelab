@@ -173,3 +173,31 @@ The remaining non-template databases are `dagster`, `infisical`, `keycloak`,
 `wood_data`; none were altered. The obsolete ignored local `POSTGRES_*` connection
 variables were removed. Rollback after this cleanup requires restoring the protected
 logical dumps, rather than reconnecting to a retained source database.
+
+### Infisical source migration — 2026-09-25
+
+The dedicated `homelab-postgres` password source is now `homelab:/postgres`,
+key `POSTGRES_PASSWORD`, resolved by the shared root-owned `homelab-deployer`
+into `/srv/homelab/secrets/runtime/postgres.env`. The active password and the
+database role credential remained unchanged at opaque fingerprint `FP-0029`.
+The PostgreSQL image entrypoint runs `initdb` only when `PGDATA/PG_VERSION`
+is absent. This data directory was already initialized, so changing the
+container's environment could not be used to rotate the database role password.
+
+Before recreation, a protected full-cluster logical dump was created at
+`/mnt/wood-server-nas/backup_server/homelab-migration/phase4-homelab-postgres-20260925T162239Z/cluster.sql.gz`.
+The dump includes cluster roles and the application databases, passed gzip
+verification, and is held in a mode-`0700` directory as a mode-`0600` file.
+The existing bind mount `/srv/homelab/state/postgres/data` was preserved;
+neither Compose operation removed or initialized the data volume. Both forced
+recreations retained the same data-directory inode, database OIDs, and roles.
+PostgreSQL became healthy and accepted authenticated queries after each.
+Mealie, Vikunja, OpenProject, and Vaultwarden reconnected; Grafana's database
+remains staged while its application is stopped.
+
+The previous Compose definition is retained on the host as
+`/srv/homelab/compose/postgres/compose.pre-infisical.yml`. Both active and
+rollback Compose definitions validate. `rollback-infisical-service postgres`
+disables only its template unit, restores that definition, and recreates only
+this container from the retained legacy env file without touching the data
+volume. Rollback was not executed against the healthy database.

@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 def run():
-    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in ('vikunja','openproject','caddy','vaultwarden'):
+    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in ('vikunja','openproject','caddy','vaultwarden','postgres'):
         raise ValueError('invalid rollback target')
     name=sys.argv[1]
     item=json.loads(pathlib.Path('/etc/homelab/infisical-runtime-services.json').read_text())[name]

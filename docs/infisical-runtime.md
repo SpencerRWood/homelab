@@ -1,9 +1,9 @@
 # Infisical runtime secrets
 
 The `Homelab` project has one `homelab` environment and the service paths
-`/mealie`, `/vikunja`, `/openproject`, `/caddy`, and `/vaultwarden`.
-`homelab-deployer` has Universal Auth,
-organization `no-access`, and the built-in project `Viewer` role. Viewer is
+`/mealie`, `/vikunja`, `/openproject`, `/caddy`, `/vaultwarden`, and
+`/postgres`. `homelab-deployer` has Universal Auth, organization `no-access`,
+and the built-in project `Viewer` role. Viewer is
 project-wide. The trusted root-owned deployment layer is the security boundary:
 application containers receive generated environment files and never receive
 Infisical credentials.
@@ -27,11 +27,13 @@ To deploy an individual migrated service from this checkout, run the
 `ansible/playbooks/homelab-infisical.yml` playbook with
 `infisical_selected_services` set to that service. The playbook retains the
 previous Compose definition before a first switch. `rollback-mealie-infisical`
-and `rollback-infisical-service vikunja|openproject|caddy|vaultwarden` restore
+and `rollback-infisical-service vikunja|openproject|caddy|vaultwarden|postgres` restore
 only the selected service's Compose file and legacy `homelab.env`; rollback
 does not delete Infisical secrets.
 
-The legacy env file remains until a separate cleanup tranche. PostgreSQL,
-dev infrastructure, GitHub Actions, media-managed
-settings, runner credentials, and stale or recovered instances are outside this
-migration.
+The legacy env file remains until a separate cleanup tranche. The dedicated
+`homelab-postgres` container consumes `POSTGRES_PASSWORD` from the protected
+`/srv/homelab/secrets/runtime/postgres.env`; its initialized database role
+password was not changed. Legacy-postgres, pg-dev, dev infrastructure,
+GitHub Actions, media-managed settings, runner credentials, and stale or
+recovered instances are outside this migration.
