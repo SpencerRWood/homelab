@@ -41,10 +41,14 @@ def resolve() -> None:
     request = urllib.request.Request(
         api_url + "/api/v1/auth/universal-auth/login",
         data=form,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Infisical-Mealie-Resolver/1.0",
+        },
         method="POST",
     )
-    with urllib.request.urlopen(request, timeout=15) as response:
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    with opener.open(request, timeout=15) as response:
         token = json.load(response)["accessToken"]
     if not isinstance(token, str) or not token:
         raise ValueError("machine identity returned no access token")
@@ -74,9 +78,20 @@ def resolve() -> None:
             raise ValueError("Infisical export failed")
         protected_file(pathlib.Path(export_path))
         exported = json.loads(pathlib.Path(export_path).read_text(encoding="utf-8"))
-        if not isinstance(exported, dict) or set(exported) != {KEY}:
+        if not isinstance(exported, list) or len(exported) != 1:
             raise ValueError("Mealie destination must contain only POSTGRES_PASSWORD")
-        value = exported[KEY]
+        secret = exported[0]
+        if not isinstance(secret, dict) or any(
+            secret.get(field) != expected
+            for field, expected in (
+                ("key", KEY),
+                ("workspace", identity["project_id"]),
+                ("secretPath", "/mealie"),
+                ("type", "shared"),
+            )
+        ):
+            raise ValueError("Mealie destination metadata is invalid")
+        value = secret.get("value")
         if not isinstance(value, str) or not value or "\n" in value or "\r" in value or "\x00" in value:
             raise ValueError("Mealie secret is not a nonempty single-line value")
         if not re.fullmatch(r"[\x21-\x7e]+", value):
