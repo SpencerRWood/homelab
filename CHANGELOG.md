@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v0.15.0 (2026-09-25)
+
+### Bug Fixes
+
+- **mealie**: Resolve scoped Infisical export safely
+  ([`86ef48c`](https://github.com/SpencerRWood/homelab/commit/86ef48c9717d42a1a9492a61f41b6503cb96d8e4))
+
+### Features
+
+- **mealie**: Prepare scoped Infisical canary deployment
+  ([`10ba5e8`](https://github.com/SpencerRWood/homelab/commit/10ba5e8f54ddf33aa64ac3fa44611f24c2fa7114))
+
+- **secrets**: Deploy homelab services through Infisical
+  ([`74bc6b4`](https://github.com/SpencerRWood/homelab/commit/74bc6b408935556d20f10600139e504806740829))
+
+
 ## v0.14.13 (2026-09-23)
 
 ### Chores
