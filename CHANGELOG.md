@@ -2,6 +2,20 @@
 
 <!-- version list -->
 
+## v0.16.0 (2026-09-25)
+
+### Chores
+
+- **deps**: Update lscr.io/linuxserver/calibre:latest docker digest to 84d3e30
+  ([#35](https://github.com/SpencerRWood/homelab/pull/35),
+  [`6900b79`](https://github.com/SpencerRWood/homelab/commit/6900b79bd700a39eba2d63dac87e28e0da1294f7))
+
+### Features
+
+- **secrets**: Migrate Caddy and Vaultwarden to Infisical
+  ([`5e502c7`](https://github.com/SpencerRWood/homelab/commit/5e502c77e94ae7bfb287b7cd1353c2bd0309319e))
+
+
 ## v0.15.0 (2026-09-25)
 
 ### Bug Fixes
