@@ -77,8 +77,9 @@ on the shared wood-data-platform Postgres.
 
 ## Secrets
 
-Mealie, Vikunja, and OpenProject secrets come from the `Homelab` Infisical project
-through the root-owned resolver on the Beelink. The `homelab-deployer` identity has
+Mealie, Vikunja, OpenProject, Caddy, and Vaultwarden secrets come from the
+`Homelab` Infisical project through the root-owned resolver on the Beelink.
+The `homelab-deployer` identity has
 organization `no-access` and project-wide `Viewer`; application containers receive
 generated env files, never Infisical credentials. See
 [the runtime secret architecture](docs/infisical-runtime.md).

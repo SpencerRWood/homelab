@@ -10,6 +10,8 @@
       mealie: compose/productivity/recipes/compose.infisical.yml
       vikunja: compose/productivity/vikunja/compose.yml
       openproject: compose/productivity/openproject/compose.yml
+      caddy: compose/platform/caddy/compose.yml
+      vaultwarden: compose/platform/vaultwarden/compose.yml
   tasks:
     - name: Verify permanent bootstrap credential
       ansible.builtin.stat:
