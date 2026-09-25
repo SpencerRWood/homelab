@@ -1,0 +1,36 @@
+---
+name: dev
+
+services:
+  postgres:
+    image: ghcr.io/spencerrwood/postgres-service@sha256:82ca88e4251e87126614f8801dcfc3b45ad73879d04c8bd8eafe3263a078e45f
+    container_name: pg-dev
+    restart: unless-stopped
+    env_file:
+      - /srv/homelab/secrets/runtime/pg-dev.env
+    environment:
+      POSTGRES_DB: postgres_dev
+      POSTGRES_USER: spencer
+      PGDATA: /var/lib/postgresql/pgdata
+      PGTZ: UTC
+      TZ: UTC
+    command: ["-c", "listen_addresses=*"]
+    ports:
+      - "15432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          pg_isready -h 127.0.0.1 -p 5432
+          -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  pgdata:
+    external: true
+    name: dev_pgdata

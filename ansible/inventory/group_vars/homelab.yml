@@ -69,3 +69,11 @@ infisical_runtime_services:
     required_keys: [POSTGRES_PASSWORD]
     compose_file: /srv/homelab/compose/postgres/compose.yml
     compose_services: [postgres]
+  pg-dev:
+    environment: homelab
+    path: /pg-dev
+    output: /srv/homelab/secrets/runtime/pg-dev.env
+    required_keys: [POSTGRES_PASSWORD]
+    compose_file: /srv/homelab/compose/pg-dev/compose.yml
+    compose_services: [postgres]
+    rollback_env_file: /srv/homelab/secrets/rollback/pg-dev.env
