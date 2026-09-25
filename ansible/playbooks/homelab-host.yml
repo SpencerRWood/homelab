@@ -1,4 +1,9 @@
 ---
+- name: Prepare protected runtime secrets before Compose validation
+  ansible.builtin.import_playbook: homelab-infisical.yml
+  vars:
+    infisical_refresh_all: true
+
 - name: Configure the homelab host
   hosts: homelab
   become: true

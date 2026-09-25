@@ -15,3 +15,36 @@ homelab_docker_manage_group_membership: false
 # Preserve audited service UID/GID mappings during first Compose migration.
 # Do not normalize these values until each service is migrated and verified.
 homelab_preserve_existing_service_ids: true
+
+# The deployer identity remains on the host. Containers receive only
+# rendered env files.
+infisical_runtime_services:
+  mealie:
+    environment: homelab
+    path: /mealie
+    output: /srv/homelab/secrets/runtime/mealie.env
+    required_keys: [POSTGRES_PASSWORD]
+    compose_file: /srv/homelab/compose/productivity/recipes/compose.infisical.yml
+    compose_services: [mealie]
+  vikunja:
+    environment: homelab
+    path: /vikunja
+    output: /srv/homelab/secrets/runtime/vikunja.env
+    required_keys: [VIKUNJA_DATABASE_PASSWORD]
+    compose_file: /srv/homelab/compose/productivity/vikunja/compose.yml
+    compose_services: [vikunja]
+  openproject:
+    environment: homelab
+    path: /openproject
+    output: /srv/homelab/secrets/runtime/openproject.env
+    required_keys:
+      - DATABASE_URL
+      - OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET
+      - SECRET
+      - SECRET_KEY_BASE
+    compose_file: /srv/homelab/compose/productivity/openproject/compose.yml
+    compose_services:
+      - projects-web
+      - projects-worker
+      - projects-cron
+      - projects-hocuspocus

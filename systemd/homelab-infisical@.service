@@ -1,5 +1,5 @@
 [Unit]
-Description=Resolve Mealie secret from Infisical and start Mealie
+Description=Resolve Infisical environment and reconcile %i
 Requires=docker.service
 After=docker.service network-online.target
 Wants=network-online.target
@@ -8,7 +8,7 @@ StartLimitIntervalSec=0
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/local/sbin/deploy-mealie-infisical
+ExecStart=/usr/local/sbin/deploy-infisical-service %i
 Restart=on-failure
 RestartSec=30s
 

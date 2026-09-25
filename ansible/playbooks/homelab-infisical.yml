@@ -1,0 +1,132 @@
+---
+- name: Install trusted homelab Infisical resolver
+  hosts: homelab
+  become: true
+  gather_facts: false
+  vars:
+    source_root: "{{ playbook_dir }}/../.."
+    infisical_selected_services: []
+    infisical_compose_sources:
+      mealie: compose/productivity/recipes/compose.infisical.yml
+      vikunja: compose/productivity/vikunja/compose.yml
+      openproject: compose/productivity/openproject/compose.yml
+  tasks:
+    - name: Verify permanent bootstrap credential
+      ansible.builtin.stat:
+        path: /srv/homelab/secrets/bootstrap/infisical-homelab.json
+      register: deployer_credential
+    - name: Require protected deployer credential
+      ansible.builtin.assert:
+        that:
+          - deployer_credential.stat.exists
+          - deployer_credential.stat.isreg
+          - deployer_credential.stat.pw_name == 'root'
+          - deployer_credential.stat.gr_name == 'root'
+          - deployer_credential.stat.mode == '0600'
+    - name: Create resolver configuration directory
+      ansible.builtin.file:
+        path: /etc/homelab
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+    - name: Install declarative runtime service metadata
+      ansible.builtin.copy:
+        content: "{{ infisical_runtime_services | to_nice_json }}\n"
+        dest: /etc/homelab/infisical-runtime-services.json
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Install generic resolver and reconciler
+      ansible.builtin.copy:
+        src: "{{ source_root }}/scripts/{{ item }}"
+        dest: "/usr/local/sbin/{{ item.removesuffix('.py') }}"
+        owner: root
+        group: root
+        mode: '0755'
+      loop:
+        - resolve-infisical-env.py
+        - deploy-infisical-service
+    - name: Install template boot unit
+      ansible.builtin.copy:
+        src: "{{ source_root }}/systemd/homelab-infisical@.service"
+        dest: /etc/systemd/system/homelab-infisical@.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload Infisical systemd
+    - name: Install service rollback command
+      ansible.builtin.copy:
+        src: "{{ source_root }}/scripts/rollback-infisical-service"
+        dest: /usr/local/sbin/rollback-infisical-service
+        owner: root
+        group: root
+        mode: '0755'
+    - name: Install Mealie rollback command
+      ansible.builtin.copy:
+        src: "{{ source_root }}/scripts/rollback-mealie-infisical"
+        dest: /usr/local/sbin/rollback-mealie-infisical
+        owner: root
+        group: root
+        mode: '0755'
+    - name: Reload units before enabling selected services
+      ansible.builtin.meta: flush_handlers
+    - name: Resolve declared runtime files before canonical Compose validation
+      ansible.builtin.command:
+        argv: >-
+          {{ ['/usr/local/sbin/resolve-infisical-env', '--environment',
+              item.value.environment, '--path', item.value.path, '--output',
+              item.value.output] +
+              (item.value.required_keys |
+              map('regex_replace', '^', '--require=') | list) }}
+      loop: "{{ infisical_runtime_services | dict2items }}"
+      when: infisical_refresh_all | default(false) | bool
+      no_log: true
+      changed_when: false
+    - name: Validate selected services
+      ansible.builtin.assert:
+        that:
+          - item in infisical_runtime_services
+      loop: "{{ infisical_selected_services }}"
+    - name: Inspect retained pre-Infisical Compose definitions
+      ansible.builtin.stat:
+        path: >-
+          {{ infisical_runtime_services[item].compose_file | dirname
+          }}/compose.pre-infisical.yml
+      loop: "{{ infisical_selected_services | difference(['mealie']) }}"
+      register: legacy_compose_files
+    - name: Retain previous Compose definitions for rollback
+      ansible.builtin.copy:
+        src: "{{ infisical_runtime_services[item.item].compose_file }}"
+        dest: >-
+          {{ infisical_runtime_services[item.item].compose_file | dirname
+          }}/compose.pre-infisical.yml
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0644'
+      loop: "{{ legacy_compose_files.results }}"
+      when: not item.stat.exists
+    - name: Install selected Compose definitions
+      ansible.builtin.copy:
+        src: "{{ source_root }}/{{ infisical_compose_sources[item] }}"
+        dest: "{{ infisical_runtime_services[item].compose_file }}"
+        owner: root
+        group: root
+        mode: '0644'
+      loop: "{{ infisical_selected_services }}"
+    - name: Resolve and reconcile selected services
+      ansible.builtin.command:
+        cmd: "/usr/local/sbin/deploy-infisical-service {{ item }} --recreate"
+      changed_when: true
+      no_log: true
+      loop: "{{ infisical_selected_services }}"
+    - name: Enable selected boot units
+      ansible.builtin.systemd_service:
+        name: "homelab-infisical@{{ item }}.service"
+        enabled: true
+      loop: "{{ infisical_selected_services }}"
+  handlers:
+    - name: Reload Infisical systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true

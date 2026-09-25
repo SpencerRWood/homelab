@@ -13,8 +13,8 @@ if [ ! -f "$legacy_file" ] || [ ! -f "$global_env" ]; then
   printf '%s\n' 'Mealie rollback sources are unavailable' >&2
   exit 1
 fi
-if systemctl cat mealie-infisical.service >/dev/null 2>&1; then
-  systemctl disable --now mealie-infisical.service >/dev/null 2>&1 || {
+if systemctl cat homelab-infisical@mealie.service >/dev/null 2>&1; then
+  systemctl disable --now homelab-infisical@mealie.service >/dev/null 2>&1 || {
     printf '%s\n' 'Could not disable Mealie Infisical boot unit' >&2
     exit 1
   }

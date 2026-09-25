@@ -450,7 +450,7 @@ wheels = [
 
 [[package]]
 name = "homelab"
-version = "0.13.3"
+version = "0.14.11"
 source = { virtual = "." }
 
 [package.dev-dependencies]
