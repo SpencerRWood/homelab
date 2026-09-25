@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.17.0 (2026-09-25)
+
+### Features
+
+- **secrets**: Migrate homelab postgres to Infisical
+  ([`84ad51a`](https://github.com/SpencerRWood/homelab/commit/84ad51a999cb0f6ef4225743d807e3d1f4de9baf))
+
+
 ## v0.16.0 (2026-09-25)
 
 ### Chores
