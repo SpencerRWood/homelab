@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v0.17.1 (2026-09-25)
+
+### Bug Fixes
+
+- **deploy**: Apply pinned Calibre images in release path
+  ([`4f71ca5`](https://github.com/SpencerRWood/homelab/commit/4f71ca59dc45335edf21489110e25664295432a8))
+
+
 ## v0.17.0 (2026-09-25)
 
 ### Features
