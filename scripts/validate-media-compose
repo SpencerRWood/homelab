@@ -6,12 +6,26 @@ set -eu
 # control-node source, without exporting values into the shell or command output.
 secret_contract="${HOMELAB_ENV_FILE:-homelab.env.example}"
 
+# Compose requires env_file paths to exist during validation. Use names-only
+# temporary files so CI never needs access to the Beelink's runtime secrets.
+validation_dir="$(mktemp -d)"
+trap 'rm -rf "$validation_dir"' EXIT HUP INT TERM
+printf '%s\n' 'VIKUNJA_DATABASE_PASSWORD=validation-only' > "$validation_dir/vikunja.env"
+printf '%s\n' 'DATABASE_URL=validation-only' \
+  'OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET=validation-only' \
+  'SECRET=validation-only' 'SECRET_KEY_BASE=validation-only' \
+  > "$validation_dir/openproject.env"
+sed "s|/srv/homelab/secrets/runtime/vikunja.env|$validation_dir/vikunja.env|" \
+  compose/productivity/vikunja/compose.yml > "$validation_dir/vikunja-compose.yml"
+sed "s|/srv/homelab/secrets/runtime/openproject.env|$validation_dir/openproject.env|" \
+  compose/productivity/openproject/compose.yml > "$validation_dir/openproject-compose.yml"
+
 docker compose --env-file "$secret_contract" -f compose/media/plex.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/media/acquisition.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/books/compose.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/productivity/recipes/compose.yml config --quiet
-docker compose --env-file "$secret_contract" -f compose/productivity/vikunja/compose.yml config --quiet
-docker compose --env-file "$secret_contract" -f compose/productivity/openproject/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f "$validation_dir/vikunja-compose.yml" config --quiet
+docker compose --env-file "$secret_contract" -f "$validation_dir/openproject-compose.yml" config --quiet
 OVERLEAF_IMAGE="${OVERLEAF_IMAGE:-sharelatex/sharelatex:latest}" \
   docker compose --env-file "$secret_contract" -f compose/productivity/overleaf/compose.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/platform/caddy/compose.yml config --quiet

@@ -77,13 +77,18 @@ on the shared wood-data-platform Postgres.
 
 ## Secrets
 
-Runtime secrets originate in the control-node `homelab.env`, which is ignored by Git
-and loaded with direnv. Ansible copies that exact file without logging values to
-`/srv/homelab/secrets/homelab.env` (root:root, `0600`); canonical Compose projects
-read that server-side file. Use [homelab.env.example](homelab.env.example) as a
-names-only contract; never commit the runtime file, vault material, private keys, or
-API tokens. Legacy `/srv/docker` secret files remain rollback material until their
-corresponding cutovers are validated.
+Mealie, Vikunja, and OpenProject secrets come from the `Homelab` Infisical project
+through the root-owned resolver on the Beelink. The `homelab-deployer` identity has
+organization `no-access` and project-wide `Viewer`; application containers receive
+generated env files, never Infisical credentials. See
+[the runtime secret architecture](docs/infisical-runtime.md).
+
+Other runtime secrets still originate in the control-node `homelab.env`, which is
+ignored by Git and loaded with direnv. Ansible copies that file without logging
+values to `/srv/homelab/secrets/homelab.env` (root:root, `0600`). The migrated
+services retain it for Compose interpolation and rollback. Use
+[homelab.env.example](homelab.env.example) as a names-only contract; never commit
+runtime files, vault material, private keys, or API tokens.
 
 ## Status and exclusions
 

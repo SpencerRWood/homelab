@@ -15,6 +15,9 @@ services:
     image: vikunja/vikunja:${VIKUNJA_IMAGE_TAG:-latest}
     container_name: vikunja
     restart: unless-stopped
+    env_file:
+      - path: /srv/homelab/secrets/runtime/vikunja.env
+        format: raw
     environment:
       VIKUNJA_SERVICE_PUBLICURL:
         "${VIKUNJA_SERVICE_PUBLICURL:-https://tasks.woodhost.cloud}"
@@ -24,7 +27,6 @@ services:
       VIKUNJA_DATABASE_TYPE: "${VIKUNJA_DATABASE_TYPE:-postgres}"
       VIKUNJA_DATABASE_HOST: homelab-postgres
       VIKUNJA_DATABASE_USER: "${VIKUNJA_DATABASE_USER:-vikunja}"
-      VIKUNJA_DATABASE_PASSWORD: "${VIKUNJA_DATABASE_PASSWORD}"
       VIKUNJA_DATABASE_DATABASE: "${VIKUNJA_DATABASE_DATABASE:-vikunja}"
       VIKUNJA_DATABASE_PORT: "${VIKUNJA_DATABASE_PORT:-5432}"
       VIKUNJA_DATABASE_SSLMODE: "${VIKUNJA_DATABASE_SSLMODE:-disable}"

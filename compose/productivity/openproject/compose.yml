@@ -13,13 +13,9 @@ x-app-environment: &app-environment
     "${OPENPROJECT_RAILS__RELATIVE__URL__ROOT:-}"
   OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__URL:
     "${COLLABORATIVE_SERVER_URL:-wss://projects.woodhost.cloud/hocuspocus}"
-  OPENPROJECT_COLLABORATIVE__EDITING__HOCUSPOCUS__SECRET:
-    "${COLLABORATIVE_SERVER_SECRET}"
-  DATABASE_URL: "${DATABASE_URL}"
   RAILS_MIN_THREADS: "${RAILS_MIN_THREADS:-4}"
   RAILS_MAX_THREADS: "${RAILS_MAX_THREADS:-16}"
   IMAP_ENABLED: "${IMAP_ENABLED:-false}"
-  SECRET_KEY_BASE: "${SECRET_KEY_BASE}"
 
 services:
   projects-cache:
@@ -34,6 +30,9 @@ services:
     depends_on:
       - projects-cache
     environment: *app-environment
+    env_file: &openproject-runtime-env
+      - path: /srv/homelab/secrets/runtime/openproject.env
+        format: raw
     command: ./docker/prod/seeder
     volumes:
       - projects_opdata:/var/openproject/assets
@@ -50,6 +49,7 @@ services:
       - projects-cache
       - projects-seeder
     environment: *app-environment
+    env_file: *openproject-runtime-env
     command: ./docker/prod/web
     hostname: "${OPENPROJECT_HOST__NAME:-projects.woodhost.cloud}"
     volumes:
@@ -80,6 +80,7 @@ services:
     restart: unless-stopped
     depends_on: [projects-cache, projects-seeder]
     environment: *app-environment
+    env_file: *openproject-runtime-env
     command: ./docker/prod/worker
     volumes:
       - projects_opdata:/var/openproject/assets
@@ -91,6 +92,7 @@ services:
     restart: unless-stopped
     depends_on: [projects-cache, projects-seeder]
     environment: *app-environment
+    env_file: *openproject-runtime-env
     command: ./docker/prod/cron
     volumes:
       - projects_opdata:/var/openproject/assets
@@ -100,8 +102,8 @@ services:
     image: openproject/hocuspocus:17.8.0@sha256:f37a8d647d172f4206308bdbf4910bbec0c19433b8870c7431fe0dc45a5a7682
     container_name: projects-hocuspocus
     restart: unless-stopped
+    env_file: *openproject-runtime-env
     environment:
-      SECRET: "${COLLABORATIVE_SERVER_SECRET}"
       OPENPROJECT_URL: "${OPENPROJECT_URL:-https://projects.woodhost.cloud}"
       OPENPROJECT_HTTPS: "${OPENPROJECT_HTTPS:-true}"
     depends_on: [projects-web]
