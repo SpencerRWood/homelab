@@ -143,6 +143,20 @@
   when: not ansible_check_mode
   tags: [books_compose]
 
+- name: Apply pinned Calibre images to the canonical books services
+  ansible.builtin.command:
+    cmd: >-
+      docker compose -f {{ homelab_compose_root }}/books/compose.yml
+      up -d --no-deps calibre ebook-importer
+  register: compose_calibre_up
+  changed_when: >-
+    'Created' in compose_calibre_up.stderr or
+    'Started' in compose_calibre_up.stderr or
+    'Recreated' in compose_calibre_up.stderr
+  check_mode: false
+  when: not ansible_check_mode
+  tags: [books_compose]
+
 - name: Create canonical productivity Compose project directories
   ansible.builtin.file:
     path: "{{ homelab_compose_root }}/productivity/{{ item }}"
