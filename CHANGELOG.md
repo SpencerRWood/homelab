@@ -2,6 +2,15 @@
 
 <!-- version list -->
 
+## v0.17.2 (2026-09-27)
+
+### Chores
+
+- **deps**: Update lscr.io/linuxserver/calibre-web:latest docker digest to e7debaa
+  ([#39](https://github.com/SpencerRWood/homelab/pull/39),
+  [`b193329`](https://github.com/SpencerRWood/homelab/commit/b193329b3764bc60b031da91d22edaa84f22db03))
+
+
 ## v0.17.1 (2026-09-25)
 
 ### Bug Fixes
