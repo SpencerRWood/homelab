@@ -142,8 +142,10 @@ and the canonical homelab playbook against the Beelink, then runs
 release never cancels an active configuration run. A failed apply or health check
 applies the previously successful `homelab` Environment release once and rechecks
 it. This restores configuration only; it never attempts a blind database rollback.
-Automatic and manual deployment entrypoints use the same
-`.github/workflows/deploy-target.yml` configuration.
+Automatic and manual deployment enter the same `.github/workflows/deploy.yml`.
+It contains the target's runner, inventory, protected input path, health command,
+and durable state path. The shared resolver verifies a requested published
+release or selects the latest for a manual run with no release input.
 
 Use **Actions → Deploy released homelab configuration → Run workflow** to deploy a
 specific existing release, or leave the release input empty to redeploy the latest.
