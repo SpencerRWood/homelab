@@ -2,12 +2,23 @@
 name: Deploy released homelab configuration
 
 'on':
+  workflow_call:
+    inputs:
+      ref:
+        description: Immutable repository release tag.
+        required: true
+        type: string
+      skip_superseded:
+        description: >-
+          Skip an automated deployment when a newer main commit exists.
+        required: false
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       release:
         description: >-
-          Existing release tag to deploy; leave empty to deploy the latest
-          release.
+          Existing release tag; leave empty to deploy the latest release.
         required: false
         type: string
 
@@ -17,25 +28,38 @@ permissions:
 
 jobs:
   resolve-release:
-    runs-on: ubuntu-latest
-    outputs:
-      ref: ${{ steps.release.outputs.ref }}
-    steps:
-      - id: release
-        env:
-          EVENT_RELEASE: ${{ github.event.release.tag_name }}
-          REQUESTED_RELEASE: ${{ inputs.release }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          ref="${EVENT_RELEASE:-${REQUESTED_RELEASE:-}}"
-          if [[ -z "$ref" ]]; then
-            latest_endpoint="repos/${GITHUB_REPOSITORY}/releases/latest"
-            ref=$(gh api "$latest_endpoint" --jq .tag_name)
-          fi
-          printf 'ref=%s\n' "$ref" >> "$GITHUB_OUTPUT"
+    uses: SpencerRWood/workflows/.github/workflows/resolve-release.yml@v1
+    with:
+      ref: ${{ inputs.ref || inputs.release }}
 
   deploy:
     needs: resolve-release
-    uses: ./.github/workflows/deploy-target.yml
+    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@v1
     with:
+      repository: ${{ github.repository }}
       ref: ${{ needs.resolve-release.outputs.ref }}
+      skip_superseded: ${{ inputs.skip_superseded }}
+      inventory_path: ansible/inventory/homelab.yml
+      playbook_path: ansible/playbooks/homelab-host.yml
+      environment_name: homelab
+      deployment_working_directory: .
+      concurrency_group: deploy-homelab
+      runner: '["self-hosted", "linux", "x64", "beelink", "homelab"]'
+      ansible_extra_vars: >-
+        homelab_local_secrets_file=/home/github-runner-homelab/.secrets/homelab.env
+      validation_command: scripts/validate-media-compose
+      check_command: >-
+        uv run ansible-playbook -i ansible/inventory/homelab.yml
+        ansible/playbooks/homelab-host.yml --tags storage --check --diff
+      privileged_check_command: >-
+        sudo -n /usr/local/sbin/github-runner-homelab-deploy
+        "$GITHUB_WORKSPACE" check
+      health_check_command: bash scripts/health-check.sh
+      privileged_deploy_command: >-
+        sudo -n /usr/local/sbin/github-runner-homelab-deploy
+        "$GITHUB_WORKSPACE" apply
+      privileged_health_check_command: >-
+        sudo -n /usr/local/sbin/github-runner-homelab-deploy
+        "$GITHUB_WORKSPACE" health
+      deployment_state_file: >-
+        /var/lib/github-actions-deployments/github-runner-homelab/homelab.json
