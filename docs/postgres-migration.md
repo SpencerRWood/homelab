@@ -1,5 +1,10 @@
 # Dedicated homelab Postgres migration
 
+The early audit and cutover sections below record the 2026-09-21 sequence. For
+current recovery, use the later shared-source cleanup and Infisical sections: the
+obsolete shared application databases were removed, and protected logical backups
+are the recovery source.
+
 ## Ownership and release boundary
 
 Homelab owns the `homelab-postgres` Docker Compose runtime for home-only services.

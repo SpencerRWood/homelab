@@ -38,7 +38,6 @@ a mountpoint, duplicate records are created, unrelated fstab content changes, or
 workload loses storage access, restore the saved fstab backup and stop further
 automation. Do not improvise follow-on changes during rollback.
 
-The next storage-adjacent feature is a repository-managed `homelab-media.service` that
-owns media workload startup ordering. It is intentionally not part of this NFS
-ownership transition. The existing Plex boot workaround remains in place until that
-work is independently reviewed and deployed.
+The separately deployed `homelab-media.service` now owns media workload startup
+ordering after the NAS mount is ready. The former Plex boot workaround was removed
+during that transition; see [media startup](media-startup.md).

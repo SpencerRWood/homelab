@@ -1,24 +1,16 @@
-# Initial implementation summary
+# Implementation history
 
 ## Current state
 
-The private `SpencerRWood/homelab` repository is the MacBook-authored source of truth
-for the Beelink homelab. The centralized release workflow is active and the v0.1.0
-foundation release succeeded. The repository defines the safe ownership boundary,
-Ansible inventory and role order, runtime-secret policy, migration policies, and
-validation.
+The private `SpencerRWood/homelab` repository is the source of truth for Beelink
+home-service definitions. The centralized release and deployment workflow is active.
 
 The v0.2.x releases take declarative ownership of the three existing NFS mount records
 while preserving their active runtime mounts. v0.3.0 adds
 [`homelab-media.service`](media-startup.md), which owns mount-gated boot startup for
 the selected media workloads. Its attended reboot validation passed.
 
-## Next steps
-
-1. Transition remaining retained services one at a time, preserving their existing
-   runtime contracts and testing a rollback before each cutover.
-
-## Explicit non-actions
+## Subsequent cutovers
 
 The canonical media and books Compose cutovers passed. The productivity cutover also
 passed its attended reboot validation: Mealie, Vikunja, OpenProject, and a fresh
@@ -28,7 +20,7 @@ legacy configuration binds. Grafana, Loki, Alloy, and code-server were intention
 stopped on 2026-09-21 pending later recreation; their legacy runtime artifacts and
 staged canonical payloads remain intact. The Vaultwarden canonical cutover passed on
 2026-09-21, preserving its `/data` bind, image, network topology, and proxy reachability.
-Persistent state normalization remains out of scope; existing state paths and legacy
-Compose files remain
-rollback artifacts. Decommissioned services (Dashy, Wiki, ntfy, and qBittorrent) and
-portable infrastructure workloads remain outside this repository.
+Persistent state normalization has not been implemented; existing state paths and
+legacy Compose files remain recovery inputs. The current service classification is
+in the [README](../README.md); detailed recovery contracts are in the
+[ownership inventory](compose-ownership-migration-inventory.md).

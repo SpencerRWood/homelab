@@ -1,9 +1,11 @@
 # Service migration policy
 
-Every initial service migration preserves its current image/tag, bind paths, named
-volumes, UID/GID, ports, networks, configuration sources, and database dependencies.
+Completed Compose ownership cutovers preserved the audited images, bind paths,
+named volumes, UID/GID, ports, networks, and application state unless a separate
+attended database or secret-source migration was documented. The remaining staged
+code-server and observability services require a new attended recreation review.
 
-It must not also introduce image upgrades, persistent-data relocation, permission
-normalization, ingress redesign, or database-engine upgrades. Each service needs a
-tested rollback path before migration. Existing unusual service UID/GID mappings from
-the audit must be preserved, not silently normalized.
+For future cutovers, avoid combining Compose ownership changes with image upgrades,
+persistent-data relocation, permission normalization, ingress redesign, or database
+engine upgrades. Verify a recovery path first. Preserve existing unusual service
+UID/GID mappings unless a separate change is explicitly validated.

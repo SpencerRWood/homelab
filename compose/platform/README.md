@@ -7,8 +7,8 @@ each project with
 
 Caddy's canonical payload retains the live `proxy` project name, external `proxy`
 network, fixed LAN ingress bindings, Caddy named volumes, and legacy Caddyfile/site
-bind mounts. Its legacy `/srv/docker/proxy` tree remains the rollback source until an
-attended ingress cutover succeeds.
+bind mounts. Its attended canonical cutover passed on 2026-09-21; the legacy
+`/srv/docker/proxy` tree remains a rollback source.
 
 Vaultwarden's canonical cutover passed on 2026-09-21. Its `/data` bind, image, and
 `private_default` and `proxy` remain unchanged; Vaultwarden now uses the dedicated
