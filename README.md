@@ -4,15 +4,17 @@ The source of truth for Beelink-specific host configuration and home-only servic
 The Beelink is both the managed deployment target and the always-on execution host for
 the isolated homelab GitHub Actions runner. The MacBook can bootstrap or develop changes,
 but is not required for routine CI/CD.
-Retained services are still running from the legacy Beelink deployment and are **not**
-managed by this repository yet, except Plex, Sonarr, Radarr, SABnzbd, and Prowlarr,
-which are managed from the canonical media Compose payload.
+The retained media, books, productivity, Caddy, and Vaultwarden services completed
+their canonical Compose cutovers. Observability and code-server are intentionally
+stopped with repository definitions staged for later recreation.
 
 ## Boundary
 
-This repository owns the Beelink baseline, users/groups/permissions, NAS and storage
-prerequisites, Docker, home ingress, backup prerequisites, and home-only Compose
-definitions. The separate `infrastructure` repository owns portable platform hosts,
+This repository defines the Beelink host and home-service boundary. Implemented
+automation manages NAS mounts, Compose payloads, media startup, dedicated Postgres,
+runtime secret resolution, and the homelab runner. Other host prerequisites are not
+yet asserted by its roles. The separate `infrastructure` repository owns portable
+platform hosts,
 centralized Postgres, Dagster, shared Keycloak, Infisical, Open WebUI, RudderStack,
 website-portfolio staging, other portable nonprod/prod workloads, and Terraform-managed
 cloud infrastructure. Ambiguous services must be documented before placement.
@@ -21,7 +23,7 @@ cloud infrastructure. Ambiguous services must be documented before placement.
 
 ```text
 ansible/       Inventory, host contracts, playbooks, and ordered host roles
-compose/       Future home-only stacks: media, books, platform, productivity
+compose/       Home-only stacks: media, books, platform, productivity, Postgres
 docs/          Architecture and migration policies
 scripts/       Optional local helper scripts
 .github/       Centralized-release consumer configuration
@@ -41,10 +43,11 @@ over SSH and a Beelink checkout is not the source of truth.
 
 The managed host alias is `swood-server`. Its non-secret inventory connection uses the
 MacBook SSH alias, which resolves to the Beelink LAN address; authentication remains
-outside Git. The top-level playbook contains only implemented roles, in this order:
-storage, compose, and systemd. Storage manages the adopted NFS contracts; compose
-deploys and validates canonical Compose payloads and their server-side secret file; and
-systemd manages the mount-gated media startup unit.
+outside Git. The top-level playbook prepares protected Infisical runtime files, then
+runs storage, compose, systemd, and GitHub runner roles. Storage manages the adopted
+NFS contracts; compose deploys and validates payloads and starts dedicated Postgres;
+systemd manages the mount-gated media startup unit. Other Compose payloads are not
+automatically recreated by every release.
 
 The storage role declaratively owns the audited `media`, `database`, and
 `backup_server` NFS fstab contracts. It validates the already-active mounts before
@@ -57,23 +60,12 @@ see [media-startup.md](docs/media-startup.md).
 
 ## Compose and migration
 
-`compose/postgres/` owns the dedicated, internal-only Postgres runtime for home-only
-application databases. `compose/media/` contains the canonical definitions for Plex, Sonarr, Radarr, SABnzbd,
-and Prowlarr; `compose/books/` owns Calibre, Calibre-Web, Audiobookshelf, bookshelf
-services, and ebook-importer; `compose/productivity/` owns Mealie, Vikunja, OpenProject,
-and Overleaf; and `compose/platform/` owns Caddy and Vaultwarden, with staged
-definitions for code-server, Grafana, Loki, and Alloy. Those containers are
-intentionally stopped pending later recreation. Ansible deploys the payloads under
-`/srv/homelab/compose/`; legacy `/srv/docker`
-files remain rollback artifacts and are not deleted. Initial migrations preserve
-images/tags, paths, volumes, UID/GID, ports, networks, configuration sources, and
-database dependencies. They reuse current server state paths; state normalization to
-`/srv/homelab/state/` is a later, separately validated action.
-See [persistent-state.md](docs/persistent-state.md) and
-[service-migration-policy.md](docs/service-migration-policy.md). The attended
-[Postgres migration inventory](docs/postgres-migration.md) records ownership,
-backup/rollback, and validation boundaries; infrastructure-development databases stay
-on the shared wood-data-platform Postgres.
+The repository owns an internal-only Postgres runtime for home application databases.
+Ansible deploys canonical Compose files under `/srv/homelab/compose/`. Existing
+`/srv/docker` state paths remain in use, and legacy Compose files are retained for
+recovery. See [persistent state](docs/persistent-state.md), the
+[migration policy](docs/service-migration-policy.md), and the
+[Postgres recovery record](docs/postgres-migration.md).
 
 ## Secrets
 
@@ -84,20 +76,30 @@ organization `no-access` and project-wide `Viewer`; application containers recei
 generated env files, never Infisical credentials. See
 [the runtime secret architecture](docs/infisical-runtime.md).
 
-Other runtime secrets still originate in the control-node `homelab.env`, which is
-ignored by Git and loaded with direnv. Ansible copies that file without logging
-values to `/srv/homelab/secrets/homelab.env` (root:root, `0600`). The migrated
-services retain it for Compose interpolation and rollback. Use
+Other runtime and Compose interpolation inputs still originate in the control-node
+`homelab.env`, which is ignored by Git and loaded with direnv. Ansible copies that
+file without logging values to `/srv/homelab/secrets/homelab.env` (root:root,
+`0600`). Use
 [homelab.env.example](homelab.env.example) as a names-only contract; never commit
 runtime files, vault material, private keys, or API tokens.
 
 ## Status and exclusions
 
-Phase 1 audit and migration preparation are complete; retained configuration/state has
-recovery inputs documented in [migration-backups.md](docs/migration-backups.md). No
-retained service was changed by repository initialization.
+| State | Services |
+| --- | --- |
+| Canonical Compose cutover completed | Plex, Sonarr, Radarr, SABnzbd, Prowlarr; Calibre, Calibre-Web, Audiobookshelf, bookshelf-audiobooks, bookshelf-ebooks, ebook-importer; Mealie, Vikunja, OpenProject, Overleaf; Caddy, Vaultwarden |
+| Defined here, intentionally stopped pending recreation | code-server, Grafana, Loki, Alloy |
+| Running from legacy Compose | None on `swood-server` at the 2026-09-29 inspection; all running home-service containers had canonical `/srv/homelab/compose/` labels |
+| Decommissioned | Dashy, Wiki, ntfy, qBittorrent |
 
-Dashy, Wiki, ntfy, and qBittorrent were decommissioned and are intentionally absent.
+The media unit starts the five media services; Ansible starts dedicated Postgres.
+Books and most other cut-over applications retain Docker restart behavior; selected
+Infisical-backed services have service-specific boot reconciliation. The deployment
+health check tests only containers already present; the 2026-09-29 host inspection
+separately confirmed the states above. See the
+[ownership and recovery inventory](docs/compose-ownership-migration-inventory.md)
+and [migration backups](docs/migration-backups.md) for detail.
+
 Portable infrastructure workloads, including Dagster, Keycloak, Infisical, Open WebUI,
 infrastructure Postgres, CloudBeaver, and wood-data-platform are intentionally absent.
 
@@ -126,9 +128,8 @@ ruleset is intentionally disabled for this single-developer
 repository, allowing semantic-release to write its version commit back to
 `main`; see the [shared branch policy](https://github.com/SpencerRWood/workflows/blob/main/docs/branch-rules.md).
 
-Releases are semantic versions of the deployable repository configuration state, not
-application-image versions: `v0.1.0` is the foundation, `v0.2.x` owns NFS storage,
-and `v0.3.0` owns mount-gated media startup, including its passed reboot validation.
+Releases are semantic versions of the deployable repository configuration state,
+not application-image versions.
 Conventional commits determine release bumps.
 The release job writes the new version to `pyproject.toml`, commits
 `chore(release): X.Y.Z`, tags that commit `vX.Y.Z`, and publishes the GitHub
@@ -159,31 +160,14 @@ that changes PostgreSQL compatibility (for example `pg16` to `pg17`) remains man
 
 ## Validation
 
-Run from the repository root:
+Run the repository checks from the repository root:
 
 ```bash
-ansible-inventory --graph
-ansible-playbook ansible/playbooks/homelab-host.yml --syntax-check
-ansible-playbook ansible/playbooks/homelab-host.yml --tags storage --check --diff
-ansible-playbook ansible/playbooks/homelab-host.yml --tags media_startup --check --diff
-docker compose -f compose/media/plex.yml config
-docker compose --env-file homelab.env -f compose/postgres/compose.yml config
-docker compose -f compose/media/acquisition.yml config
-docker compose -f compose/books/compose.yml config
-docker compose -f compose/productivity/recipes/compose.yml config
-docker compose -f compose/productivity/vikunja/compose.yml config
-docker compose -f compose/productivity/openproject/compose.yml config
-docker compose -f compose/productivity/overleaf/compose.yml config
-docker compose -f compose/platform/caddy/compose.yml config
-docker compose -f compose/platform/logging/compose.yml config
-docker compose -f compose/platform/code-server/compose.yml config
-docker compose -f compose/platform/vaultwarden/compose.yml config
-pre-commit run --all-files
+uv run pre-commit run --all-files
 ```
 
-Do not run an unrestricted live apply from documentation. The media Compose cutover and
-post-cutover reboot validation have passed; subsequent service migrations remain
-attended maintenance actions with documented rollbacks.
+Do not run an unrestricted live apply from documentation. Recreation of the stopped
+services remains attended maintenance work with documented recovery inputs.
 
 ## Template compatibility
 
