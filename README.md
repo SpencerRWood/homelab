@@ -152,6 +152,11 @@ specific existing release, or leave the release input empty to redeploy the late
 The self-hosted runner retains a protected runner-local copy of the deployment input
 outside the Actions checkout; runtime secrets remain protected server-side.
 
+The [shared rollback contract](docs/rollback-contract.md) exposes `rollback.yml`
+and a versioned JSON result for deterministic previous-known-good recovery.
+It requires matching failed-deployment evidence, uses the canonical privileged
+entrypoint, and verifies recovery separately from execution. Preview is the default.
+
 Renovate uses the same PR → validation → main → semantic-release → release-tag
 deployment path as human changes. Docker patch, minor, major, and security image
 updates are currently configured for Renovate-managed PR auto-merge, including minor and major

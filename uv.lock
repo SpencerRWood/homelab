@@ -456,6 +456,7 @@ source = { virtual = "." }
 dev = [
     { name = "ansible" },
     { name = "ansible-lint" },
+    { name = "jsonschema" },
     { name = "pre-commit" },
     { name = "python-semantic-release" },
     { name = "yamllint" },
@@ -467,6 +468,7 @@ dev = [
 dev = [
     { name = "ansible", specifier = ">=12.0.0" },
     { name = "ansible-lint", specifier = ">=25.0.0" },
+    { name = "jsonschema", specifier = ">=4.0.0" },
     { name = "pre-commit", specifier = ">=4.0.0" },
     { name = "python-semantic-release", specifier = ">=10.0.0" },
     { name = "yamllint", specifier = ">=1.35.0" },

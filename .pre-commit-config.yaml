@@ -44,3 +44,9 @@ repos:
         entry: scripts/validate-media-compose
         language: system
         pass_filenames: false
+      - id: rollback-contract
+        name: Rollback contract and health behavior
+        entry: uv run python -m unittest discover -s tests
+        language: system
+        pass_filenames: false
+        always_run: true
