@@ -1,0 +1,8 @@
+# Consumer policy for deterministic configuration rollback.
+contract_version = 1
+repository = "SpencerRWood/homelab"
+environment = "homelab"
+mode = "enabled"
+state_file = "/var/lib/github-actions-deployments/github-runner-homelab/homelab.json"
+wrapper = "/usr/local/sbin/github-runner-homelab-deploy"
+operation_timeout_seconds = 1800
