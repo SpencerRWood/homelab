@@ -33,8 +33,6 @@ docker compose --env-file "$secret_contract" -f compose/books/compose.yml config
 docker compose --env-file "$secret_contract" -f compose/productivity/recipes/compose.yml config --quiet
 docker compose --env-file "$secret_contract" -f "$validation_dir/vikunja-compose.yml" config --quiet
 docker compose --env-file "$secret_contract" -f "$validation_dir/openproject-compose.yml" config --quiet
-OVERLEAF_IMAGE="${OVERLEAF_IMAGE:-sharelatex/sharelatex:latest}" \
-  docker compose --env-file "$secret_contract" -f compose/productivity/overleaf/compose.yml config --quiet
 docker compose --project-directory compose/platform/caddy --env-file "$secret_contract" \
   -f "$validation_dir/caddy-compose.yml" config --quiet
 docker compose --env-file "$secret_contract" -f compose/platform/logging/compose.yml config --quiet
