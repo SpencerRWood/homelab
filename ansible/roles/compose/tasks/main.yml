@@ -167,7 +167,6 @@
   loop:
     - recipes
     - vikunja
-    - overleaf
     - openproject
   tags: [productivity_compose]
 
@@ -286,7 +285,6 @@
   loop:
     - recipes
     - vikunja
-    - overleaf
     - openproject
   tags: [productivity_compose]
 
@@ -302,6 +300,5 @@
   loop:
     - recipes
     - vikunja
-    - overleaf
     - openproject
   tags: [productivity_compose]
