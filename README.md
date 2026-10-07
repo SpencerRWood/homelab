@@ -1,5 +1,9 @@
 # homelab
 
+The [Recovery Verification consumer contract](docs/recovery-onboarding.md) exposes
+revision-bound manifests and non-destructive preflight. Configuration rollback
+reuses the existing contract; full-host reconstruction requires an isolated target.
+
 The source of truth for Beelink-specific host configuration and home-only services.
 The Beelink is both the managed deployment target and the always-on execution host for
 the isolated homelab GitHub Actions runner. The MacBook can bootstrap or develop changes,
