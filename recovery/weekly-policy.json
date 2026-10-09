@@ -1,0 +1,13 @@
+{
+  "idempotence_safe": true,
+  "allowed_second_run_changes": 0,
+  "check_mode_exclusions": {
+    "secret_resolution": "requires_credentialed_isolated_host",
+    "compose_start": "check_mode_cannot_prove_service_start",
+    "live_storage": "requires_isolated_mount_namespace"
+  },
+  "backup_sha256": "845196c51a592c24a3972dc3498aa2d5c6a265855d9150d5ceda6a66eed3bba9",
+  "files": {
+    "routes.json": "026127fd11d5d330ab6a997e99876f173602cf9c88f9d990969bde29a5603152"
+  }
+}
