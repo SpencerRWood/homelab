@@ -8,13 +8,13 @@ import sys
 import tempfile
 
 def run():
-    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in ('vikunja','openproject','caddy','vaultwarden','postgres'):
+    if os.geteuid()!=0 or len(sys.argv)!=2 or sys.argv[1] not in ('vikunja','openproject','caddy','vaultwarden','postgres','pg-dev'):
         raise ValueError('invalid rollback target')
     name=sys.argv[1]
     item=json.loads(pathlib.Path('/etc/homelab/infisical-runtime-services.json').read_text())[name]
     snapshot=pathlib.Path(item['compose_file']).with_name('compose.pre-infisical.yml')
     active=pathlib.Path(item['compose_file'])
-    legacy=pathlib.Path('/srv/homelab/secrets/homelab.env')
+    legacy=pathlib.Path(item.get('rollback_env_file','/srv/homelab/secrets/homelab.env'))
     if not snapshot.is_file() or not legacy.is_file():raise ValueError('rollback source unavailable')
     base=['docker','compose','--env-file',str(legacy),'-f',str(snapshot)]
     subprocess.run(base+['config','--quiet'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,check=True)

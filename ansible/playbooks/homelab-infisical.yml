@@ -13,6 +13,7 @@
       caddy: compose/platform/caddy/compose.yml
       vaultwarden: compose/platform/vaultwarden/compose.yml
       postgres: compose/postgres/compose.yml
+      pg-dev: compose/pg-dev/compose.yml
   tasks:
     - name: Verify permanent bootstrap credential
       ansible.builtin.stat:
@@ -109,7 +110,29 @@
         group: root
         mode: '0644'
       loop: "{{ legacy_compose_files.results }}"
-      when: not item.stat.exists
+      when:
+        - not item.stat.exists
+        - item.item != 'pg-dev'
+    - name: Require protected pg-dev rollback sources before cutover
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /srv/homelab/compose/pg-dev/compose.pre-infisical.yml
+        - /srv/homelab/secrets/rollback/pg-dev.env
+      register: pg_dev_rollback_sources
+      when: "'pg-dev' in infisical_selected_services"
+      no_log: true
+    - name: Validate pg-dev rollback sources
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - item.stat.isreg
+          - item.stat.pw_name == 'root'
+          - item.stat.gr_name == 'root'
+          - item.stat.mode == ('0600' if item.item.endswith('.env') else '0644')
+      loop: "{{ pg_dev_rollback_sources.results }}"
+      when: "'pg-dev' in infisical_selected_services"
+      no_log: true
     - name: Install selected Compose definitions
       ansible.builtin.copy:
         src: "{{ source_root }}/{{ infisical_compose_sources[item] }}"
@@ -118,6 +141,18 @@
         group: root
         mode: '0644'
       loop: "{{ infisical_selected_services }}"
+    - name: Resolve selected runtime files before Compose validation
+      ansible.builtin.command:
+        argv: >-
+          {{ ['/usr/local/sbin/resolve-infisical-env', '--environment',
+              infisical_runtime_services[item].environment, '--path',
+              infisical_runtime_services[item].path, '--output',
+              infisical_runtime_services[item].output] +
+              (infisical_runtime_services[item].required_keys |
+              map('regex_replace', '^', '--require=') | list) }}
+      loop: "{{ infisical_selected_services }}"
+      no_log: true
+      changed_when: false
     - name: Validate selected Compose definitions before reconciliation
       ansible.builtin.command:
         argv:
