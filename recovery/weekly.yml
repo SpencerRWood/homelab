@@ -1,0 +1,25 @@
+---
+- name: Verify approved isolated homelab recovery payload
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Validate temporary workspace boundary
+      ansible.builtin.assert:
+        that:
+          - recovery_workspace is match('^/tmp/rv-[A-Za-z0-9_-]+$')
+    - name: Recover canonical Compose declaration into temporary storage
+      ansible.builtin.copy:
+        src: "../compose/books/compose.yml"
+        dest: "{{ recovery_workspace }}/recovered-compose.yml"
+        mode: '0600'
+    - name: Render canonical media mount readiness script in isolated storage
+      ansible.builtin.template:
+        src: "../ansible/roles/systemd/templates/wait-for-media.sh.j2"
+        dest: "{{ recovery_workspace }}/wait-for-media.sh"
+        mode: '0600'
+      vars:
+        systemd_media_startup:
+          mount_path: "{{ recovery_workspace }}"
+          readiness_paths: ["{{ recovery_workspace }}"]
