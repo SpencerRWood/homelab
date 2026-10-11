@@ -45,6 +45,10 @@ concurrency:
 
 jobs:
   rollback:
+    if: >-
+      inputs.apply != true ||
+      (github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main')
     runs-on: [self-hosted, linux, x64, beelink, homelab]
     environment: homelab
     timeout-minutes: 100

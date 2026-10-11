@@ -156,6 +156,13 @@ class WeeklyTests(unittest.TestCase):
         self.assertTrue(all(not path.exists() for path in captured))
         restore = next(check for check in result["checks"] if check["phase"] == "restore")
         self.assertRegex(restore["artifact_sha256"], "^[0-9a-f]{64}$")
+        self.assertEqual(["recovery/weekly.yml"], result["provenance"]["playbooks"])
+        self.assertIsNone(result["provenance"]["inventories"])
+        self.assertEqual("localhost", result["provenance"]["inline_inventory"])
+        artifact = result["provenance"]["backups"][0]
+        self.assertEqual("representative_fixture", artifact["kind"])
+        self.assertEqual(restore["artifact_sha256"], artifact["artifact_sha256"])
+        self.assertIsNone(artifact["timestamp"])
 
     def test_corrupt_unreadable_and_failed_integrity_backup(self):
         for failure in (WEEKLY.VerificationFailure("backup_checksum_mismatch"), OSError("secret")):
