@@ -1,0 +1,1092 @@
+{
+  "auditDate": "2026-10-12",
+  "observedAt": "2026-10-12T13:14:28.982Z",
+  "baseRevision": "7dadf5d9f201f051e1eb78d49a002484a6f86d0c",
+  "strategy": "trunk",
+  "baseBranch": "main",
+  "prTarget": "main",
+  "openprojectRelease": "Not applicable: repository-wide infrastructure audit, no Story assigned",
+  "summary": {
+    "configurationReferences": 33,
+    "distinctConfigurationImages": 26,
+    "covered": 22,
+    "excluded": 2,
+    "blocked": 2,
+    "externalImages": 24,
+    "currentlyPinned": 8,
+    "missingPins": 16
+  },
+  "images": [
+    {
+      "image": "lscr.io/linuxserver/calibre",
+      "currentReference": "latest@sha256:4b1673b28f18c170e8d6c48c791e67520df44dc4f9b9e8f63fef21d23910abab",
+      "registry": "LSCR",
+      "services": [
+        "calibre",
+        "ebook-importer"
+      ],
+      "sources": [
+        {
+          "file": "compose/books/compose.yml",
+          "line": 9,
+          "reference": "lscr.io/linuxserver/calibre:latest@sha256:4b1673b28f18c170e8d6c48c791e67520df44dc4f9b9e8f63fef21d23910abab"
+        },
+        {
+          "file": "compose/books/compose.yml",
+          "line": 95,
+          "reference": "lscr.io/linuxserver/calibre:latest@sha256:4b1673b28f18c170e8d6c48c791e67520df44dc4f9b9e8f63fef21d23910abab"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:4b1673b28f18c170e8d6c48c791e67520df44dc4f9b9e8f63fef21d23910abab",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": [
+        {
+          "number": 64,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/64",
+          "createdAt": "2026-10-11T09:44:56Z"
+        },
+        {
+          "number": 61,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/61",
+          "createdAt": "2026-10-09T12:09:03Z"
+        },
+        {
+          "number": 56,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/56",
+          "createdAt": "2026-10-07T17:17:37Z"
+        },
+        {
+          "number": 50,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/50",
+          "createdAt": "2026-10-04T08:52:13Z"
+        },
+        {
+          "number": 47,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/47",
+          "createdAt": "2026-10-01T15:03:16Z"
+        },
+        {
+          "number": 39,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/39",
+          "createdAt": "2026-09-27T05:51:13Z"
+        },
+        {
+          "number": 35,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/35",
+          "createdAt": "2026-09-25T15:54:51Z"
+        }
+      ]
+    },
+    {
+      "image": "lscr.io/linuxserver/calibre-web",
+      "currentReference": "latest@sha256:5dcbcb381d29c4ccb2236910eb547679f482c3eb1c9e458138729e89eceb4774",
+      "registry": "LSCR",
+      "services": [
+        "calibre-web"
+      ],
+      "sources": [
+        {
+          "file": "compose/books/compose.yml",
+          "line": 25,
+          "reference": "lscr.io/linuxserver/calibre-web:latest@sha256:5dcbcb381d29c4ccb2236910eb547679f482c3eb1c9e458138729e89eceb4774"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:5dcbcb381d29c4ccb2236910eb547679f482c3eb1c9e458138729e89eceb4774",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": [
+        {
+          "number": 64,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/64",
+          "createdAt": "2026-10-11T09:44:56Z"
+        },
+        {
+          "number": 50,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/50",
+          "createdAt": "2026-10-04T08:52:13Z"
+        },
+        {
+          "number": 39,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/39",
+          "createdAt": "2026-09-27T05:51:13Z"
+        }
+      ]
+    },
+    {
+      "image": "linuxserver/mods",
+      "currentReference": "universal-calibre",
+      "registry": "Docker Hub",
+      "services": [
+        "calibre-web mod"
+      ],
+      "sources": [
+        {
+          "file": "compose/books/compose.yml",
+          "line": 30,
+          "reference": "linuxserver/mods:universal-calibre"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:de4c8d4b7d413cc9329742327b6e0ad5c12e2a855c5589c3492a62195dec975f",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "DOCKER_MODS OCI image is not extracted by standard Compose manager",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "universal-calibre",
+          "newDigest": "sha256:de4c8d4b7d413cc9329742327b6e0ad5c12e2a855c5589c3492a62195dec975f",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "ghcr.io/advplyr/audiobookshelf",
+      "currentReference": "2.37.1@sha256:581d68b2a6fc7ebf58d81c878a9f387cbbc0d88ac9d37b298b9cee10168af85b",
+      "registry": "GHCR",
+      "services": [
+        "audiobookshelf"
+      ],
+      "sources": [
+        {
+          "file": "compose/books/compose.yml",
+          "line": 43,
+          "reference": "ghcr.io/advplyr/audiobookshelf:2.37.1@sha256:581d68b2a6fc7ebf58d81c878a9f387cbbc0d88ac9d37b298b9cee10168af85b"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:581d68b2a6fc7ebf58d81c878a9f387cbbc0d88ac9d37b298b9cee10168af85b",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": [
+        {
+          "number": 45,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/45",
+          "createdAt": "2026-09-30T02:32:09Z"
+        },
+        {
+          "number": 40,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/40",
+          "createdAt": "2026-09-29T02:05:53Z"
+        },
+        {
+          "number": 24,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/24",
+          "createdAt": "2026-09-22T12:13:54Z"
+        }
+      ]
+    },
+    {
+      "image": "ghcr.io/pennydreadful/bookshelf",
+      "currentReference": "softcover@sha256:23defe59522d0591ade31b2a59c674648f43be47fae769d93d32bb1e038c7170",
+      "registry": "GHCR",
+      "services": [
+        "bookshelf-audiobooks",
+        "bookshelf-ebooks"
+      ],
+      "sources": [
+        {
+          "file": "compose/books/compose.yml",
+          "line": 60,
+          "reference": "ghcr.io/pennydreadful/bookshelf:softcover@sha256:23defe59522d0591ade31b2a59c674648f43be47fae769d93d32bb1e038c7170"
+        },
+        {
+          "file": "compose/books/compose.yml",
+          "line": 77,
+          "reference": "ghcr.io/pennydreadful/bookshelf:softcover@sha256:23defe59522d0591ade31b2a59c674648f43be47fae769d93d32bb1e038c7170"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:23defe59522d0591ade31b2a59c674648f43be47fae769d93d32bb1e038c7170",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": []
+    },
+    {
+      "image": "ghcr.io/hotio/sonarr",
+      "currentReference": "latest",
+      "registry": "GHCR",
+      "services": [
+        "sonarr"
+      ],
+      "sources": [
+        {
+          "file": "compose/media/acquisition.yml",
+          "line": 11,
+          "reference": "ghcr.io/hotio/sonarr:latest"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": false,
+      "latestAvailable": "sha256:afc94d6134d3e21162bc86b82afee332c7555bedf4a29b710edcd794c9c38e1d",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Nonstandard Compose filename absent from default matching",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:afc94d6134d3e21162bc86b82afee332c7555bedf4a29b710edcd794c9c38e1d",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "ghcr.io/hotio/radarr",
+      "currentReference": "latest",
+      "registry": "GHCR",
+      "services": [
+        "radarr"
+      ],
+      "sources": [
+        {
+          "file": "compose/media/acquisition.yml",
+          "line": 39,
+          "reference": "ghcr.io/hotio/radarr:latest"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": false,
+      "latestAvailable": "sha256:5de3a35527a4c4a9ec96be9a505cea6e775d705560abb7c27e230b005b3cdad7",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Nonstandard Compose filename absent from default matching",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:5de3a35527a4c4a9ec96be9a505cea6e775d705560abb7c27e230b005b3cdad7",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "lscr.io/linuxserver/sabnzbd",
+      "currentReference": "latest",
+      "registry": "LSCR",
+      "services": [
+        "sabnzbd"
+      ],
+      "sources": [
+        {
+          "file": "compose/media/acquisition.yml",
+          "line": 68,
+          "reference": "lscr.io/linuxserver/sabnzbd:latest"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": false,
+      "latestAvailable": "sha256:382f9bd4e3f6df2abf7bcc92edada0c5bd4d4ff26eb5416f257ac54989464fa1",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Nonstandard Compose filename absent from default matching",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:382f9bd4e3f6df2abf7bcc92edada0c5bd4d4ff26eb5416f257ac54989464fa1",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "ghcr.io/hotio/prowlarr",
+      "currentReference": "latest",
+      "registry": "GHCR",
+      "services": [
+        "prowlarr"
+      ],
+      "sources": [
+        {
+          "file": "compose/media/acquisition.yml",
+          "line": 97,
+          "reference": "ghcr.io/hotio/prowlarr:latest"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": false,
+      "latestAvailable": "sha256:ed37728f55a3e1f1049600ffcae4f266b83bcc804546963a9fdbea9a31d89c48",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Nonstandard Compose filename absent from default matching",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:ed37728f55a3e1f1049600ffcae4f266b83bcc804546963a9fdbea9a31d89c48",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "linuxserver/plex",
+      "currentReference": "latest",
+      "registry": "Docker Hub",
+      "services": [
+        "plex"
+      ],
+      "sources": [
+        {
+          "file": "compose/media/plex.yml",
+          "line": 9,
+          "reference": "linuxserver/plex:latest"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": false,
+      "latestAvailable": "sha256:06e07af2851e6a822e89062b148435495dd794d6d5aaf36247dee05fb3dcc4b8",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Nonstandard Compose filename absent from default matching",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:06e07af2851e6a822e89062b148435495dd794d6d5aaf36247dee05fb3dcc4b8",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "local/caddy-cloudflare",
+      "currentReference": "2.11.2",
+      "registry": "Local build",
+      "services": [
+        "caddy"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/caddy/compose.yml",
+          "line": 12,
+          "reference": "local/caddy-cloudflare:${CADDY_VERSION:-2.11.2}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": false,
+      "manager": "Excluded (local build)",
+      "digestPinned": false,
+      "latestAvailable": null,
+      "registryResolved": null,
+      "updateAvailable": "Not applicable",
+      "updatePolicy": "Not applicable",
+      "coverageStatus": "Excluded",
+      "reason": "Locally built output, not a registry dependency",
+      "proposedUpdates": [],
+      "prHistory": []
+    },
+    {
+      "image": "busybox",
+      "currentReference": "1.38@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e",
+      "registry": "Docker Hub",
+      "services": [
+        "code-server-init",
+        "vikunja-init"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/code-server/compose.yml",
+          "line": 6,
+          "reference": "busybox:1.38@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e"
+        },
+        {
+          "file": "compose/productivity/vikunja/compose.yml",
+          "line": 6,
+          "reference": "busybox:1.38@sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:fd7dc98638c8e305f4dc34e979f1c0fdfdcaeb0fbf8fcff77ae834b6da3d7e6e",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": [
+        {
+          "number": 28,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/28",
+          "createdAt": "2026-09-23T05:35:55Z"
+        },
+        {
+          "number": 23,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/23",
+          "createdAt": "2026-09-22T12:13:49Z"
+        }
+      ]
+    },
+    {
+      "image": "code-server-codex",
+      "currentReference": "latest",
+      "registry": "Local build",
+      "services": [
+        "code-server"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/code-server/compose.yml",
+          "line": 20,
+          "reference": "code-server-codex:${CODE_SERVER_IMAGE_TAG:-latest}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": false,
+      "manager": "Excluded (local build)",
+      "digestPinned": false,
+      "latestAvailable": null,
+      "registryResolved": null,
+      "updateAvailable": "Not applicable",
+      "updatePolicy": "Not applicable",
+      "coverageStatus": "Excluded",
+      "reason": "Locally built output, not a registry dependency",
+      "proposedUpdates": [],
+      "prHistory": []
+    },
+    {
+      "image": "grafana/loki",
+      "currentReference": "latest",
+      "registry": "Docker Hub",
+      "services": [
+        "loki"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/logging/compose.yml",
+          "line": 6,
+          "reference": "grafana/loki:${LOKI_IMAGE_TAG:-latest}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:1107dd5274e0ada47e42472b7a7e71f3b2a2fe878878108f3e2f9e51528f0193",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Compose tag interpolation skipped as contains-variable",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:1107dd5274e0ada47e42472b7a7e71f3b2a2fe878878108f3e2f9e51528f0193",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "grafana/grafana",
+      "currentReference": "latest",
+      "registry": "Docker Hub",
+      "services": [
+        "grafana"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/logging/compose.yml",
+          "line": 17,
+          "reference": "grafana/grafana:${GRAFANA_IMAGE_TAG:-latest}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Compose tag interpolation skipped as contains-variable",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "grafana/alloy",
+      "currentReference": "latest",
+      "registry": "Docker Hub",
+      "services": [
+        "alloy"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/logging/compose.yml",
+          "line": 48,
+          "reference": "grafana/alloy:${ALLOY_IMAGE_TAG:-latest}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:2aa2099af76c0098d4af7a4d6e48f86cb66dc1a000222ad927a1c67c6542d13f",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Compose tag interpolation skipped as contains-variable",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:2aa2099af76c0098d4af7a4d6e48f86cb66dc1a000222ad927a1c67c6542d13f",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "vaultwarden/server",
+      "currentReference": "latest",
+      "registry": "Docker Hub",
+      "services": [
+        "vaultwarden"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/vaultwarden/compose.yml",
+          "line": 8,
+          "reference": "vaultwarden/server:${VAULTWARDEN_IMAGE_TAG:-latest}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:efb3cde962015fcc036b2ea625242248611943b27212ebf4392841fb30fad055",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Compose tag interpolation skipped as contains-variable",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:efb3cde962015fcc036b2ea625242248611943b27212ebf4392841fb30fad055",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "pgvector/pgvector",
+      "currentReference": "0.8.7-pg16-bookworm@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a",
+      "registry": "Docker Hub",
+      "services": [
+        "postgres"
+      ],
+      "sources": [
+        {
+          "file": "compose/postgres/compose.yml",
+          "line": 7,
+          "reference": "pgvector/pgvector:0.8.7-pg16-bookworm@sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:7b822b0aac60967beb1ea5e576b8602c94c300a157d187f385ae3e0da199b90a",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Manual review for every update",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": [
+        {
+          "number": 49,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/49",
+          "createdAt": "2026-10-01T19:07:36Z"
+        },
+        {
+          "number": 20,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/20",
+          "createdAt": "2026-09-22T11:39:20Z"
+        }
+      ]
+    },
+    {
+      "image": "memcached",
+      "currentReference": "1.6@sha256:2046d6d2eb7cbd59470b533a101cbd67def3e718b04eb72478306dbc804a3171",
+      "registry": "Docker Hub",
+      "services": [
+        "projects-cache"
+      ],
+      "sources": [
+        {
+          "file": "compose/productivity/openproject/compose.yml",
+          "line": 22,
+          "reference": "memcached:1.6@sha256:2046d6d2eb7cbd59470b533a101cbd67def3e718b04eb72478306dbc804a3171"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:2046d6d2eb7cbd59470b533a101cbd67def3e718b04eb72478306dbc804a3171",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": [
+        {
+          "number": 55,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/55",
+          "createdAt": "2026-10-06T16:05:29Z"
+        },
+        {
+          "number": 54,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/54",
+          "createdAt": "2026-10-06T09:51:06Z"
+        },
+        {
+          "number": 53,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/53",
+          "createdAt": "2026-10-06T04:31:15Z"
+        },
+        {
+          "number": 30,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/30",
+          "createdAt": "2026-09-23T11:11:46Z"
+        }
+      ]
+    },
+    {
+      "image": "openproject/openproject",
+      "currentReference": "17-slim",
+      "registry": "Docker Hub",
+      "services": [
+        "projects-seeder",
+        "projects-web",
+        "projects-worker",
+        "projects-cron"
+      ],
+      "sources": [
+        {
+          "file": "compose/productivity/openproject/compose.yml",
+          "line": 27,
+          "reference": "openproject/openproject:${TAG:-17-slim}"
+        },
+        {
+          "file": "compose/productivity/openproject/compose.yml",
+          "line": 45,
+          "reference": "openproject/openproject:${TAG:-17-slim}"
+        },
+        {
+          "file": "compose/productivity/openproject/compose.yml",
+          "line": 78,
+          "reference": "openproject/openproject:${TAG:-17-slim}"
+        },
+        {
+          "file": "compose/productivity/openproject/compose.yml",
+          "line": 90,
+          "reference": "openproject/openproject:${TAG:-17-slim}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:2beeecac788d4f423c46a95ffbd04e6479491938b9924b610e9f47d81a38303c",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Compose tag interpolation skipped as contains-variable",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "17-slim",
+          "newDigest": "sha256:2beeecac788d4f423c46a95ffbd04e6479491938b9924b610e9f47d81a38303c",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "openproject/hocuspocus",
+      "currentReference": "17.9.1@sha256:2fb02a59609f5f197c7cedea1654d4cbcfc4e679e6fbc630f374d77e3448758e",
+      "registry": "Docker Hub",
+      "services": [
+        "projects-hocuspocus"
+      ],
+      "sources": [
+        {
+          "file": "compose/productivity/openproject/compose.yml",
+          "line": 102,
+          "reference": "openproject/hocuspocus:17.9.1@sha256:2fb02a59609f5f197c7cedea1654d4cbcfc4e679e6fbc630f374d77e3448758e"
+        }
+      ],
+      "renovateDiscoveredBefore": true,
+      "renovateDiscoveredAfter": true,
+      "manager": "docker-compose",
+      "digestPinned": true,
+      "latestAvailable": "sha256:2fb02a59609f5f197c7cedea1654d4cbcfc4e679e6fbc630f374d77e3448758e",
+      "registryResolved": true,
+      "updateAvailable": "No update in lookup",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Already discovered; no registry/tag/digest update in snapshot",
+      "proposedUpdates": [],
+      "prHistory": [
+        {
+          "number": 48,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/48",
+          "createdAt": "2026-10-01T15:03:23Z"
+        },
+        {
+          "number": 46,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/46",
+          "createdAt": "2026-09-30T08:35:51Z"
+        },
+        {
+          "number": 27,
+          "state": "MERGED",
+          "url": "https://github.com/SpencerRWood/homelab/pull/27",
+          "createdAt": "2026-09-22T19:23:46Z"
+        }
+      ]
+    },
+    {
+      "image": "ghcr.io/mealie-recipes/mealie",
+      "currentReference": "latest",
+      "registry": "GHCR",
+      "services": [
+        "mealie"
+      ],
+      "sources": [
+        {
+          "file": "compose/productivity/recipes/compose.infisical.yml",
+          "line": 8,
+          "reference": "ghcr.io/mealie-recipes/mealie:${MEALIE_IMAGE_TAG:-latest}"
+        },
+        {
+          "file": "compose/productivity/recipes/compose.yml",
+          "line": 8,
+          "reference": "ghcr.io/mealie-recipes/mealie:${MEALIE_IMAGE_TAG:-latest}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:8b02290f4d1806f02acac6f25f6d48a3c965612fda1f8e914d5af533276f8688",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Compose tag interpolation skipped as contains-variable",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:8b02290f4d1806f02acac6f25f6d48a3c965612fda1f8e914d5af533276f8688",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "vikunja/vikunja",
+      "currentReference": "latest",
+      "registry": "Docker Hub",
+      "services": [
+        "vikunja"
+      ],
+      "sources": [
+        {
+          "file": "compose/productivity/vikunja/compose.yml",
+          "line": 15,
+          "reference": "vikunja/vikunja:${VIKUNJA_IMAGE_TAG:-latest}"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:e2204a1c1c6a81e833c2b3a5442be182ca2335b54c2e7e37578cc3fe12a27cfc",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Compose tag interpolation skipped as contains-variable",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:e2204a1c1c6a81e833c2b3a5442be182ca2335b54c2e7e37578cc3fe12a27cfc",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "caddy",
+      "currentReference": "2.11.2-builder",
+      "registry": "Docker Hub",
+      "services": [
+        "Caddy base"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/caddy/Dockerfile",
+          "line": 3,
+          "reference": "caddy:${CADDY_VERSION}-builder"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:1ecefa333507828a592aaecc68d5f62a993787057429c04e9b0438a65c980a30",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin available; 2.11.7 tag upgrade blocked",
+      "updatePolicy": "Automerge digest maintenance; version changes blocked",
+      "coverageStatus": "Blocked",
+      "reason": "Digest maintenance verified; shared version ARG plus suffixes prevents safe automatic tag replacement",
+      "proposedUpdates": [
+        {
+          "bucket": "non-major",
+          "newVersion": "2.11.7",
+          "newValue": "2.11.7-builder",
+          "releaseTimestamp": "2026-10-08T20:53:07.878Z",
+          "newVersionAgeInDays": 3,
+          "newMajor": 2,
+          "newMinor": 11,
+          "newPatch": 7,
+          "updateType": "patch",
+          "isBreaking": false,
+          "newDigest": "sha256:b25f47453fa02f7e66c0828b4b1343658808b9000950b6825c4a1cb0c988f5f8",
+          "libYears": 0.4171241380010147,
+          "branchName": "renovate/caddy-image-update"
+        },
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "2.11.2-builder",
+          "newDigest": "sha256:1ecefa333507828a592aaecc68d5f62a993787057429c04e9b0438a65c980a30",
+          "branchName": "renovate/caddy-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "caddy",
+      "currentReference": "2.11.2-alpine",
+      "registry": "Docker Hub",
+      "services": [
+        "Caddy base"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/caddy/Dockerfile",
+          "line": 11,
+          "reference": "caddy:${CADDY_VERSION}-alpine"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "custom.regex",
+      "digestPinned": false,
+      "latestAvailable": "sha256:834468128c7696cec0ceea6172f7d692daf645ae51983ca76e39da54a97c570d",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin available; 2.11.7 tag upgrade blocked",
+      "updatePolicy": "Automerge digest maintenance; version changes blocked",
+      "coverageStatus": "Blocked",
+      "reason": "Digest maintenance verified; shared version ARG plus suffixes prevents safe automatic tag replacement",
+      "proposedUpdates": [
+        {
+          "bucket": "non-major",
+          "newVersion": "2.11.7",
+          "newValue": "2.11.7-alpine",
+          "releaseTimestamp": "2026-10-06T05:52:45.194Z",
+          "newVersionAgeInDays": 6,
+          "newMajor": 2,
+          "newMinor": 11,
+          "newPatch": 7,
+          "updateType": "patch",
+          "isBreaking": false,
+          "newDigest": "sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f",
+          "libYears": 0.4708906305809234,
+          "branchName": "renovate/caddy-image-update"
+        },
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "2.11.2-alpine",
+          "newDigest": "sha256:834468128c7696cec0ceea6172f7d692daf645ae51983ca76e39da54a97c570d",
+          "branchName": "renovate/caddy-image-update"
+        }
+      ],
+      "prHistory": []
+    },
+    {
+      "image": "codercom/code-server",
+      "currentReference": "latest",
+      "registry": "Docker Hub",
+      "services": [
+        "code-server base"
+      ],
+      "sources": [
+        {
+          "file": "compose/platform/code-server/Dockerfile",
+          "line": 1,
+          "reference": "codercom/code-server:latest"
+        }
+      ],
+      "renovateDiscoveredBefore": false,
+      "renovateDiscoveredAfter": true,
+      "manager": "dockerfile",
+      "digestPinned": false,
+      "latestAvailable": "sha256:72ab24b5680ee597dd647b30d82625752f40109b5f61bef90ffbf1ea1f02dbb8",
+      "registryResolved": true,
+      "updateAvailable": "Yes: pin; previous digest change unknown",
+      "updatePolicy": "Automerge eligible pins/digests/minor/patch; major manual",
+      "coverageStatus": "Covered",
+      "reason": "Dockerfile manager disabled",
+      "proposedUpdates": [
+        {
+          "isPinDigest": true,
+          "updateType": "pinDigest",
+          "newValue": "latest",
+          "newDigest": "sha256:72ab24b5680ee597dd647b30d82625752f40109b5f61bef90ffbf1ea1f02dbb8",
+          "branchName": "renovate/depname-image-update"
+        }
+      ],
+      "prHistory": []
+    }
+  ],
+  "historicalReferences": [
+    {
+      "image": "pgvector/pgvector",
+      "currentReference": "0.8.2-pg16-bookworm",
+      "sources": [
+        {
+          "file": "docs/postgres-migration.md",
+          "line": 16
+        },
+        {
+          "file": "docs/postgres-migration.md",
+          "line": 37
+        }
+      ],
+      "manager": "None",
+      "coverageStatus": "Excluded",
+      "reason": "Historical migration evidence; does not determine deployed images"
+    }
+  ]
+}

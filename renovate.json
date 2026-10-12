@@ -1,7 +1,45 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "enabledManagers": ["docker-compose"],
+  "enabledManagers": ["docker-compose", "dockerfile", "custom.regex"],
+  "docker-compose": {
+    "managerFilePatterns": ["/^compose/.*\\.ya?ml$/"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Manage external image tag defaults that Compose extraction skips as variables.",
+      "managerFilePatterns": ["/^compose/.*\\.ya?ml$/"],
+      "matchStrings": [
+        "image:[ \\t]+(?<depName>[^\\s:$]+(?:/[^\\s:$]+)*):\\$\\{(?<depType>[A-Z_]+):-(?<currentValue>[^@}\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?\\}"
+      ],
+      "datasourceTemplate": "docker",
+      "autoReplaceStringTemplate": "image: {{depName}}:{{{replace '^.*$' '${' depType}}}{{depType}}:-{{newValue}}{{#if newDigest}}@{{newDigest}}{{/if}}{{{replace '^.*$' '}' depType}}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Pin and refresh Caddy FROM digests in the existing version channel; shared-ARG version upgrades require a separate coordinated review.",
+      "managerFilePatterns": ["/^compose/platform/caddy/Dockerfile$/"],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": [
+        "ARG CADDY_VERSION=(?<caddyVersion>[^\\s]+)[\\s\\S]*",
+        "FROM (?<depName>caddy):\\$\\{CADDY_VERSION\\}-(?<depType>builder|alpine)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?"
+      ],
+      "currentValueTemplate": "{{caddyVersion}}-{{depType}}",
+      "datasourceTemplate": "docker",
+      "autoReplaceStringTemplate": "FROM caddy:{{{replace '^.*$' '${CADDY_VERSION}' depType}}}-{{depType}}{{#if newDigest}}@{{newDigest}}{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Calibre-Web's LinuxServer mod is also an OCI image; its loader supports tag plus digest.",
+      "managerFilePatterns": ["/^compose/books/compose\\.yml$/"],
+      "matchStrings": [
+        "DOCKER_MODS:[ \\t]+(?<depName>linuxserver/mods):(?<currentValue>universal-calibre)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?"
+      ],
+      "datasourceTemplate": "docker",
+      "autoReplaceStringTemplate": "DOCKER_MODS: {{depName}}:{{newValue}}{{#if newDigest}}@{{newDigest}}{{/if}}"
+    }
+  ],
   "semanticCommits": "enabled",
   "semanticCommitType": "chore",
   "semanticCommitScope": "deps",
@@ -15,15 +53,44 @@
   },
   "packageRules": [
     {
-      "description": "Homelab image updates share the normal validated release-and-deploy path.",
+      "description": "Eligible image updates retain the validated PR and platform automerge path; release and deployment remain separately approved.",
       "matchDatasources": ["docker"],
       "automerge": true,
+      "pinDigests": true,
       "groupName": "{{depName}} image update"
     },
     {
-      "description": "A pgvector tag changing PostgreSQL compatibility is always attended.",
+      "description": "Changing Caddy's shared ARG and both pinned FROM variants is unsupported by Renovate's atomic replacement; retain digest maintenance and block tag upgrades pending a coordinated build-contract change.",
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": ["caddy"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "enabled": false
+    },
+    {
+      "description": "The two Caddy FROM variants share one digest maintenance PR.",
+      "matchPackageNames": ["caddy"],
+      "groupName": "Caddy image update"
+    },
+    {
+      "description": "Standard Dockerfile replacement cannot update Caddy's shared ARG with tag suffixes; the scoped custom managers own this file.",
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["compose/platform/caddy/Dockerfile"],
+      "enabled": false
+    },
+    {
+      "description": "Locally built output names are not registry dependencies; their Dockerfile bases are managed.",
+      "matchPackageNames": ["local/caddy-cloudflare", "code-server-codex"],
+      "enabled": false
+    },
+    {
+      "description": "Potentially incompatible major image upgrades require manual review.",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "All PostgreSQL image changes require persistent-state and compatibility review.",
       "matchPackageNames": ["pgvector/pgvector"],
-      "matchNewValue": "/-pg(?:17|[2-9][0-9]+)-/",
       "automerge": false
     }
   ]
