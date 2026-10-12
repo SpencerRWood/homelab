@@ -70,13 +70,17 @@ class RoutinePolicyTests(unittest.TestCase):
         release = {'draft': False, 'prerelease': False, 'tag_name': 'v1.0.0', 'published_at': '2026-10-12'}
         pr = {'user': {'login': 'renovate[bot]'}, 'merged_at': 'today',
               'base': {'ref': 'main'}, 'merge_commit_sha': 'head'}
-        with patch.object(POLICY, 'git', side_effect=git), patch.object(POLICY.subprocess, 'run') as run:
+        with patch.dict(os.environ, {'EXPECTED_REVISION': 'head'}), \
+                patch.object(POLICY, 'git', side_effect=git), patch.object(POLICY.subprocess, 'run') as run:
             run.return_value.returncode = 0
             with patch.object(POLICY, 'api', side_effect=lambda p: [release] if p.startswith('releases') else [pr]):
                 self.assertTrue(POLICY.authorize()['eligible'])
                 pr['user']['login'] = 'human'
                 with self.assertRaisesRegex(ValueError, 'non_renovate'):
                     POLICY.authorize()
+                with patch.dict(os.environ, {'EXPECTED_REVISION': 'unexpected'}):
+                    with self.assertRaisesRegex(ValueError, 'revision_mismatch'):
+                        POLICY.authorize()
 
     def test_all_protected_packages_are_manual_in_renovate(self):
         config = json.loads((ROOT / 'renovate.json').read_text())
