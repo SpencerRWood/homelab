@@ -239,6 +239,11 @@ class RoutineRuntimeTests(unittest.TestCase):
         with patch.object(RUNTIME, 'command', return_value='/dev/sda'):
             with self.assertRaisesRegex(ValueError, 'mount_source'):
                 RUNTIME.media_gate(['plex'])
+        container['HostConfig']['RestartPolicy']['Name'] = 'no'
+        container['NetworkSettings'] = {'Networks': {'logging': {'IPAddress': '10.0.0.2'}}}
+        with patch.object(RUNTIME, 'json_command', return_value=[container]), patch.object(RUNTIME, 'endpoint') as endpoint:
+            RUNTIME.verify(row | {'container': 'logging-alloy'})
+            endpoint.assert_called_once_with('http://10.0.0.2:12345/-/ready')
 
     def test_openproject_tag_override_cannot_bypass_pin(self):
         services = yaml.safe_load((ROOT / 'compose/productivity/openproject/compose.yml').read_text())['services']

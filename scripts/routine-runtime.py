@@ -192,6 +192,12 @@ def verify(row, recovering=False):
             try:
                 if url := POLICY['endpoints'].get(row['container']):
                     endpoint(url)
+                if internal := POLICY.get('container_endpoints', {}).get(row['container']):
+                    addresses = [n['IPAddress'] for n in container['NetworkSettings']['Networks'].values()
+                                 if n.get('IPAddress')]
+                    if not addresses:
+                        raise ValueError('affected_endpoint_address_missing')
+                    endpoint(f"http://{addresses[0]}:{internal['port']}{internal['path']}")
                 return
             except (ValueError, OSError):
                 pass
