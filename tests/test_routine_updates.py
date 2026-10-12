@@ -24,12 +24,36 @@ def load(name):
 
 
 POLICY = load('routine-policy')
+MAIN_POLICY = load('main-deployment-policy')
 RUNTIME = load('routine-runtime')
 DIGEST = 'sha256:' + 'a' * 64
 NEXT = 'sha256:' + 'b' * 64
 
 
 class RoutinePolicyTests(unittest.TestCase):
+    def test_main_delivery_accepts_human_and_bot_commits_but_rejects_other_events(self):
+        env = {'GITHUB_EVENT_NAME': 'push', 'GITHUB_REF': 'refs/heads/main',
+               'GITHUB_SHA': 'approved', 'EXPECTED_REVISION': 'approved'}
+        with patch.object(MAIN_POLICY.subprocess, 'check_output', return_value='approved\n'):
+            for actor in ('SpencerRWood', 'renovate[bot]'):
+                with patch.dict(os.environ, env | {'GITHUB_ACTOR': actor}, clear=True):
+                    self.assertTrue(MAIN_POLICY.authorize()['authorized'])
+            for changes in ({'GITHUB_EVENT_NAME': 'pull_request'}, {'GITHUB_REF': 'refs/heads/feature'},
+                            {'GITHUB_SHA': 'different'}, {'EXPECTED_REVISION': 'different'}):
+                with patch.dict(os.environ, env | changes, clear=True), self.assertRaises(ValueError):
+                    MAIN_POLICY.authorize()
+
+    def test_every_successfully_validated_main_push_deploys_even_without_a_new_tag(self):
+        document = yaml.safe_load((ROOT / '.github/workflows/release.yml').read_text())
+        self.assertNotIn('policy', document['jobs'])
+        release = document['jobs']['release']
+        self.assertNotIn('eligible', release['if'])
+        self.assertIn('scripts/main-deployment-policy.py', release['with']['automatic_policy_command'])
+        deploy = document['jobs']['deploy']
+        self.assertEqual(deploy['needs'], 'release')
+        self.assertEqual(deploy['if'].strip(), "github.event_name == 'push'")
+        self.assertEqual(deploy['with']['ref'], '${{ needs.release.outputs.release_tag || github.sha }}')
+        self.assertTrue(deploy['with']['automatic'])
     def test_digest_patch_minor_and_custom_references(self):
         for old, new in [('latest', 'latest'), ('1.2.3', '1.2.4'), ('1.2', '1.3')]:
             before = f'services:\n  app:\n    image: example/app:{old}@{DIGEST}\n'
@@ -132,8 +156,8 @@ class RoutineRuntimeTests(unittest.TestCase):
         inputs = document['jobs']['deploy']['with']
         for operation in ('check', 'deploy', 'health_check'):
             name = {'check': 'check', 'deploy': 'apply', 'health_check': 'health'}[operation]
-            self.assertIn('manual-' + name, inputs['privileged_' + operation + '_command'])
-        self.assertIn('routine-rollback', inputs['privileged_rollback_command'])
+            self.assertIn('release-' + name, inputs['privileged_' + operation + '_command'])
+        self.assertIn('release-rollback', inputs['privileged_rollback_command'])
         playbook = yaml.safe_load((ROOT / 'ansible/playbooks/homelab-routine.yml').read_text())[0]
         self.assertTrue(playbook['vars']['routine_automatic'])
         for task in (playbook['tasks'][0], playbook['tasks'][2]):

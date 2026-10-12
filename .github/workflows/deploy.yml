@@ -6,7 +6,7 @@ name: Deploy released homelab configuration
     inputs:
       automatic:
         description: >-
-          Routine delivery authorized by the complete Renovate release policy.
+          Validated main-push delivery authorized by repository policy.
         required: false
         type: boolean
         default: false
@@ -50,9 +50,34 @@ jobs:
       ((github.event_name == 'workflow_dispatch' &&
       inputs.deployment_approved == true) ||
       (github.event_name == 'push' && inputs.automatic == true))
-    uses: SpencerRWood/workflows/.github/workflows/resolve-release.yml@13c34c39c7513342ec0b970c0d23684653000c69
-    with:
-      ref: ${{ inputs.ref || inputs.release }}
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+      - name: Resolve exact deployment revision
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_REF: ${{ inputs.ref || inputs.release }}
+          AUTOMATIC: ${{ inputs.automatic }}
+        run: |
+          set -euo pipefail
+          if [[ "$AUTOMATIC" == true &&
+                "$REQUESTED_REF" =~ ^[a-f0-9]{40}$ ]]; then
+            test "$GITHUB_EVENT_NAME" = push
+            test "$GITHUB_REF" = refs/heads/main
+            test "$REQUESTED_REF" = "$GITHUB_SHA"
+            ref="$REQUESTED_REF"
+          elif [[ -n "$REQUESTED_REF" ]]; then
+            ref=$(gh release view "$REQUESTED_REF" --repo "$GITHUB_REPOSITORY" \
+              --json isDraft,tagName \
+              --jq 'select(.isDraft == false) | .tagName')
+          else
+            ref=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" \
+              --jq .tag_name)
+          fi
+          test -n "$ref"
+          printf 'ref=%s\n' "$ref" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: resolve-release
@@ -61,12 +86,13 @@ jobs:
       ((github.event_name == 'workflow_dispatch' &&
       inputs.deployment_approved == true) ||
       (github.event_name == 'push' && inputs.automatic == true))
-    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@f7fbddcc2017a176975d4b86a77b0e71955203b4
+    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@e41de6348e00285553bb825beba9159ef41b50a5
     with:
       require_approval: true
       approved: ${{ inputs.deployment_approved }}
       automatic: ${{ inputs.automatic == true }}
-      automatic_policy_command: python3 scripts/routine-policy.py --authorize
+      automatic_policy_command: python3 scripts/main-deployment-policy.py
+      allow_main_commit: ${{ inputs.automatic }}
       repository: ${{ github.repository }}
       ref: ${{ needs.resolve-release.outputs.ref }}
       skip_superseded: ${{ inputs.skip_superseded }}
@@ -85,18 +111,18 @@ jobs:
       privileged_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE"
-        ${{ inputs.automatic && 'routine-check' || 'manual-check' }}
+        release-check
       health_check_command: bash scripts/health-check.sh
       privileged_deploy_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE"
-        ${{ inputs.automatic && 'routine-apply' || 'manual-apply' }}
+        release-apply
       privileged_health_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE"
-        ${{ inputs.automatic && 'routine-health' || 'manual-health' }}
+        release-health
       privileged_rollback_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
-        "$GITHUB_WORKSPACE" routine-rollback
+        "$GITHUB_WORKSPACE" release-rollback
       deployment_state_file: >-
         /var/lib/github-actions-deployments/github-runner-homelab/homelab.json
