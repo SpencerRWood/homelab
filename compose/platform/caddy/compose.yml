@@ -8,8 +8,8 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        CADDY_VERSION: ${CADDY_VERSION:-2.11.2}
-    image: local/caddy-cloudflare:${CADDY_VERSION:-2.11.2}
+        CADDY_VERSION: ${CADDY_VERSION:-2.11.7}
+    image: local/caddy-cloudflare:${CADDY_VERSION:-2.11.7}
     container_name: caddy
     restart: unless-stopped
     env_file:
@@ -18,7 +18,7 @@ services:
     environment:
       ACME_EMAIL: "${ACME_EMAIL}"
       CADDY_PROXY_NETWORK: "${CADDY_PROXY_NETWORK:-proxy}"
-      CADDY_VERSION: "${CADDY_VERSION:-2.11.2}"
+      CADDY_VERSION: "${CADDY_VERSION:-2.11.7}"
     ports:
       - "192.168.1.21:80:80"
       - "192.168.1.21:443:443"
