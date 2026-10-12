@@ -162,8 +162,16 @@ class RoutineRuntimeTests(unittest.TestCase):
                 RUNTIME.compatibility(before, after, True)
         self.assertFalse(RUNTIME.compatibility('1.2.3', '1.3.0', True))
         self.assertTrue(RUNTIME.compatibility('1.2.3', '1.2.3', True))
+        self.assertTrue(RUNTIME.compatibility('v2.11.2', '2.11.2', True))
+        self.assertFalse(RUNTIME.compatibility('2.11.2', None, False))
         self.assertFalse(RUNTIME.compatibility('4.0.20.3009-ls132', '4.0.20.3009-ls133', True))
         self.assertEqual(RUNTIME.semver('Linuxserver.io version:- 4.0.20.1-ls123 Build-date:- today'), (4, 0, 20, 1))
+        with patch.object(RUNTIME, 'command', return_value='4.108.2 build-id') as command:
+            self.assertEqual(RUNTIME.binary_version('code-server'), '4.108.2')
+            command.assert_called_with('docker', 'exec', 'code-server', 'code-server', '--version')
+            self.assertEqual(RUNTIME.binary_version('code-server', 'approved-image'), '4.108.2')
+            command.assert_called_with('docker', 'run', '--rm', '--network', 'none', '--entrypoint',
+                                       'code-server', 'approved-image', '--version')
 
     def test_planner_preserves_unrelated_services_and_media_order(self):
         with tempfile.TemporaryDirectory() as tmp:

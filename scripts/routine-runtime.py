@@ -58,12 +58,24 @@ def compatibility(before, after, automatic):
     if automatic and (old is None or new is None or old[0] != new[0] or new < old):
         raise ValueError('major_or_unknown_runtime_version_requires_manual_approval')
     # Never automatically undo a possible schema migration, even within a minor.
-    return old is not None and before == after
+    return old is not None and new is not None and before.lstrip('v') == after.lstrip('v')
 
 
 def version(image):
     labels = image.get('Config', {}).get('Labels') or {}
     return labels.get('org.opencontainers.image.version') or labels.get('build_version')
+
+
+def binary_version(name, target=None):
+    # Custom builds can omit OCI version labels. Read the supported application
+    # interface instead of treating their image names as a version attestation.
+    if name not in ('caddy', 'code-server'):
+        return None
+    flag = 'version' if name == 'caddy' else '--version'
+    if target is None:
+        return command('docker', 'exec', name, name, flag).split()[0]
+    return command('docker', 'run', '--rm', '--network', 'none', '--entrypoint', name,
+                   target, flag).split()[0]
 
 
 def compose(source, *args):
@@ -149,7 +161,8 @@ def plan(automatic):
             if automatic and package in POLICY['protected_packages']:
                 raise ValueError('protected_service_requires_manual_approval')
             row = {'source': source, 'service': service, 'container': name, 'target': target,
-                   'build': bool(build), 'before_id': inspect['Image'], 'before_version': version(old),
+                   'build': bool(build), 'before_id': inspect['Image'],
+                   'before_version': version(old) or binary_version(name),
                    'restart': inspect['HostConfig']['RestartPolicy']['Name'], 'mods': mods}
             result['services'].append(row)
             result['sources'].append(source)
@@ -231,7 +244,8 @@ def apply(automatic):
         row['expected_id'] = candidate['Id']
         if not row['build'] and row['target'].split('@')[-1] not in ' '.join(candidate.get('RepoDigests', [])):
             raise ValueError('pulled_digest_mismatch')
-        safe = compatibility(row['before_version'], version(candidate), automatic)
+        row['after_version'] = version(candidate) or binary_version(row['container'], row['target'])
+        safe = compatibility(row['before_version'], row['after_version'], automatic)
         row['rollback_safe'] = safe
         write(transaction)
         media_gate([row['container']])
