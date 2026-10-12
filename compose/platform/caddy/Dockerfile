@@ -10,4 +10,7 @@ RUN xcaddy build \
 
 FROM caddy:${CADDY_VERSION}-alpine@sha256:834468128c7696cec0ceea6172f7d692daf645ae51983ca76e39da54a97c570d
 
+ARG CADDY_VERSION
+LABEL org.opencontainers.image.version=${CADDY_VERSION}
+
 COPY --from=builder /src/caddy /usr/bin/caddy

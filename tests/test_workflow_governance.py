@@ -10,17 +10,24 @@ ROOT = Path(__file__).resolve().parents[1] / '.github/workflows'
 
 
 class WorkflowGovernanceTests(unittest.TestCase):
-    def test_merges_do_not_publish_or_deploy(self):
+    def test_only_classified_routine_merges_can_publish_and_deploy(self):
         release = yaml.safe_load((ROOT / 'release.yml').read_text())
         triggers = release.get('on', release.get(True))
-        self.assertEqual(set(triggers), {'workflow_dispatch'})
+        self.assertEqual(set(triggers), {'workflow_dispatch', 'push'})
         self.assertFalse(triggers['workflow_dispatch']['inputs']['release_approved']['default'])
-        self.assertEqual(set(release['jobs']), {'release'})
+        self.assertEqual(set(release['jobs']), {'policy', 'release', 'deploy'})
         job = release['jobs']['release']
         self.assertIn("github.ref == 'refs/heads/main'", job['if'])
         self.assertIn("github.event_name == 'workflow_dispatch'", job['if'])
         self.assertIn('inputs.release_approved == true', job['if'])
         self.assertTrue(job['with']['require_approval'])
+        self.assertEqual(job['needs'], 'policy')
+        self.assertIn("needs.policy.outputs.eligible == 'true'", job['if'])
+        self.assertIn('scripts/routine-policy.py --authorize', job['with']['automatic_policy_command'])
+        deployment = release['jobs']['deploy']
+        self.assertIn("needs.release.outputs.released == 'true'", deployment['if'])
+        self.assertEqual(deployment['with']['ref'], '${{ needs.release.outputs.release_tag }}')
+        self.assertTrue(deployment['with']['automatic'])
 
     def test_deployment_and_rollback_remain_separately_manual(self):
         deploy = yaml.safe_load((ROOT / 'deploy.yml').read_text())
@@ -36,6 +43,8 @@ class WorkflowGovernanceTests(unittest.TestCase):
         job = next(job for job in deploy['jobs'].values() if 'deploy-ansible' in job['uses'])
         self.assertTrue(job['with']['require_approval'])
         self.assertEqual(job['with']['approved'], '${{ inputs.deployment_approved }}')
+        self.assertIn('routine-apply', job['with']['privileged_deploy_command'])
+        self.assertIn('routine-rollback', job['with']['privileged_rollback_command'])
 
     def test_pushes_and_prs_validate_without_publishing_authority(self):
         validate = yaml.safe_load((ROOT / 'validate.yml').read_text())

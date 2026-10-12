@@ -2,6 +2,8 @@
 name: Release
 
 'on':
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       release_approved:
@@ -12,15 +14,47 @@ name: Release
 
 permissions:
   contents: write
+  pull-requests: read
+  deployments: write
 
 jobs:
+  policy:
+    runs-on: ubuntu-latest
+    outputs:
+      eligible: ${{ steps.policy.outputs.eligible }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Classify the complete unreleased revision range
+        id: policy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_REVISION: ${{ github.sha }}
+        run: python3 scripts/routine-policy.py --classify
+
   release:
+    needs: policy
     if: >-
       github.ref == 'refs/heads/main' &&
-      github.event_name == 'workflow_dispatch' &&
-      inputs.release_approved == true
-    uses: SpencerRWood/workflows/.github/workflows/release.yml@9307f9b80141f4ed9c463af360a1b13a49ca3353
+      ((github.event_name == 'workflow_dispatch' &&
+      inputs.release_approved == true) ||
+      (github.event_name == 'push' && needs.policy.outputs.eligible == 'true'))
+    uses: SpencerRWood/workflows/.github/workflows/release.yml@13c34c39c7513342ec0b970c0d23684653000c69
     with:
       require_approval: true
-      workflow_revision: 9307f9b80141f4ed9c463af360a1b13a49ca3353
+      workflow_revision: 13c34c39c7513342ec0b970c0d23684653000c69
       approved: ${{ inputs.release_approved }}
+      automatic: ${{ github.event_name == 'push' }}
+      automatic_policy_command: python3 scripts/routine-policy.py --authorize
+
+  deploy:
+    needs: [policy, release]
+    if: >-
+      github.event_name == 'push' && needs.policy.outputs.eligible == 'true' &&
+      needs.release.outputs.released == 'true'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      automatic: true
+      ref: ${{ needs.release.outputs.release_tag }}
+      skip_superseded: true

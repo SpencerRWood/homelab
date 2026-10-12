@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "protected_packages": [
+    "busybox",
+    "pgvector/pgvector",
+    "openproject/openproject",
+    "openproject/hocuspocus",
+    "vaultwarden/server",
+    "ghcr.io/mealie-recipes/mealie",
+    "vikunja/vikunja"
+  ],
+  "backup_manifest": "/mnt/wood-server-nas/backup_server/swood-server/logs/homelab-postgres-backup.json",
+  "backup_max_age_seconds": 86400,
+  "state_directory": "/var/lib/github-actions-deployments/github-runner-homelab",
+  "media_order": ["plex", "sonarr", "radarr", "sabnzbd", "prowlarr"],
+  "endpoints": {
+    "caddy": "https://vault.woodhost.cloud/",
+    "plex": "https://plex.woodhost.cloud/",
+    "sonarr": "https://sonarr.woodhost.cloud/",
+    "radarr": "https://radarr.woodhost.cloud/",
+    "prowlarr": "https://prowlarr.woodhost.cloud/",
+    "sabnzbd": "https://sabnzbd.woodhost.cloud/",
+    "calibre-web": "https://books.woodhost.cloud/",
+    "audiobookshelf": "https://audiobooks.woodhost.cloud/",
+    "logging-grafana": "https://logs.woodhost.cloud/",
+    "code-server": "https://code.woodhost.cloud/"
+  }
+}

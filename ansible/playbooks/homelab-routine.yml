@@ -1,0 +1,72 @@
+---
+- name: Reconcile only approved affected container images
+  hosts: homelab
+  become: true
+  gather_facts: false
+  vars:
+    routine_state_root: >-
+      /var/lib/github-actions-deployments/github-runner-homelab
+  tasks:
+    - name: Inspect affected services and mandatory runtime gates
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ playbook_dir }}/../../scripts/routine-runtime.py"
+          - check
+      register: routine_plan
+      changed_when: false
+      check_mode: false
+      tags: [check, apply]
+
+    - name: Copy only affected repository definitions with Ansible ownership
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../{{ item }}"
+        dest: "/srv/homelab/{{ item }}"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ (routine_plan.stdout | from_json).sources }}"
+      when: not ansible_check_mode
+      tags: [apply]
+
+    - name: Reconcile and verify affected images sequentially
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ playbook_dir }}/../../scripts/routine-runtime.py"
+          - apply
+      changed_when: true
+      when: not ansible_check_mode
+      tags: [apply]
+
+    - name: Verify the exact affected runtime image identities and endpoints
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ playbook_dir }}/../../scripts/routine-runtime.py"
+          - health
+      changed_when: false
+      tags: [health]
+
+    - name: Recover affected images only with verified schema safety
+      ansible.builtin.command:
+        argv:
+          - python3
+          - "{{ playbook_dir }}/../../scripts/routine-runtime.py"
+          - rollback
+      register: routine_recovery
+      changed_when: true
+      when: not ansible_check_mode
+      tags: [rollback]
+
+    - name: Restore affected canonical definitions after successful recovery
+      ansible.builtin.copy:
+        src: "{{ routine_state_root }}/rollback-sources/{{ item }}"
+        dest: "/srv/homelab/{{ item }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ (routine_recovery.stdout | from_json).sources }}"
+      when: not ansible_check_mode
+      tags: [rollback]

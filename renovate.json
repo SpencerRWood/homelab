@@ -41,23 +41,25 @@
     }
   ],
   "semanticCommits": "enabled",
-  "semanticCommitType": "chore",
+  "semanticCommitType": "fix",
   "semanticCommitScope": "deps",
   "pinDigests": true,
   "platformAutomerge": true,
   "automergeStrategy": "squash",
+  "rebaseWhen": "behind-base-branch",
   "vulnerabilityAlerts": {
-    "automerge": true,
+    "automerge": false,
     "semanticCommitType": "chore",
     "semanticCommitScope": "deps"
   },
   "packageRules": [
     {
-      "description": "Eligible image updates retain the validated PR and platform automerge path; release and deployment remain separately approved.",
+      "description": "Only digest pins, digest refreshes, patch and minor images qualify for routine delivery after CI.",
       "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["pinDigest", "digest", "patch", "minor"],
       "automerge": true,
       "pinDigests": true,
-      "groupName": "{{depName}} image update"
+      "groupName": "Routine image updates"
     },
     {
       "description": "Changing Caddy's shared ARG and both pinned FROM variants is unsupported by Renovate's atomic replacement; retain digest maintenance and block tag upgrades pending a coordinated build-contract change.",
@@ -67,9 +69,10 @@
       "enabled": false
     },
     {
-      "description": "The two Caddy FROM variants share one digest maintenance PR.",
-      "matchPackageNames": ["caddy"],
-      "groupName": "Caddy image update"
+      "description": "Protected applications and permission-changing init helpers require manual review for every image change.",
+      "matchPackageNames": ["busybox", "openproject/openproject", "openproject/hocuspocus", "vaultwarden/server", "ghcr.io/mealie-recipes/mealie", "vikunja/vikunja"],
+      "groupName": "{{depName}} image update",
+      "automerge": false
     },
     {
       "description": "Standard Dockerfile replacement cannot update Caddy's shared ARG with tag suffixes; the scoped custom managers own this file.",
@@ -91,6 +94,7 @@
     {
       "description": "All PostgreSQL image changes require persistent-state and compatibility review.",
       "matchPackageNames": ["pgvector/pgvector"],
+      "groupName": "{{depName}} image update",
       "automerge": false
     }
   ]

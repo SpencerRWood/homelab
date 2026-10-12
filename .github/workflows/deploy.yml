@@ -4,6 +4,12 @@ name: Deploy released homelab configuration
 'on':
   workflow_call:
     inputs:
+      automatic:
+        description: >-
+          Routine delivery authorized by the complete Renovate release policy.
+        required: false
+        type: boolean
+        default: false
       deployment_approved:
         description: Confirm separate deployment or rollback authorization.
         required: false
@@ -34,15 +40,17 @@ name: Deploy released homelab configuration
 
 permissions:
   contents: read
+  pull-requests: read
   deployments: write
 
 jobs:
   resolve-release:
     if: >-
       github.ref == 'refs/heads/main' &&
-      github.event_name == 'workflow_dispatch' &&
-      inputs.deployment_approved == true
-    uses: SpencerRWood/workflows/.github/workflows/resolve-release.yml@v1
+      ((github.event_name == 'workflow_dispatch' &&
+      inputs.deployment_approved == true) ||
+      (github.event_name == 'push' && inputs.automatic == true))
+    uses: SpencerRWood/workflows/.github/workflows/resolve-release.yml@13c34c39c7513342ec0b970c0d23684653000c69
     with:
       ref: ${{ inputs.ref || inputs.release }}
 
@@ -50,12 +58,15 @@ jobs:
     needs: resolve-release
     if: >-
       github.ref == 'refs/heads/main' &&
-      github.event_name == 'workflow_dispatch' &&
-      inputs.deployment_approved == true
-    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@9307f9b80141f4ed9c463af360a1b13a49ca3353
+      ((github.event_name == 'workflow_dispatch' &&
+      inputs.deployment_approved == true) ||
+      (github.event_name == 'push' && inputs.automatic == true))
+    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@13c34c39c7513342ec0b970c0d23684653000c69
     with:
       require_approval: true
       approved: ${{ inputs.deployment_approved }}
+      automatic: ${{ inputs.automatic == true }}
+      automatic_policy_command: python3 scripts/routine-policy.py --authorize
       repository: ${{ github.repository }}
       ref: ${{ needs.resolve-release.outputs.ref }}
       skip_superseded: ${{ inputs.skip_superseded }}
@@ -73,13 +84,19 @@ jobs:
         ansible/playbooks/homelab-host.yml --tags storage --check --diff
       privileged_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
-        "$GITHUB_WORKSPACE" check
+        "$GITHUB_WORKSPACE"
+        ${{ inputs.automatic && 'routine-check' || 'check' }}
       health_check_command: bash scripts/health-check.sh
       privileged_deploy_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
-        "$GITHUB_WORKSPACE" apply
+        "$GITHUB_WORKSPACE"
+        ${{ inputs.automatic && 'routine-apply' || 'apply' }}
       privileged_health_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
-        "$GITHUB_WORKSPACE" health
+        "$GITHUB_WORKSPACE"
+        ${{ inputs.automatic && 'routine-health' || 'health' }}
+      privileged_rollback_command: >-
+        sudo -n /usr/local/sbin/github-runner-homelab-deploy
+        "$GITHUB_WORKSPACE" routine-rollback
       deployment_state_file: >-
         /var/lib/github-actions-deployments/github-runner-homelab/homelab.json
