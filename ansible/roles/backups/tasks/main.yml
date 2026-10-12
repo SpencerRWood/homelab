@@ -1,0 +1,18 @@
+---
+- name: Install the active homelab cluster backup helper
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../scripts/homelab-postgres-backup.sh"
+    dest: /srv/docker/scripts/homelab-postgres-backup.sh
+    owner: root
+    group: root
+    mode: "0700"
+  tags: [backups]
+
+- name: Include the active cluster in the existing logical backup job
+  ansible.builtin.blockinfile:
+    path: /srv/docker/scripts/database-logical-backup.sh
+    insertafter: '^require_mount$'
+    marker: '# {mark} ANSIBLE HOMELAB ACTIVE CLUSTER'
+    block: /srv/docker/scripts/homelab-postgres-backup.sh
+    validate: bash -n %s
+  tags: [backups]

@@ -15,6 +15,11 @@ test -d "$workspace/.git"
 cd "$workspace"
 
 case "$operation" in
+  routine-check|routine-apply|routine-health|routine-rollback)
+    args=()
+    if [[ "$operation" == routine-check ]]; then args+=(--check); fi
+    exec /usr/bin/ansible-playbook --connection=local -i "{{ github_runner_inventory_path }}" ansible/playbooks/homelab-routine.yml --tags "${operation#routine-}" "${args[@]}" {{ github_runner_ansible_extra_args }}
+    ;;
   apply)
     exec /usr/bin/ansible-playbook --connection=local -i "{{ github_runner_inventory_path }}" "{{ github_runner_playbook_path }}" {{ github_runner_ansible_extra_args }}
     ;;

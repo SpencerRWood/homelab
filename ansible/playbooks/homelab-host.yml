@@ -10,6 +10,7 @@
   gather_facts: false
   roles:
     - role: storage
+    - role: backups
     - role: compose
     - role: systemd
     - role: github_runner
