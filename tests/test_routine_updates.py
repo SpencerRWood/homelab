@@ -214,6 +214,35 @@ class RoutineRuntimeTests(unittest.TestCase):
             self.assertEqual(probe.call_count, 2)
             self.assertEqual(transaction['outcome'], 'success')
 
+    def test_openproject_upgrade_seeds_before_processes_and_blocks_schema_rollback(self):
+        transaction = self.transaction()
+        for row, name in zip(transaction['services'], ('projects-cron', 'projects-web')):
+            row.update(container=name, service=name, before_version='17.7.1',
+                       source='compose/productivity/openproject/compose.yml',
+                       target='openproject/openproject:17-slim@' + NEXT)
+        candidate = [{'Id': 'sha256:new', 'RepoDigests': ['openproject/openproject@' + NEXT],
+                      'Config': {'Labels': {'org.opencontainers.image.version': '17.9.1'}}}]
+        with patch.object(RUNTIME, 'plan', return_value=transaction), patch.object(RUNTIME, 'write'), \
+                patch.object(RUNTIME, 'command'), patch.object(RUNTIME, 'json_command', return_value=candidate), \
+                patch.object(RUNTIME, 'compose') as compose, patch.object(RUNTIME, 'media_gate'), \
+                patch.object(RUNTIME, 'verify'):
+            RUNTIME.apply(False)
+            self.assertEqual([c.args[-1] for c in compose.call_args_list],
+                             ['projects-seeder', 'projects-cron', 'projects-web'])
+            self.assertIn('--no-deps', compose.call_args_list[0].args)
+            self.assertFalse(transaction['rollback_safe'])
+            self.assertTrue(transaction['openproject_migrated'])
+            transaction.pop('openproject_migrated')
+            for row in transaction['services']:
+                row.pop('applied')
+            compose.reset_mock()
+            compose.side_effect = ValueError('migration_failed')
+            with self.assertRaisesRegex(ValueError, 'migration_failed'):
+                RUNTIME.apply(False)
+            self.assertEqual(compose.call_count, 1)
+            self.assertFalse(transaction['rollback_safe'])
+            self.assertTrue(all(not row.get('applied') for row in transaction['services']))
+
     def test_recovery_uses_retained_image_ids_without_pull(self):
         transaction = self.transaction()
         transaction['services'][0]['applied'] = True

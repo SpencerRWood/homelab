@@ -253,10 +253,19 @@ def apply(automatic):
         safe = compatibility(row['before_version'], row['after_version'], automatic)
         row['rollback_safe'] = safe
         write(transaction)
+        if row['target'].startswith('openproject/openproject:') and not transaction.get('openproject_migrated'):
+            # The tracked seeder is the supported upgrade path. Run it once
+            # before any new web/worker/cron process sees the database.
+            transaction['migration_risk'] = not safe
+            transaction['rollback_safe'] = transaction['rollback_safe'] and safe
+            write(transaction)
+            compose(row['source'], 'run', '--rm', '--no-deps', '--pull', 'never', 'projects-seeder')
+            transaction['openproject_migrated'] = True
+            write(transaction)
         media_gate([row['container']])
         row['applied'] = True
-        transaction['rollback_safe'] = all(r.get('rollback_safe', True)
-                                           for r in transaction['services'] if r.get('applied'))
+        transaction['rollback_safe'] = not transaction.get('migration_risk', False) and all(
+            r.get('rollback_safe', True) for r in transaction['services'] if r.get('applied'))
         write(transaction)
         compose(row['source'], 'up', '-d', '--no-deps', '--no-build', '--force-recreate', '--pull', 'never', row['service'])
         verify(row)

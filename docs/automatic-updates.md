@@ -43,6 +43,9 @@ restart policies. Secrets and volumes retain their existing definitions. Caddy
 builds verify the Cloudflare module and actual mounted configuration before use.
 Health checks verify image ID, restart policy, health state, mod reference and
 configured endpoints before proceeding to the next container.
+OpenProject runs its tracked seeder once before recreating new web, worker, or
+cron processes. A failed migration stops the rollout, and a version-changing
+migration prevents unattended schema rollback.
 
 The existing deployment recovery step restores only attempted services using the
 retained exact old image IDs and previous definitions. It never pulls a floating
