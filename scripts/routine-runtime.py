@@ -2,8 +2,6 @@
 """Ansible-owned, affected-service deployment with immutable runtime recovery."""
 import argparse
 import datetime
-import gzip
-import hashlib
 import json
 from pathlib import Path
 import re
@@ -28,23 +26,12 @@ def json_command(*args):
     return json.loads(command(*args))
 
 
-def backup_gate(path=None, now=None):
-    manifest = json.loads(Path(path or POLICY['backup_manifest']).read_text())
-    timestamp = datetime.datetime.fromisoformat(manifest['completed_at'])
-    age = ((now or datetime.datetime.now(datetime.timezone.utc)) - timestamp).total_seconds()
-    if not 0 <= age <= POLICY['backup_max_age_seconds']:
-        raise ValueError('active_database_backup_stale')
-    if manifest['container'] != 'homelab-postgres' or not {
-            'openproject', 'vaultwarden', 'mealie', 'vikunja'} <= set(manifest['databases']):
-        raise ValueError('active_database_backup_coverage_missing')
-    artifact = Path(manifest['artifact'])
-    with artifact.open('rb') as stream:
-        digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-    if digest != manifest['sha256']:
-        raise ValueError('active_database_backup_integrity_failed')
-    with gzip.open(artifact, 'rb') as stream:
-        while stream.read(1024 * 1024):
-            pass
+def backup_gate(path=None, now=None, policy_file=None):
+    reader = runpy.run_path(str(ROOT / 'scripts/recovery_manifest.py'))
+    policy = reader['load_policy'](policy_file or ROOT / 'recovery/backup-policy.yml')
+    policy['max_age_seconds'] = min(policy['max_age_seconds'], POLICY['backup_max_age_seconds'])
+    reader = runpy.run_path(str(ROOT / 'scripts/recovery_manifest.py'))
+    reader['validate'](path or POLICY['backup_manifest'], policy, now)
 
 
 def semver(label):

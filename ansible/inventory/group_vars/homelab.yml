@@ -69,3 +69,118 @@ infisical_runtime_services:
     required_keys: [POSTGRES_PASSWORD]
     compose_file: /srv/homelab/compose/postgres/compose.yml
     compose_services: [postgres]
+
+# Declarative backup targets; runtime JSON is compiled from this authority.
+backups_configuration:
+  consumer: homelab
+  environment: home
+  reader_gid: 10001
+  status_file: /var/lib/homelab/backups/last-attempt.json
+  deadline_seconds: 3600
+  off_source_copy_sources:
+    - calibre-library-metadata
+  off_source_destination:
+    mount: /
+    source: /dev/sda2
+    fstype: ext4
+    root: /srv/recovery-backups/nas-metadata
+  max_age_seconds: 86400
+  destination:
+    mount: /mnt/wood-server-nas/backup_server
+    source: 192.168.1.10:/volume1/backup_server
+    fstype: nfs
+    root: /mnt/wood-server-nas/backup_server/swood-server/homelab
+  postgres:
+    password_source: environment
+    container: homelab-postgres
+    required_databases:
+      - openproject
+      - vaultwarden
+      - mealie
+      - vikunja
+      - grafana
+  quiesce_authorized: false
+  quiesce_containers:
+    - projects-web
+    - projects-worker
+    - projects-cron
+    - projects-hocuspocus
+    - vaultwarden
+    - mealie
+    - vikunja
+    - plex
+    - sonarr
+    - radarr
+    - prowlarr
+    - bookshelf-ebooks
+    - bookshelf-audiobooks
+    - calibre
+    - calibre-web
+    - ebook-importer
+    - audiobookshelf
+    - sabnzbd
+  files:
+    - id: openproject-assets
+      paths:
+        - /var/lib/docker/volumes/projects_projects_opdata/_data
+    - id: vaultwarden-files
+      paths:
+        - /srv/docker/private/config/vaultwarden
+    - id: mealie-files
+      paths:
+        - /srv/docker/recipes/config/data
+    - id: vikunja-files
+      paths:
+        - /var/lib/docker/volumes/tasks_vikunja_files/_data
+    - id: media-application-state
+      paths:
+        - /srv/docker/media-acquisition/config/services
+      exclude:
+        - 0/*/logs
+        - 0/*/logs.db*
+        - 0/*/cache.db*
+      required_sqlite_members:
+        - 0/sonarr/sonarr.db
+        - 0/radarr/radarr.db
+        - 0/prowlarr/prowlarr.db
+        - 0/calibre-web/app.db
+        - 0/bookshelf-ebooks/readarr.db
+        - 0/bookshelf-audiobooks/readarr.db
+    - id: plex-state
+      paths:
+        - /srv/docker/media/config/plex
+      sqlite_engine: plex
+      sqlite_container: plex
+      exclude:
+        - 0/Library/Application Support/Plex Media Server/Cache
+        - 0/Library/Application Support/Plex Media Server/Logs
+        - 0/Library/Application Support/Plex Media Server/Crash Reports
+      required_sqlite_members:
+        - "0/Library/Application Support/Plex Media Server/Plug-in
+          Support/Databases/com.plexapp.plugins.library.db"
+        - "0/Library/Application Support/Plex Media Server/Plug-in
+          Support/Databases/com.plexapp.plugins.library.blobs.db"
+    - id: calibre-library-metadata
+      paths:
+        - /mnt/wood-server-nas/media/books/calibre/metadata.db
+      sqlite_engine: calibre
+      sqlite_container: calibre
+      required_sqlite_members:
+        - '0'
+  schema_version: 1
+  recovery_group: homelab-daily-consistent
+  retention:
+    pruning_enabled: false
+    daily: 14
+    weekly: 8
+    monthly: 12
+  recovery_prerequisites:
+    - compatible PostgreSQL engine, extensions and source locales
+    - isolated disposable restore storage
+    - independently recoverable application secret references
+  schedule:
+    kind: existing-script
+    reference: /srv/docker/scripts/database-logical-backup.sh
+    user: spencerwood
+    hour: '1'
+    minute: '30'

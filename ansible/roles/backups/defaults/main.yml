@@ -1,0 +1,3 @@
+---
+# Set only through the approved operational rollout.
+backups_quiesce_authorized: false

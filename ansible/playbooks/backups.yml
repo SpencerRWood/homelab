@@ -1,0 +1,7 @@
+---
+- name: Configure only the homelab backup producer
+  hosts: homelab
+  become: true
+  gather_facts: false
+  roles:
+    - role: backups

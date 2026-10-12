@@ -328,20 +328,50 @@ class RoutineRuntimeTests(unittest.TestCase):
 
     def test_backup_integrity_freshness_and_active_cluster_coverage(self):
         with tempfile.TemporaryDirectory() as tmp:
-            artifact = Path(tmp) / 'dump.sql.gz'
-            artifact.write_bytes(gzip.compress(b'CREATE DATABASE openproject;'))
+            root = Path(tmp)
+            group = root / 'completed'
+            group.mkdir()
             now = datetime.datetime.now(datetime.timezone.utc)
-            record = {'container': 'homelab-postgres', 'completed_at': now.isoformat(),
-                      'databases': ['openproject', 'vaultwarden', 'mealie', 'vikunja'],
-                      'artifact': str(artifact), 'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest()}
-            manifest = Path(tmp) / 'manifest.json'
+            policy = yaml.safe_load((ROOT / 'recovery/backup-policy.yml').read_text())
+            policy['off_source_copy_root'] = str(root / 'off-source')
+            copy_root = Path(policy['off_source_copy_root'])
+            copy_root.mkdir()
+            policy_file = root / 'policy.yml'
+            policy_file.write_text(yaml.safe_dump(policy))
+            entries = []
+            for index, source in enumerate(policy['required_sources']):
+                artifact = group / str(index)
+                artifact.write_bytes(b'-- logical backup fixture')
+                entries.append({'source': source, 'artifact': artifact.name, 'format': 'postgres-sql',
+                                'size_bytes': artifact.stat().st_size,
+                                'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                                'created_at': now.isoformat(), 'completed_at': now.isoformat()})
+                if source in policy.get('off_source_copy_sources', []):
+                    copied = copy_root / artifact.name
+                    copied.write_bytes(artifact.read_bytes())
+                    metadata = copied.with_name(copied.name + '.json')
+                    metadata.write_text(json.dumps({
+                        'artifact': str(copied), 'consumer': 'homelab', 'environment': 'home',
+                        'source': source, 'recovery_group': 'completed',
+                        'sha256': entries[-1]['sha256'], 'size_bytes': entries[-1]['size_bytes']}))
+                    entries[-1]['off_source_copy'] = {
+                        'artifact': str(copied), 'metadata': str(metadata),
+                        'sha256': entries[-1]['sha256']}
+            record = {'schema_version': 1, 'consumer': 'homelab', 'environment': 'home',
+                      'postgres_container': 'homelab-postgres',
+                      'recovery_group': 'completed', 'completed_at': now.isoformat(), 'created_at': now.isoformat(),
+                      'max_age_seconds': 86400, 'databases': [],
+                      'required_sources': policy['required_sources'], 'artifacts': entries}
+            manifest = group / 'manifest.json'
             manifest.write_text(json.dumps(record))
-            RUNTIME.backup_gate(manifest, now)
-            for changes in ({'container': 'postgres_db'}, {'databases': ['openproject', 'other']},
-                            {'sha256': 'invalid'}, {'completed_at': (now - datetime.timedelta(days=2)).isoformat()}):
+            pointer = root / 'current.json'
+            pointer.write_text(json.dumps({'schema_version': 1, 'manifest': 'completed/manifest.json'}))
+            RUNTIME.backup_gate(pointer, now, policy_file)
+            for changes in ({'consumer': 'infrastructure'}, {'required_sources': ['openproject', 'other']},
+                            {'artifacts': entries[1:]}, {'completed_at': (now - datetime.timedelta(days=2)).isoformat()}):
                 manifest.write_text(json.dumps(record | changes))
                 with self.assertRaises(ValueError):
-                    RUNTIME.backup_gate(manifest, now)
+                    RUNTIME.backup_gate(pointer, now, policy_file)
 
     def test_image_health_restart_policy_and_mount_identity_are_enforced(self):
         row = self.transaction()['services'][0] | {'expected_id': 'new'}
@@ -373,36 +403,16 @@ class RoutineRuntimeTests(unittest.TestCase):
     def test_backup_extension_preserves_existing_schedule_and_cluster_requirement(self):
         tasks = yaml.safe_load((ROOT / 'ansible/roles/backups/tasks/main.yml').read_text())
         self.assertNotIn('cron', str(tasks))
-        self.assertEqual(tasks[1]['ansible.builtin.blockinfile']['path'], '/srv/docker/scripts/database-logical-backup.sh')
-        helper = (ROOT / 'scripts/homelab-postgres-backup.sh').read_text()
-        self.assertIn('pg_dumpall -U "$POSTGRES_USER"', helper)
-        self.assertIn("'{{.State.Running}}' homelab-postgres", helper)
-        self.assertIn('for database in openproject vaultwarden mealie vikunja', helper)
-
-    def test_existing_job_helper_creates_verified_active_cluster_artifact(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            bin_dir = root / 'bin'
-            bin_dir.mkdir()
-            commands = {
-                'mountpoint': '#!/bin/sh\nexit 0\n',
-                'hostname': '#!/bin/sh\necho swood-server\n',
-                'docker': '#!/bin/sh\ncase "$1" in\ninspect) echo true;;\nexec) case "$5" in\n*SELECT*) printf "openproject\\nvaultwarden\\nmealie\\nvikunja\\n";;\n*) echo "CREATE DATABASE openproject;";;\nesac;;\nesac\n',
-            }
-            for name, content in commands.items():
-                path = bin_dir / name
-                path.write_text(content)
-                path.chmod(0o700)
-            script = (ROOT / 'scripts/homelab-postgres-backup.sh').read_text()
-            script = script.replace('backup_mount=/mnt/wood-server-nas/backup_server', 'backup_mount=' + str(root))
-            result = subprocess.run(['bash', '-c', script], capture_output=True, text=True,
-                                    env={**os.environ, 'PATH': str(bin_dir) + ':' + os.environ['PATH']})
-            self.assertEqual(result.returncode, 0, result.stderr)
-            RUNTIME.backup_gate(root / 'swood-server/logs/homelab-postgres-backup.json')
-            (bin_dir / 'docker').write_text('#!/bin/sh\necho false\n')
-            failed = subprocess.run(['bash', '-c', script], capture_output=True,
-                                    env={**os.environ, 'PATH': str(bin_dir) + ':' + os.environ['PATH']})
-            self.assertNotEqual(failed.returncode, 0)
+        job = next(task['ansible.builtin.blockinfile'] for task in tasks if 'ansible.builtin.blockinfile' in task)
+        self.assertEqual(job['path'], '{{ backups_configuration.schedule.reference }}')
+        self.assertIn('sudo -n /usr/local/sbin/homelab-recovery-backup', job['block'])
+        installation = next(task['ansible.builtin.copy'] for task in tasks
+                            if task.get('ansible.builtin.copy', {}).get('dest') == '/usr/local/sbin/homelab-recovery-backup')
+        self.assertEqual(('root', '0700'), (installation['owner'], installation['mode']))
+        policy = yaml.safe_load((ROOT / 'ansible/inventory/group_vars/homelab.yml').read_text())['backups_configuration']
+        self.assertEqual(policy['postgres']['container'], 'homelab-postgres')
+        self.assertIn('grafana', policy['postgres']['required_databases'])
+        self.assertFalse(policy['quiesce_authorized'])
 
 
 if __name__ == '__main__':
