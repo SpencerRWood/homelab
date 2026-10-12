@@ -48,7 +48,6 @@
   "automergeStrategy": "squash",
   "rebaseWhen": "behind-base-branch",
   "vulnerabilityAlerts": {
-    "automerge": false,
     "semanticCommitType": "chore",
     "semanticCommitScope": "deps"
   },
