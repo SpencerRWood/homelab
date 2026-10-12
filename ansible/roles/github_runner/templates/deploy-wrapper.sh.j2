@@ -15,10 +15,10 @@ test -d "$workspace/.git"
 cd "$workspace"
 
 case "$operation" in
-  routine-check|routine-apply|routine-health|routine-rollback|manual-check|manual-apply|manual-health|manual-rollback)
+  release-check|release-apply|release-health|release-rollback)
     args=()
     if [[ "$operation" == *-check ]]; then args+=(--check); fi
-    if [[ "$operation" == manual-* ]]; then args+=(--extra-vars routine_automatic=false); fi
+    args+=(--extra-vars routine_automatic=false)
     exec /usr/bin/ansible-playbook --connection=local -i "{{ github_runner_inventory_path }}" ansible/playbooks/homelab-routine.yml --tags "${operation#*-}" "${args[@]}" {{ github_runner_ansible_extra_args }}
     ;;
   apply)
