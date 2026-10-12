@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+set -eu
+
+renovate-config-validator --strict renovate.json
+# pre-commit installs Renovate into its isolated Node environment. Resolve the
+# executable symlink so the regression test imports that exact pinned package.
+renovate_package="$(node -e '
+  const fs = require("node:fs");
+  const path = require("node:path");
+  console.log(path.dirname(path.dirname(fs.realpathSync(process.argv[1]))));
+' "$(command -v renovate)")"
+node scripts/test-renovate-coverage.mjs "$renovate_package"

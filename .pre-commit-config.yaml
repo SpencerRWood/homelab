@@ -17,6 +17,14 @@ repos:
       - id: detect-private-key
   - repo: local
     hooks:
+      - id: renovate-coverage
+        name: Renovate configuration and image coverage
+        entry: sh scripts/validate-renovate-coverage
+        language: node
+        language_version: 24.11.0
+        additional_dependencies: [renovate@44.151.2]
+        pass_filenames: false
+        always_run: true
       - id: workflow-governance
         name: Publication and deployment workflow contracts
         entry: >-
