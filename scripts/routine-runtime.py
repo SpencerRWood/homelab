@@ -122,7 +122,7 @@ def plan(automatic):
             except ValueError as error:
                 raise ValueError('undeployed_manual_changes_require_manual_approval') from error
     result = {'revision': head, 'base': base, 'automatic': automatic,
-              'services': [], 'sources': [], 'rollback_safe': True}
+              'services': [], 'sources': [], 'disabled': [], 'rollback_safe': True}
     for source in files:
         if not source.endswith(('.yml', '.yaml')) or source.endswith('compose.infisical.yml'):
             continue
@@ -137,6 +137,11 @@ def plan(automatic):
             if source not in changed and not build_changed:
                 continue
             inspect = json_command('docker', 'inspect', name)[0]
+            if name in POLICY['disabled_containers']:
+                if inspect['State']['Status'] == 'running':
+                    raise ValueError('disabled_service_is_running_review_required')
+                result['disabled'].append(name)
+                continue
             old = json_command('docker', 'image', 'inspect', inspect['Image'])[0]
             target = definition['image']
             mods = definition.get('environment', {}).get('DOCKER_MODS')
@@ -232,9 +237,9 @@ def apply(automatic):
                                   row['target'], 'list-modules')
                 if 'dns.providers.cloudflare' not in modules:
                     raise ValueError('caddy_cloudflare_module_missing')
-                binary_version = command('docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'caddy',
+                caddy_version = command('docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'caddy',
                                          row['target'], 'version').split()[0]
-                if binary_version.lstrip('v') != (ROOT / 'compose/platform/caddy/Dockerfile').read_text().splitlines()[0].split('=')[1]:
+                if caddy_version.lstrip('v') != (ROOT / 'compose/platform/caddy/Dockerfile').read_text().splitlines()[0].split('=')[1]:
                     raise ValueError('caddy_binary_version_mismatch')
                 compose(row['source'], 'run', '--rm', '--no-deps', '--entrypoint', 'caddy',
                         row['service'], 'validate', '--config', '/etc/caddy/Caddyfile')
@@ -298,7 +303,8 @@ def main():
         if args.operation == 'check':
             result = plan(not args.manual)
             print(json.dumps({'revision': result['revision'], 'sources': result['sources'],
-                              'affected': [r['container'] for r in result['services']]}))
+                              'affected': [r['container'] for r in result['services']],
+                              'disabled': result['disabled']}))
         elif args.operation == 'apply':
             apply(not args.manual)
         elif args.operation == 'rollback':

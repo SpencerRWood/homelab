@@ -4,15 +4,16 @@
   become: true
   gather_facts: false
   vars:
+    routine_automatic: true
     routine_state_root: >-
       /var/lib/github-actions-deployments/github-runner-homelab
   tasks:
     - name: Inspect affected services and mandatory runtime gates
       ansible.builtin.command:
-        argv:
-          - python3
-          - "{{ playbook_dir }}/../../scripts/routine-runtime.py"
-          - check
+        argv: >-
+          {{ ['python3',
+              playbook_dir + '/../../scripts/routine-runtime.py', 'check']
+             + ([] if routine_automatic | bool else ['--manual']) }}
       register: routine_plan
       changed_when: false
       check_mode: false
@@ -31,10 +32,10 @@
 
     - name: Reconcile and verify affected images sequentially
       ansible.builtin.command:
-        argv:
-          - python3
-          - "{{ playbook_dir }}/../../scripts/routine-runtime.py"
-          - apply
+        argv: >-
+          {{ ['python3',
+              playbook_dir + '/../../scripts/routine-runtime.py', 'apply']
+             + ([] if routine_automatic | bool else ['--manual']) }}
       changed_when: true
       when: not ansible_check_mode
       tags: [apply]

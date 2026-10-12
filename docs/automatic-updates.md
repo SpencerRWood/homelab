@@ -18,11 +18,19 @@ Permission-changing BusyBox init helpers also require manual review. Changes to
 Caddy's shared version ARG remain a coordinated manual build change; its two base
 digest updates are eligible. Other policy/configuration changes remain manual.
 
+Both automatic and explicitly approved manual image deployments use the scoped
+Ansible reconciler and its exact-image health evidence. Manual approval admits
+pending manual release changes; it does not make schema downgrades safe. Recovery
+uses the same retained-image transaction in both modes.
+
 Automatic deployment checks the protected current-release metadata, fresh active
 cluster backup, media mounts and effective pinned image references. It copies
 only affected definitions through Ansible, retains old local image IDs, and
 recreates affected running services individually with `--no-deps --no-build`.
-Staged/stopped affected services block automation. Media services remain ordered
+The explicit `disabled_containers` policy preserves staged code-server and logging
+services without starting or verifying them as active workloads. Unexpectedly
+running disabled services and other stopped affected services block deployment.
+Media services remain ordered
 Plex, Sonarr, Radarr, SABnzbd, Prowlarr with the existing NAS readiness paths and
 restart policies. Secrets and volumes retain their existing definitions. Caddy
 builds verify the Cloudflare module and actual mounted configuration before use.
@@ -49,8 +57,9 @@ the actual `homelab-postgres` databases, including OpenProject, Vaultwarden,
 Mealie and Vikunja. The helper does not run during installation.
 
 Reconcile and approve a known-good baseline manually, including Caddy's version
-label and any currently stopped services. Existing manual deployment controls
-remain unchanged; installation alone does not enable automatic reconciliation of
+label and the declared disabled-service policy. Approved manual deployments use
+the scoped reconciler; host provisioning retains its separate Ansible playbook.
+Installation alone does not enable automatic reconciliation of
 an older runtime containing protected/migration-sensitive changes. Verify the
 backup restoration procedure on an isolated target before enabling unattended
 stateful applications. No production operation is part of these PRs.

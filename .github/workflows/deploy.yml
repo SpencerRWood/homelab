@@ -61,7 +61,7 @@ jobs:
       ((github.event_name == 'workflow_dispatch' &&
       inputs.deployment_approved == true) ||
       (github.event_name == 'push' && inputs.automatic == true))
-    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@13c34c39c7513342ec0b970c0d23684653000c69
+    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@f7fbddcc2017a176975d4b86a77b0e71955203b4
     with:
       require_approval: true
       approved: ${{ inputs.deployment_approved }}
@@ -85,16 +85,16 @@ jobs:
       privileged_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE"
-        ${{ inputs.automatic && 'routine-check' || 'check' }}
+        ${{ inputs.automatic && 'routine-check' || 'manual-check' }}
       health_check_command: bash scripts/health-check.sh
       privileged_deploy_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE"
-        ${{ inputs.automatic && 'routine-apply' || 'apply' }}
+        ${{ inputs.automatic && 'routine-apply' || 'manual-apply' }}
       privileged_health_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE"
-        ${{ inputs.automatic && 'routine-health' || 'health' }}
+        ${{ inputs.automatic && 'routine-health' || 'manual-health' }}
       privileged_rollback_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE" routine-rollback
