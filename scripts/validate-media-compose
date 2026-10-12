@@ -12,6 +12,8 @@ validation_dir="$(mktemp -d)"
 trap 'rm -rf "$validation_dir"' EXIT HUP INT TERM
 printf '%s\n' 'VIKUNJA_DATABASE_PASSWORD=validation-only' > "$validation_dir/vikunja.env"
 printf '%s\n' 'CLOUDFLARE_API_TOKEN=validation-only' > "$validation_dir/caddy.env"
+printf '%s\n' 'POSTGRES_PASSWORD=validation-only' > "$validation_dir/postgres.env"
+printf '%s\n' 'POSTGRES_PASSWORD=validation-only' > "$validation_dir/mealie.env"
 printf '%s\n' 'ADMIN_TOKEN=validation-only' 'DATABASE_URL=validation-only' \
   > "$validation_dir/vaultwarden.env"
 printf '%s\n' 'DATABASE_URL=validation-only' \
@@ -26,11 +28,17 @@ sed "s|/srv/homelab/secrets/runtime/caddy.env|$validation_dir/caddy.env|" \
   compose/platform/caddy/compose.yml > "$validation_dir/caddy-compose.yml"
 sed "s|/srv/homelab/secrets/runtime/vaultwarden.env|$validation_dir/vaultwarden.env|" \
   compose/platform/vaultwarden/compose.yml > "$validation_dir/vaultwarden-compose.yml"
+sed "s|/srv/homelab/secrets/runtime/postgres.env|$validation_dir/postgres.env|" \
+  compose/postgres/compose.yml > "$validation_dir/postgres-compose.yml"
+sed "s|/srv/homelab/secrets/runtime/mealie.env|$validation_dir/mealie.env|" \
+  compose/productivity/recipes/compose.infisical.yml > "$validation_dir/mealie-compose.yml"
 
 docker compose --env-file "$secret_contract" -f compose/media/plex.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/media/acquisition.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/books/compose.yml config --quiet
 docker compose --env-file "$secret_contract" -f compose/productivity/recipes/compose.yml config --quiet
+docker compose --env-file "$secret_contract" -f "$validation_dir/mealie-compose.yml" config --quiet
+docker compose --env-file "$secret_contract" -f "$validation_dir/postgres-compose.yml" config --quiet
 docker compose --env-file "$secret_contract" -f "$validation_dir/vikunja-compose.yml" config --quiet
 docker compose --env-file "$secret_contract" -f "$validation_dir/openproject-compose.yml" config --quiet
 docker compose --project-directory compose/platform/caddy --env-file "$secret_contract" \
