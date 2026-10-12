@@ -55,8 +55,10 @@ def image_changes(path, old, new, protected):
         if ap != bp or ap in protected or not bh:
             raise ValueError('protected_or_unpinned_image')
         if at != bt:
-            av, bv = re.match(r'v?(\d+)\.(\d+)', at), re.match(r'v?(\d+)\.(\d+)', bt)
-            if not av or not bv or av[1] != bv[1] or tuple(map(int, bv.groups())) < tuple(map(int, av.groups())):
+            av, bv = re.match(r'v?([0-9]+(?:\.[0-9]+){1,3})', at), re.match(r'v?([0-9]+(?:\.[0-9]+){1,3})', bt)
+            old_version = tuple(map(int, av[1].split('.'))) if av else ()
+            new_version = tuple(map(int, bv[1].split('.'))) if bv else ()
+            if not av or not bv or old_version[0] != new_version[0] or new_version < old_version:
                 raise ValueError('major_channel_or_downgrade')
         changes.append({'source': path, 'package': bp, 'before': a[2], 'after': b[2]})
     return changes

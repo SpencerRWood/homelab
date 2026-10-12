@@ -153,12 +153,13 @@ class RoutineRuntimeTests(unittest.TestCase):
                     RUNTIME.rollback()
 
     def test_migration_unknown_major_and_downgrade_safety(self):
-        for before, after in [('1.2.3', '2.0.0'), ('1.2.3', None), ('1.2.3', '1.2.2')]:
+        for before, after in [('1.2.3', '2.0.0'), ('1.2.3', None), ('1.2.3', '1.2.2'), ('4.0.20.3009', '4.0.20.3008')]:
             with self.assertRaises(ValueError):
                 RUNTIME.compatibility(before, after, True)
         self.assertFalse(RUNTIME.compatibility('1.2.3', '1.3.0', True))
         self.assertTrue(RUNTIME.compatibility('1.2.3', '1.2.3', True))
-        self.assertEqual(RUNTIME.semver('Linuxserver.io version:- 4.0.20.1-ls123 Build-date:- today'), (4, 0, 20))
+        self.assertFalse(RUNTIME.compatibility('4.0.20.3009-ls132', '4.0.20.3009-ls133', True))
+        self.assertEqual(RUNTIME.semver('Linuxserver.io version:- 4.0.20.1-ls123 Build-date:- today'), (4, 0, 20, 1))
 
     def test_planner_preserves_unrelated_services_and_media_order(self):
         with tempfile.TemporaryDirectory() as tmp:

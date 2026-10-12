@@ -49,8 +49,8 @@ def backup_gate(path=None, now=None):
 
 def semver(label):
     label = re.sub(r'^Linuxserver.io version:-\s*', '', label or '')
-    match = re.match(r'v?(\d+)\.(\d+)\.(\d+)', label)
-    return tuple(map(int, match.groups())) if match else None
+    match = re.match(r'v?(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?', label)
+    return tuple(int(value) for value in match.groups() if value is not None) if match else None
 
 
 def compatibility(before, after, automatic):
@@ -58,7 +58,7 @@ def compatibility(before, after, automatic):
     if automatic and (old is None or new is None or old[0] != new[0] or new < old):
         raise ValueError('major_or_unknown_runtime_version_requires_manual_approval')
     # Never automatically undo a possible schema migration, even within a minor.
-    return old is not None and old == new
+    return old is not None and before == after
 
 
 def version(image):
