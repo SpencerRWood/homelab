@@ -28,7 +28,7 @@ jobs:
     with:
       require_approval: true
       workflow_revision: 13c34c39c7513342ec0b970c0d23684653000c69
-      approved: ${{ inputs.release_approved }}
+      approved: ${{ inputs.release_approved == true }}
       automatic: ${{ github.event_name == 'push' }}
       automatic_policy_command: python3 scripts/main-deployment-policy.py
 

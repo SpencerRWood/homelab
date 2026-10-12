@@ -21,6 +21,7 @@ class WorkflowGovernanceTests(unittest.TestCase):
         self.assertIn("github.event_name == 'workflow_dispatch'", job['if'])
         self.assertIn('inputs.release_approved == true', job['if'])
         self.assertTrue(job['with']['require_approval'])
+        self.assertEqual(job['with']['approved'], '${{ inputs.release_approved == true }}')
         self.assertIn("github.event_name == 'push'", job['if'])
         self.assertNotIn('eligible', job['if'])
         self.assertIn('scripts/main-deployment-policy.py', job['with']['automatic_policy_command'])
