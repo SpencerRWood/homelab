@@ -13,6 +13,7 @@
   "backup_max_age_seconds": 86400,
   "state_directory": "/var/lib/github-actions-deployments/github-runner-homelab",
   "media_order": ["plex", "sonarr", "radarr", "sabnzbd", "prowlarr"],
+  "disabled_containers": ["code-server", "logging-grafana", "logging-loki", "logging-alloy"],
   "container_endpoints": {
     "logging-loki": {"port": 3100, "path": "/ready"},
     "logging-alloy": {"port": 12345, "path": "/-/ready"}

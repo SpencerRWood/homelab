@@ -93,6 +93,52 @@ class RoutinePolicyTests(unittest.TestCase):
 
 
 class RoutineRuntimeTests(unittest.TestCase):
+    def test_disabled_services_remain_stopped_while_enabled_images_reconcile(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            state = Path(tmp)
+            (state / 'homelab.json').write_text(json.dumps({'current_release': 'v1.0.0'}))
+            source = 'compose/platform/logging/compose.yml'
+            config = {'services': {name: {'image': 'example/app:1.2.3@' + NEXT,
+                                         'container_name': name} for name in ('logging-loki', 'enabled')}}
+
+            def command(*args):
+                if args[:2] == ('git', 'rev-parse'):
+                    return 'head'
+                if args[:2] in (('git', 'ls-files'), ('git', 'diff')):
+                    return source
+                return ''
+
+            def inspect(*args):
+                if args[:2] == ('docker', 'inspect'):
+                    return [{'Image': 'old', 'State': {'Status': 'exited' if args[-1] == 'logging-loki' else 'running'},
+                             'Config': {'Env': []}, 'HostConfig': {'RestartPolicy': {'Name': 'no'}}}]
+                return [{'RepoDigests': ['example/app@' + DIGEST], 'Config': {}}]
+
+            with patch.object(RUNTIME, 'STATE', state), patch.object(RUNTIME, 'command', side_effect=command), \
+                    patch.object(RUNTIME, 'compose', return_value=json.dumps(config)), \
+                    patch.object(RUNTIME, 'json_command', side_effect=inspect), \
+                    patch.object(RUNTIME, 'media_gate'), patch.object(RUNTIME, 'backup_gate'):
+                for automatic in (True, False):
+                    result = RUNTIME.plan(automatic)
+                    self.assertEqual(result['disabled'], ['logging-loki'])
+                    self.assertEqual([r['container'] for r in result['services']], ['enabled'])
+                config['services'].pop('enabled')
+                with patch.object(RUNTIME, 'json_command', return_value=[{'State': {'Status': 'running'}}]):
+                    with self.assertRaisesRegex(ValueError, 'disabled_service_is_running'):
+                        RUNTIME.plan(False)
+
+    def test_approved_manual_workflow_uses_scoped_apply_health_and_recovery(self):
+        document = yaml.safe_load((ROOT / '.github/workflows/deploy.yml').read_text())
+        inputs = document['jobs']['deploy']['with']
+        for operation in ('check', 'deploy', 'health_check'):
+            name = {'check': 'check', 'deploy': 'apply', 'health_check': 'health'}[operation]
+            self.assertIn('manual-' + name, inputs['privileged_' + operation + '_command'])
+        self.assertIn('routine-rollback', inputs['privileged_rollback_command'])
+        playbook = yaml.safe_load((ROOT / 'ansible/playbooks/homelab-routine.yml').read_text())[0]
+        self.assertTrue(playbook['vars']['routine_automatic'])
+        for task in (playbook['tasks'][0], playbook['tasks'][2]):
+            self.assertIn('--manual', task['ansible.builtin.command']['argv'])
+
     def transaction(self):
         return {'revision': 'head', 'base': 'v1.0.0', 'rollback_safe': True, 'sources': ['compose/media/plex.yml'],
                 'services': [{'source': 'compose/media/plex.yml', 'service': name, 'container': name,
@@ -132,6 +178,17 @@ class RoutineRuntimeTests(unittest.TestCase):
             self.assertEqual(compose.call_count, 1)
             self.assertTrue(transaction['services'][0]['applied'])
             self.assertNotIn('applied', transaction['services'][1])
+
+    def test_unlabelled_image_uses_version_probe_during_apply(self):
+        transaction = self.transaction()
+        candidate = [{'Id': 'sha256:new', 'RepoDigests': ['example/app@' + NEXT], 'Config': {}}]
+        with patch.object(RUNTIME, 'plan', return_value=transaction), patch.object(RUNTIME, 'write'), \
+                patch.object(RUNTIME, 'command'), patch.object(RUNTIME, 'json_command', return_value=candidate), \
+                patch.object(RUNTIME, 'compose'), patch.object(RUNTIME, 'media_gate'), \
+                patch.object(RUNTIME, 'verify'), patch.object(RUNTIME, 'binary_version', return_value='1.2.3') as probe:
+            RUNTIME.apply(True)
+            self.assertEqual(probe.call_count, 2)
+            self.assertEqual(transaction['outcome'], 'success')
 
     def test_recovery_uses_retained_image_ids_without_pull(self):
         transaction = self.transaction()
