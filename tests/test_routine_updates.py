@@ -341,8 +341,9 @@ class RoutineRuntimeTests(unittest.TestCase):
             entries = []
             for index, source in enumerate(policy['required_sources']):
                 artifact = group / str(index)
-                artifact.write_bytes(b'-- logical backup fixture')
-                entries.append({'source': source, 'artifact': artifact.name, 'format': 'postgres-sql',
+                artifact.write_bytes(b'age-encryption.org/v1\nfixture-ciphertext')
+                entries.append({'source': source, 'artifact': artifact.name, 'format': 'postgres-sql-age',
+                                'encryption': {'format': 'age', 'recipient': policy['encryption_recipient']},
                                 'size_bytes': artifact.stat().st_size,
                                 'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest(),
                                 'created_at': now.isoformat(), 'completed_at': now.isoformat()})

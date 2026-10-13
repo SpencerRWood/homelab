@@ -40,8 +40,9 @@ The destination is
 wrong source and symlink redirection fail before publication. An ordinary host
 directory cannot substitute for the NAS. This copy survives application-host
 loss, but shares the NAS failure domain with media. Off-NAS replication and NAS
-encryption at rest are unverified. PostgreSQL and ordinary application archives
-are not encrypted by this producer; protect access to the NAS accordingly.
+encryption at rest are unverified. All new artifacts, including PostgreSQL roles,
+database archives and application state, are encrypted with the configured age
+recipient before publication. Existing backups remain untouched.
 
 Temporary groups are private and never consumed. Complete groups contain
 nonempty validated artifacts with SHA-256 checksums, source completion times,

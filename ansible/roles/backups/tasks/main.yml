@@ -31,6 +31,12 @@
     mode: '0700'
   tags: [backups]
 
+- name: Install the public-recipient encryption runtime
+  ansible.builtin.package:
+    name: age
+    state: present
+  tags: [backups]
+
 - name: Install the repository-owned recovery backup producer
   ansible.builtin.copy:
     src: "{{ role_path }}/../../../scripts/recovery-backup.py"
