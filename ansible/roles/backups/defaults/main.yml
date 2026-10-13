@@ -1,3 +1,4 @@
 ---
 # Set only through the approved operational rollout.
 backups_quiesce_authorized: false
+backups_temporary_operator_custody_authorized: false
