@@ -17,6 +17,14 @@ repos:
       - id: detect-private-key
   - repo: local
     hooks:
+      - id: backup-configuration
+        name: Backup YAML schema and coverage policy
+        entry: >-
+          uv run python scripts/validate-backups.py
+          ansible/inventory/group_vars/homelab.yml
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: renovate-coverage
         name: Renovate configuration and image coverage
         entry: sh scripts/validate-renovate-coverage
@@ -56,8 +64,9 @@ repos:
       - id: ansible-syntax
         name: Ansible playbook syntax
         entry: >-
-          uv run ansible-playbook --syntax-check
-          ansible/playbooks/homelab-host.yml
+          sh -c 'uv run ansible-playbook --syntax-check
+          ansible/playbooks/homelab-host.yml &&
+          uv run ansible-playbook --syntax-check ansible/playbooks/backups.yml'
         language: system
         pass_filenames: false
       - id: ansible-lint

@@ -1,18 +1,139 @@
 ---
-- name: Install the active homelab cluster backup helper
-  ansible.builtin.copy:
-    src: "{{ playbook_dir }}/../../scripts/homelab-postgres-backup.sh"
-    dest: /srv/docker/scripts/homelab-postgres-backup.sh
+- name: Require a declared homelab backup configuration
+  ansible.builtin.assert:
+    that:
+      - backups_configuration.consumer == 'homelab'
+      - backups_configuration.schedule.kind == 'existing-script'
+      - backups_configuration.retention.pruning_enabled == false
+  tags: [backups]
+
+- name: Persist and establish the dedicated backup export
+  ansible.posix.mount:
+    path: "{{ backups_configuration.destination.mount }}"
+    src: "{{ backups_configuration.destination.source }}"
+    fstype: "{{ backups_configuration.destination.fstype }}"
+    opts: "vers=3,rw,hard,proto=tcp,_netdev,x-systemd.requires-mounts-for=/mnt/wood-server-nas/backup_server"
+    state: mounted
+    dump: '0'
+    passno: '0'
+  tags: [backups]
+
+- name: Read the mounted backup destination identity
+  ansible.builtin.command:
+    argv:
+      - findmnt
+      - --json
+      - --mountpoint
+      - "{{ backups_configuration.destination.mount }}"
+      - --output
+      - TARGET,SOURCE,FSTYPE
+  register: backups_mount_identity
+  changed_when: false
+  check_mode: false
+  tags: [backups]
+
+- name: Require the exact dedicated backup destination
+  ansible.builtin.assert:
+    that:
+      - >-
+        (backups_mount_identity.stdout | from_json).filesystems ==
+        [{'target': backups_configuration.destination.mount,
+          'source': backups_configuration.destination.source,
+          'fstype': backups_configuration.destination.fstype}]
+  tags: [backups]
+
+- name: Install the backup schema validator runtime
+  ansible.builtin.command: python3 -c "import jsonschema"
+  register: backups_schema_runtime
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags: [backups]
+
+- name: Install the missing backup schema validator package
+  ansible.builtin.package:
+    name: python3-jsonschema
+    state: present
+  when: backups_schema_runtime.rc != 0
+  tags: [backups]
+
+- name: Create protected backup configuration directory
+  ansible.builtin.file:
+    path: /etc/homelab
+    state: directory
     owner: root
     group: root
-    mode: "0700"
+    mode: '0700'
+  tags: [backups]
+
+- name: Install the public-recipient encryption runtime
+  ansible.builtin.package:
+    name: age
+    state: present
+  tags: [backups]
+
+- name: Install the repository-owned recovery backup producer
+  ansible.builtin.copy:
+    src: "{{ role_path }}/../../../scripts/recovery-backup.py"
+    dest: /usr/local/sbin/homelab-recovery-backup
+    owner: root
+    group: root
+    mode: '0700'
+  tags: [backups]
+
+- name: Install the backup configuration schema
+  ansible.builtin.copy:
+    src: "{{ role_path }}/../../../recovery/backup-config.schema.json"
+    dest: /etc/homelab/recovery-backup.schema.json
+    owner: root
+    group: root
+    mode: '0600'
+  tags: [backups]
+
+- name: Install the protected schema-validated backup configuration
+  ansible.builtin.copy:
+    content: "{{ backups_runtime_configuration | to_nice_json }}\n"
+    dest: /etc/homelab/recovery-backup.json
+    owner: root
+    group: root
+    mode: '0600'
+    validate: >-
+      /usr/local/sbin/homelab-recovery-backup --config %s
+      --schema /etc/homelab/recovery-backup.schema.json --validate-config
+  vars:
+    backups_runtime_configuration: >-
+      {{ backups_configuration | combine({
+        'quiesce_authorized': backups_quiesce_authorized | bool,
+        'temporary_operator_custody_authorized':
+          backups_temporary_operator_custody_authorized | bool
+      }) }}
+  tags: [backups]
+
+- name: Authorize the existing scheduler user for the backup command
+  ansible.builtin.copy:
+    dest: /etc/sudoers.d/homelab-recovery-backup
+    owner: root
+    group: root
+    mode: '0440'
+    content: >
+      {{ backups_configuration.schedule.user }} ALL=(root) NOPASSWD: /usr/local/sbin/homelab-recovery-backup
+      --config /etc/homelab/recovery-backup.json
+    validate: /usr/sbin/visudo -cf %s
   tags: [backups]
 
 - name: Include the active cluster in the existing logical backup job
   ansible.builtin.blockinfile:
-    path: /srv/docker/scripts/database-logical-backup.sh
+    path: "{{ backups_configuration.schedule.reference }}"
     insertafter: '^require_mount$'
     marker: '# {mark} ANSIBLE HOMELAB ACTIVE CLUSTER'
-    block: /srv/docker/scripts/homelab-postgres-backup.sh
+    block: >-
+      sudo -n /usr/local/sbin/homelab-recovery-backup
+      --config /etc/homelab/recovery-backup.json
     validate: bash -n %s
+  tags: [backups]
+
+- name: Remove the superseded helper after migrating its caller
+  ansible.builtin.file:
+    path: /srv/docker/scripts/homelab-postgres-backup.sh
+    state: absent
   tags: [backups]

@@ -9,7 +9,7 @@
     "ghcr.io/mealie-recipes/mealie",
     "vikunja/vikunja"
   ],
-  "backup_manifest": "/mnt/wood-server-nas/backup_server/swood-server/logs/homelab-postgres-backup.json",
+  "backup_manifest": "/mnt/wood-server-nas/backup_server/swood-server/homelab/current.json",
   "backup_max_age_seconds": 86400,
   "state_directory": "/var/lib/github-actions-deployments/github-runner-homelab",
   "media_order": ["plex", "sonarr", "radarr", "sabnzbd", "prowlarr"],

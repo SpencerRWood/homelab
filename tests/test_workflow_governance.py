@@ -1,6 +1,9 @@
 """Ensure validation, publication and rollback require distinct authority."""
 
 from pathlib import Path
+import os
+import subprocess
+import tempfile
 import unittest
 
 import yaml
@@ -10,13 +13,51 @@ ROOT = Path(__file__).resolve().parents[1] / '.github/workflows'
 
 
 class WorkflowGovernanceTests(unittest.TestCase):
+    def test_backup_integration_gate_fails_closed_without_deploying_other_revisions(self):
+        release = yaml.safe_load((ROOT / 'release.yml').read_text())
+        scope = release['jobs']['delivery-scope']
+        self.assertEqual(scope['permissions'], {'contents': 'read', 'pull-requests': 'read'})
+        command = scope['steps'][0]['run']
+        revision = 'a' * 40
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            gh = directory / 'gh'
+            gh.write_text('#!/bin/sh\n[ "$1" = api ] || exit 2\n'
+                          '[ "$2" = repos/example/homelab/pulls/76 ] || exit 2\n'
+                          'printf "%s\\n" "$TEST_MERGED_REVISION"\nexit "$TEST_API_EXIT"\n')
+            gh.chmod(0o700)
+            output = directory / 'output'
+            for merged, api_exit, event, expected in [
+                    ('pending', '0', 'push', 'false'),
+                    (revision, '0', 'push', 'false'),
+                    ('b' * 40, '0', 'push', 'true'),
+                    ('null', '0', 'push', None),
+                    ('', '1', 'push', None),
+                    ('', '1', 'workflow_dispatch', 'true')]:
+                with self.subTest(merged=merged, api_exit=api_exit, event=event):
+                    output.write_text('')
+                    result = subprocess.run(['bash', '-c', command], capture_output=True, text=True,
+                                            env=os.environ | {
+                                                'PATH': str(directory) + os.pathsep + os.environ['PATH'],
+                                                'GH_REPO': 'example/homelab', 'EVENT_NAME': event,
+                                                'REVISION': revision, 'GITHUB_OUTPUT': str(output),
+                                                'TEST_MERGED_REVISION': merged, 'TEST_API_EXIT': api_exit})
+                    if expected is None:
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertEqual(output.read_text(), '')
+                    else:
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        self.assertEqual(output.read_text(), f'automatic_delivery={expected}\n')
+
     def test_validated_main_merges_can_publish_and_deploy(self):
         release = yaml.safe_load((ROOT / 'release.yml').read_text())
         triggers = release.get('on', release.get(True))
         self.assertEqual(set(triggers), {'workflow_dispatch', 'push'})
         self.assertFalse(triggers['workflow_dispatch']['inputs']['release_approved']['default'])
-        self.assertEqual(set(release['jobs']), {'release', 'deploy'})
+        self.assertEqual(set(release['jobs']), {'delivery-scope', 'release', 'deploy'})
         job = release['jobs']['release']
+        self.assertEqual(job['needs'], 'delivery-scope')
+        self.assertIn("needs.delivery-scope.outputs.automatic_delivery == 'true'", job['if'])
         self.assertIn("github.ref == 'refs/heads/main'", job['if'])
         self.assertIn("github.event_name == 'workflow_dispatch'", job['if'])
         self.assertIn('inputs.release_approved == true', job['if'])

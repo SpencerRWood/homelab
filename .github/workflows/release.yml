@@ -18,8 +18,44 @@ permissions:
   deployments: write
 
 jobs:
+  delivery-scope:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      automatic_delivery: ${{ steps.scope.outputs.automatic_delivery }}
+    steps:
+      - name: Preserve the OP-542 backup-only integration exception
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          REVISION: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" != push ]]; then
+            echo 'automatic_delivery=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          integrated_revision="$(gh api "repos/$GH_REPO/pulls/76" \
+            --jq 'if .merged then .merge_commit_sha else "pending" end')"
+          if [[ "$integrated_revision" == pending ||
+                "$integrated_revision" == "$REVISION" ]]; then
+            echo 'automatic_delivery=false' >> "$GITHUB_OUTPUT"
+            echo 'OP-542: backup-only PR #76; automatic delivery held.'
+          elif [[ "$integrated_revision" =~ ^[0-9a-f]{40}$ ]]; then
+            echo 'automatic_delivery=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'OP-542 evidence unavailable; delivery blocked.' >&2
+            exit 1
+          fi
+
   release:
+    needs: delivery-scope
     if: >-
+      needs.delivery-scope.outputs.automatic_delivery == 'true' &&
       github.ref == 'refs/heads/main' &&
       ((github.event_name == 'workflow_dispatch' &&
       inputs.release_approved == true) ||
