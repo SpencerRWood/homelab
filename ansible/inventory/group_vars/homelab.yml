@@ -89,8 +89,8 @@ backups_configuration:
     root: /srv/recovery-backups/nas-metadata
   max_age_seconds: 86400
   destination:
-    mount: /mnt/wood-server-nas/backup_server
-    source: 192.168.1.10:/volume1/backup_server
+    mount: /mnt/wood-server-nas/backup_server/swood-server/homelab
+    source: 192.168.1.10:/volume1/recovery_backups/homelab
     fstype: nfs
     root: /mnt/wood-server-nas/backup_server/swood-server/homelab
   postgres:
@@ -154,6 +154,15 @@ backups_configuration:
         - /srv/docker/media/config/plex
       sqlite_engine: plex
       sqlite_container: plex
+      # Preserve these dated automatic copies as historical bytes. They fail
+      # the current engine's integrity check; live databases remain mandatory.
+      historical_sqlite_members:
+        - "0/Library/Application Support/Plex Media Server/Plug-in
+          Support/Databases/com.plexapp.plugins.library.db-2026-10-04"
+        - "0/Library/Application Support/Plex Media Server/Plug-in
+          Support/Databases/com.plexapp.plugins.library.db-2026-10-07"
+        - "0/Library/Application Support/Plex Media Server/Plug-in
+          Support/Databases/com.plexapp.plugins.library.db-2026-10-10"
       exclude:
         - 0/Library/Application Support/Plex Media Server/Cache
         - 0/Library/Application Support/Plex Media Server/Logs

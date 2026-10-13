@@ -1,5 +1,21 @@
 # Recovery backups
 
+The backup-only Ansible role persists and establishes the dedicated backup mount
+before configuring the producer. The mount requires the existing parent
+`backup_server` mount without changing its definition or unrelated NFS entries.
+Test persistence by stopping and starting only the dedicated systemd mount unit
+and checking the exact source; no production reboot is required.
+
+`historical_sqlite_members` names specific archived SQLite copies that are kept
+as historical bytes rather than asserted as current recovery databases. The
+three dated Plex library copies from October 4, 7 and 10, 2026 fail the current
+native engine's integrity check. Their contents remain in encrypted archives;
+the manifest records their classification. Current required Plex databases
+remain integrity-gated, and a required member cannot be classified as historical.
+All other detected SQLite files retain their integrity checks. Isolated restores
+must verify the historical copies' bytes and metadata without claiming their
+database integrity passed.
+
 The canonical homelab Ansible host playbook installs the repository backup
 producer as `/usr/local/sbin/homelab-recovery-backup`, root-owned `0700`, with
 protected configuration at `/etc/homelab/recovery-backup.json`. The existing
@@ -36,7 +52,9 @@ archive restore as full-system recovery.
 
 The destination is
 `/mnt/wood-server-nas/backup_server/swood-server/homelab`, on exactly
-`192.168.1.10:/volume1/backup_server` with filesystem type `nfs`. Mount absence,
+`192.168.1.10:/volume1/recovery_backups/homelab` with filesystem type `nfs`.
+The destination itself must be the dedicated mount; the old parent
+`backup_server` mount cannot satisfy this identity check. Mount absence,
 wrong source and symlink redirection fail before publication. An ordinary host
 directory cannot substitute for the NAS. This copy survives application-host
 loss, but shares the NAS failure domain with media. Off-NAS replication and NAS
@@ -51,6 +69,14 @@ sizes, formats and restoration prerequisites. They are renamed atomically before
 every prior group and the previous pointer without refreshing its timestamp.
 Completed directories use `0750` and files `0640` for verifier GID 10001, with
 read access only. No secret contents appear in manifests or diagnostics.
+
+The dedicated export retains root squash and preserves verifier UID/GID10001.
+The producer adds the configured reader GID only to its own supplementary groups
+before destination writes, permitting its required group assignment after root
+mapping without changing NAS account membership. Actual producer publication,
+private staging, verifier write-denial and unrelated-user denial tests must pass
+before rollout. The existing backup_server export and historical artifacts remain
+unchanged; a read-only container bind is not the NAS permission test.
 
 Proposed retention: 14 daily, 8 weekly, 12 monthly recovery points. Pruning is
 disabled; no existing backups are deleted. Confirm capacity and obtain separate
