@@ -43,10 +43,12 @@ class RoutinePolicyTests(unittest.TestCase):
                 with patch.dict(os.environ, env | changes, clear=True), self.assertRaises(ValueError):
                     MAIN_POLICY.authorize()
 
-    def test_every_successfully_validated_main_push_deploys_even_without_a_new_tag(self):
+    def test_main_delivery_preserves_the_backup_only_integration_exception(self):
         document = yaml.safe_load((ROOT / '.github/workflows/release.yml').read_text())
         self.assertNotIn('policy', document['jobs'])
         release = document['jobs']['release']
+        self.assertEqual(release['needs'], 'delivery-scope')
+        self.assertIn("needs.delivery-scope.outputs.automatic_delivery == 'true'", release['if'])
         self.assertNotIn('eligible', release['if'])
         self.assertIn('scripts/main-deployment-policy.py', release['with']['automatic_policy_command'])
         deploy = document['jobs']['deploy']

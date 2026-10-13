@@ -158,3 +158,17 @@ schema/test success does not authorize rollout or establish operational recovery
 Missing or unreadable artifacts are unavailable evidence. Empty, corrupt, stale
 or incomplete groups are failed evidence. Both prevent readiness; only successful
 isolated restoration establishes restore evidence.
+
+## OP-542 integration exception
+
+PR #76's backup implementation was deployed through the approved backup-only
+playbook. Its main-branch integration must not publish a release or run the
+general homelab deployment. The Release workflow reads PR #76's authoritative
+merge revision and skips both automatic jobs for that revision. While the PR is
+pending, automatic delivery remains held; an unavailable or invalid API result
+blocks delivery. Subsequent unrelated main revisions retain normal automatic
+delivery. Explicitly approved manual delivery remains a separate gate.
+
+This exception preserves the deployed backup configuration and rollback files.
+It does not authorize service upgrades, change image versions, or establish
+independent recovery-key custody, which remains deferred to OP-543.
