@@ -1,0 +1,10 @@
+{
+  "schema_version": "1",
+  "capability_verified": false,
+  "required_services": ["postgres", "projects-web", "projects-hocuspocus", "projects-cache", "vaultwarden", "mealie", "vikunja", "grafana", "plex", "sonarr", "radarr", "prowlarr", "bookshelf-ebooks", "bookshelf-audiobooks", "calibre", "calibre-web", "audiobookshelf", "sabnzbd", "caddy", "code-server"],
+  "disabled_production_workers": ["projects-worker", "projects-cron", "ebook-importer"],
+  "credential_scope": "drill-only",
+  "network": "guest-internal-only",
+  "workload_recipes": null,
+  "recipe_dependency": "Approve the disposable provider and architecture before binding exact staged image exports, protected drill-only credentials and guest-local restored state paths."
+}
