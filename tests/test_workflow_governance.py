@@ -23,17 +23,22 @@ class WorkflowGovernanceTests(unittest.TestCase):
             directory = Path(directory)
             gh = directory / 'gh'
             gh.write_text('#!/bin/sh\n[ "$1" = api ] || exit 2\n'
-                          '[ "$2" = repos/example/homelab/pulls/76 ] || exit 2\n'
-                          'printf "%s\\n" "$TEST_MERGED_REVISION"\nexit "$TEST_API_EXIT"\n')
+                          'case "$2" in\n'
+                          'repos/example/homelab/pulls/76) printf "%s\\n" "$TEST_MERGED_REVISION"; exit "$TEST_API_EXIT";;\n'
+                          'repos/example/homelab/commits/*/pulls) printf "%s\\n" "$TEST_RECOVERY_INTEGRATION"; exit "$TEST_RECOVERY_EXIT";;\n'
+                          '*) exit 2;;\nesac\n')
             gh.chmod(0o700)
             output = directory / 'output'
-            for merged, api_exit, event, expected in [
-                    ('pending', '0', 'push', 'false'),
-                    (revision, '0', 'push', 'false'),
-                    ('b' * 40, '0', 'push', 'true'),
-                    ('null', '0', 'push', None),
-                    ('', '1', 'push', None),
-                    ('', '1', 'workflow_dispatch', 'true')]:
+            for merged, api_exit, event, recovery, recovery_exit, expected in [
+                    ('pending', '0', 'push', '0', '0', 'false'),
+                    (revision, '0', 'push', '0', '0', 'false'),
+                    ('b' * 40, '0', 'push', '0', '0', 'true'),
+                    ('b' * 40, '0', 'push', '1', '0', 'false'),
+                    ('b' * 40, '0', 'push', '2', '0', None),
+                    ('b' * 40, '0', 'push', '', '1', None),
+                    ('null', '0', 'push', '0', '0', None),
+                    ('', '1', 'push', '0', '0', None),
+                    ('', '1', 'workflow_dispatch', '0', '0', 'true')]:
                 with self.subTest(merged=merged, api_exit=api_exit, event=event):
                     output.write_text('')
                     result = subprocess.run(['bash', '-c', command], capture_output=True, text=True,
@@ -41,7 +46,9 @@ class WorkflowGovernanceTests(unittest.TestCase):
                                                 'PATH': str(directory) + os.pathsep + os.environ['PATH'],
                                                 'GH_REPO': 'example/homelab', 'EVENT_NAME': event,
                                                 'REVISION': revision, 'GITHUB_OUTPUT': str(output),
-                                                'TEST_MERGED_REVISION': merged, 'TEST_API_EXIT': api_exit})
+                                                'TEST_MERGED_REVISION': merged, 'TEST_API_EXIT': api_exit,
+                                                'TEST_RECOVERY_INTEGRATION': recovery,
+                                                'TEST_RECOVERY_EXIT': recovery_exit})
                     if expected is None:
                         self.assertNotEqual(result.returncode, 0)
                         self.assertEqual(output.read_text(), '')
