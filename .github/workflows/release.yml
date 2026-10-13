@@ -26,7 +26,7 @@ jobs:
     outputs:
       automatic_delivery: ${{ steps.scope.outputs.automatic_delivery }}
     steps:
-      - name: Preserve the OP-542 backup-only integration exception
+      - name: Preserve separately gated recovery integrations
         id: scope
         env:
           GH_TOKEN: ${{ github.token }}
@@ -46,6 +46,22 @@ jobs:
             echo 'automatic_delivery=false' >> "$GITHUB_OUTPUT"
             echo 'OP-542: backup-only PR #76; automatic delivery held.'
           elif [[ "$integrated_revision" =~ ^[0-9a-f]{40}$ ]]; then
+            recovery_integration="$(gh api \
+              "repos/$GH_REPO/commits/$REVISION/pulls" \
+              --jq '[.[] | select(.merged_at != null and
+                .base.ref == "main" and
+                .merge_commit_sha == env.REVISION and
+                .head.ref ==
+                  "fix/op-500-comprehensive-recovery-readiness-20261013")]
+                | length')"
+            if [[ "$recovery_integration" == 1 ]]; then
+              echo 'automatic_delivery=false' >> "$GITHUB_OUTPUT"
+              echo 'OP-500: recovery integration; delivery held for approval.'
+              exit 0
+            elif [[ "$recovery_integration" != 0 ]]; then
+              echo 'OP-500 authority unavailable; delivery blocked.' >&2
+              exit 1
+            fi
             echo 'automatic_delivery=true' >> "$GITHUB_OUTPUT"
           else
             echo 'OP-542 evidence unavailable; delivery blocked.' >&2

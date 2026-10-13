@@ -63,7 +63,7 @@
       {
         "id": "application_images",
         "kind": "artifact",
-        "reference": "repo://compose"
+        "reference": "repo://recovery/artifacts.v1.json"
       },
       {
         "id": "media_mount",
