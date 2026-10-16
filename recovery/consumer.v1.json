@@ -61,11 +61,6 @@
         "reference": "git://SpencerRWood/homelab"
       },
       {
-        "id": "application_images",
-        "kind": "artifact",
-        "reference": "repo://recovery/artifacts.v1.json"
-      },
-      {
         "id": "media_mount",
         "kind": "storage",
         "reference": "mount:///mnt/wood-server-nas/media"
