@@ -75,7 +75,8 @@ class WorkflowGovernanceTests(unittest.TestCase):
         self.assertIn('scripts/main-deployment-policy.py', job['with']['automatic_policy_command'])
         deployment = release['jobs']['deploy']
         self.assertEqual(deployment['needs'], 'release')
-        self.assertEqual(deployment['if'].strip(), "github.event_name == 'push'")
+        self.assertIn("github.ref == 'refs/heads/main'", deployment['if'])
+        self.assertIn("github.event_name == 'push'", deployment['if'])
         self.assertEqual(deployment['with']['ref'], '${{ needs.release.outputs.release_tag || github.sha }}')
         self.assertTrue(deployment['with']['automatic'])
 
@@ -100,7 +101,8 @@ class WorkflowGovernanceTests(unittest.TestCase):
         validate = yaml.safe_load((ROOT / 'validate.yml').read_text())
         triggers = validate.get('on', validate.get(True))
         self.assertEqual(set(triggers), {'push', 'pull_request'})
-        self.assertEqual(triggers['push']['branches'], ['**'])
+        self.assertEqual(triggers['push']['branches'], ['development'])
+        self.assertEqual(triggers['pull_request']['branches'], ['development', 'main'])
         self.assertEqual(validate['permissions']['contents'], 'read')
         for job in validate['jobs'].values():
             self.assertIn('/validate.yml@', job['uses'])
