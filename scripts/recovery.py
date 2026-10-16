@@ -2,9 +2,11 @@
 """Consumer-owned manifest export and non-destructive reconstruction preflight."""
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -55,7 +57,48 @@ def manifest(root):
         raise InvalidInput("invalid_consumer_configuration")
     target = source["target"]
     target["revision"] = clean_revision(root, target["owning_repository"])
+    target["required_dependencies"].extend(artifact_dependencies(root))
     return {"schema_version": "1", "targets": [target]}, source["preflight"]
+
+
+def artifact_dependencies(root):
+    """Export exact canonical images, without a second registry-image inventory."""
+    import yaml
+    builds = json.loads(checked_path(root, "recovery/build-artifacts.v1.json").read_text())
+    if builds.get("schema_version") != "1":
+        raise InvalidInput("invalid_build_catalog")
+    builds = builds["images"]
+    used_builds = set()
+    references = set()
+    files = sorted((*root.glob("compose/**/*.yml"), *root.glob("compose/**/*.yaml")))
+    if not files:
+        raise InvalidInput("missing_compose_images")
+    for file in files:
+        document = yaml.safe_load(checked_path(root, str(file.relative_to(root))).read_text())
+        for service in document["services"].values():
+            image = service.get("image")
+            if not isinstance(image, str):
+                raise InvalidInput("missing_compose_image")
+            image = re.sub(r'\$\{[A-Z_]+:-([^{}]+)\}', r'\1', image)
+            if "build" in service:
+                name = image.split(":", 1)[0]
+                reference = builds[name]
+                if not re.fullmatch(
+                    r'image-archive:///mnt/wood-server-nas/backup_server/swood-server/'
+                    r'infrastructure-dev/image-artifacts/homelab-(caddy|code-server)/'
+                    r'[0-9a-f]{64}/manifest\.json', reference,
+                ):
+                    raise InvalidInput("invalid_build_artifact")
+                used_builds.add(name)
+            else:
+                if not re.fullmatch(r'[a-zA-Z0-9_./:-]+@sha256:[0-9a-f]{64}', image):
+                    raise InvalidInput("immutable_compose_image_required")
+                reference = "oci://" + image
+            references.add(reference)
+    if used_builds != set(builds):
+        raise InvalidInput("unused_build_artifact")
+    return [{"id": "image-" + hashlib.sha256(reference.encode()).hexdigest()[:16],
+             "kind": "artifact", "reference": reference} for reference in sorted(references)]
 
 
 def command_check(root, config, tool, args, check_id):

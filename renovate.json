@@ -75,6 +75,14 @@
       "automerge": false
     },
     {
+      "description": "Exact OpenProject version pins may refresh their digest automatically; floating major channels and version upgrades still require compatibility review.",
+      "matchPackageNames": ["openproject/openproject", "openproject/hocuspocus"],
+      "matchCurrentValue": "/^\\d+\\.\\d+\\.\\d+(?:-slim)?$/",
+      "matchUpdateTypes": ["pinDigest", "digest"],
+      "groupName": "Routine image updates",
+      "automerge": true
+    },
+    {
       "description": "Standard Dockerfile replacement cannot update Caddy's shared ARG with tag suffixes; the scoped custom managers own this file.",
       "matchManagers": ["dockerfile"],
       "matchFileNames": ["compose/platform/caddy/Dockerfile"],

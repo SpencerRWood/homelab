@@ -1,8 +1,10 @@
 # OP-500 current-artifact readiness
 
-The explicit `recovery/artifacts.v1.json` retains every declared Compose image
-requirement, resolving canonical defaults to immutable registry references.
-No floating tag satisfies this catalog. Local Caddy/code-server build references
+The consumer manifest derives every registry image requirement directly from
+canonical Compose configuration, resolving repository defaults and retaining the
+exact tag and SHA-256 digest. Routine image changes need no recovery metadata edit.
+Missing or unpinned images fail manifest export. `recovery/build-artifacts.v1.json`
+retains explicit immutable local Caddy/code-server build references. These
 remain unavailable recovery artifacts until a reviewed image is published or an
 independent immutable export is verified. The catalog does not deploy images or
 pretend a Dockerfile is retained image evidence.

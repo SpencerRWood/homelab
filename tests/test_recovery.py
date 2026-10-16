@@ -39,6 +39,7 @@ class RecoveryTests(unittest.TestCase):
         files = [
             "recovery/consumer.v1.json", "scripts/recovery.py", "scripts/rollback.py",
             "scripts/weekly_recovery.py",
+            "recovery/build-artifacts.v1.json",
             self.config["inventory_file"], self.config["playbook"],
             self.config["ansible_config"], *self.config["runbooks"],
         ]
@@ -46,6 +47,7 @@ class RecoveryTests(unittest.TestCase):
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, path)
+        shutil.copytree(ROOT / "compose", self.root / "compose")
         self.git("init", "-q")
         self.git("config", "user.name", "Fixture")
         self.git("config", "user.email", "fixture@example.invalid")
