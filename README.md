@@ -127,7 +127,7 @@ homelab vX.Y.Z
 The thin [release workflow](.github/workflows/release.yml) runs only for pushes to
 `main` and delegates validation and release creation to the stable centralized
 workflow contract. Pull requests do not run privileged or self-hosted workloads.
-The PR wrapper calls `validate.yml@v1` with the same `.github/release.toml`
+The PR wrapper calls the immutable pinned shared `validate.yml` with the same `.github/release.toml`
 capabilities that gate semantic release.
 Run `uv run pre-commit install` in each local checkout. The installed hook
 blocks development commits directly to `main`. The GitHub `main` ruleset
@@ -142,7 +142,9 @@ The release job calculates the next version, tags the validated merged `main`
 commit `vX.Y.Z`, and publishes the GitHub Release. The Git tag is the version
 source for this non-package repository.
 
-Each published GitHub Release starts the deployment workflow. It checks out the
+An eligible main-push release continues into the deployment workflow. Publishing
+through an approved manual release dispatch requires a separate approved deploy
+dispatch selecting that exact release. Deployment checks out the
 exact `vX.Y.Z` release on the dedicated Beelink self-hosted runner, runs validation
 and the canonical homelab playbook against the Beelink, then runs
 `scripts/health-check.sh`. Deployments are serialized by `deploy-homelab`; a newer
@@ -164,13 +166,15 @@ and a versioned JSON result for deterministic previous-known-good recovery.
 It requires matching failed-deployment evidence, uses the canonical privileged
 entrypoint, and verifies recovery separately from execution. Preview is the default.
 
-Renovate uses the same PR → validation → main → semantic-release → release-tag
-deployment path as human changes. Docker patch, minor, major, and security image
-updates are currently configured for Renovate-managed PR auto-merge, including minor and major
-updates. This is the existing policy; changing it requires a separate decision.
-GitHub does not currently require the consumer `validation` check before a PR
-can merge. Renovate-managed PR automerge waits for passing checks. A pgvector tag
-that changes PostgreSQL compatibility (for example `pg16` to `pg17`) remains manual.
+Renovate targets main and follows PR → required validation → main → release.
+The current `renovate.json` owns grouping and eligibility: routine image pins,
+digest refreshes, patches and minors can automerge, with explicit exceptions for
+protected applications, PostgreSQL, and major upgrades. Exact-version OpenProject
+digest refreshes are eligible; floating version channels and version upgrades
+retain compatibility review. Main requires passing `validation / validation`
+and `pr-routing` checks before merging. Deployment separately enforces its
+runtime policy: pending protected image or configuration changes require the
+approved manual path, current recovery evidence and compatibility checks.
 
 ## Validation
 
