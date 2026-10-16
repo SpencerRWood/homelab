@@ -53,7 +53,8 @@ class RoutinePolicyTests(unittest.TestCase):
         self.assertIn('scripts/main-deployment-policy.py', release['with']['automatic_policy_command'])
         deploy = document['jobs']['deploy']
         self.assertEqual(deploy['needs'], 'release')
-        self.assertEqual(deploy['if'].strip(), "github.event_name == 'push'")
+        self.assertIn("github.ref == 'refs/heads/main'", deploy['if'])
+        self.assertIn("github.event_name == 'push'", deploy['if'])
         self.assertEqual(deploy['with']['ref'], '${{ needs.release.outputs.release_tag || github.sha }}')
         self.assertTrue(deploy['with']['automatic'])
     def test_digest_patch_minor_and_custom_references(self):
@@ -115,7 +116,8 @@ class RoutinePolicyTests(unittest.TestCase):
             self.assertTrue(rules)
             self.assertFalse(rules[-1]['automerge'])
         self.assertEqual(config['rebaseWhen'], 'behind-base-branch')
-        self.assertEqual(config['automergeStrategy'], 'squash')
+        self.assertEqual(config['automergeStrategy'], 'merge-commit')
+        self.assertEqual(config['baseBranchPatterns'], ['development'])
 
 
 class RoutineRuntimeTests(unittest.TestCase):
