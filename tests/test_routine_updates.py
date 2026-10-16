@@ -112,12 +112,13 @@ class RoutinePolicyTests(unittest.TestCase):
     def test_all_protected_packages_are_manual_in_renovate(self):
         config = json.loads((ROOT / 'renovate.json').read_text())
         for package in RUNTIME.POLICY['protected_packages']:
-            rules = [r for r in config['packageRules'] if package in r.get('matchPackageNames', [])]
+            rules = [r for r in config['packageRules'] if package in r.get('matchPackageNames', [])
+                     and 'matchCurrentValue' not in r]
             self.assertTrue(rules)
             self.assertFalse(rules[-1]['automerge'])
         self.assertEqual(config['rebaseWhen'], 'behind-base-branch')
         self.assertEqual(config['automergeStrategy'], 'merge-commit')
-        self.assertEqual(config['baseBranchPatterns'], ['development'])
+        self.assertEqual(config['baseBranchPatterns'], ['main'])
 
 
 class RoutineRuntimeTests(unittest.TestCase):

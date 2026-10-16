@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "baseBranchPatterns": ["development"],
+  "baseBranchPatterns": ["main"],
   "enabledManagers": ["docker-compose", "dockerfile", "custom.regex"],
   "docker-compose": {
     "managerFilePatterns": ["/^compose/.*\\.ya?ml$/"]
@@ -73,6 +73,14 @@
       "matchPackageNames": ["busybox", "openproject/openproject", "openproject/hocuspocus", "vaultwarden/server", "ghcr.io/mealie-recipes/mealie", "vikunja/vikunja"],
       "groupName": "{{depName}} image update",
       "automerge": false
+    },
+    {
+      "description": "Exact OpenProject version pins may refresh their digest automatically; floating major channels and version upgrades still require compatibility review.",
+      "matchPackageNames": ["openproject/openproject", "openproject/hocuspocus"],
+      "matchCurrentValue": "/^\\d+\\.\\d+\\.\\d+(?:-slim)?$/",
+      "matchUpdateTypes": ["pinDigest", "digest"],
+      "groupName": "Routine image updates",
+      "automerge": true
     },
     {
       "description": "Standard Dockerfile replacement cannot update Caddy's shared ARG with tag suffixes; the scoped custom managers own this file.",
