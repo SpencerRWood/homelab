@@ -13,7 +13,24 @@ const { extractPackageFile: dockerfile } = await load('modules/manager/dockerfil
 const { extractPackageFile: regex } = await load('modules/manager/custom/regex/index.js');
 const { compile } = await load('util/template/index.js');
 const { regEx } = await load('util/regex.js');
+const { applyPackageRules } = await load('util/package-rules/index.js');
 const config = JSON.parse(readFileSync('renovate.json', 'utf8'));
+for (const [packageName, currentValue, updateType, expected] of [
+  ['openproject/openproject', '17-slim', 'digest', false],
+  ['openproject/openproject', '17.9.2-slim', 'digest', true],
+  ['openproject/hocuspocus', '17.9.2', 'digest', true],
+  ['openproject/hocuspocus', '17.9.2', 'pinDigest', true],
+  ['openproject/hocuspocus', '17.9.1', 'patch', false],
+  ['openproject/openproject', '17.9.2-slim', 'minor', false],
+  ['openproject/openproject', '17.9.2-slim', 'major', false],
+  ['busybox', '1.38', 'digest', false],
+  ['pgvector/pgvector', '0.8.7-pg16-bookworm', 'digest', false],
+  ['grafana/loki', 'latest', 'digest', true],
+]) {
+  const resolved = await applyPackageRules({ ...config, datasource: 'docker',
+    depName: packageName, packageName, currentValue, updateType });
+  assert.equal(resolved.automerge, expected, `${packageName}:${currentValue} ${updateType}`);
+}
 const [images, caddyFrom, mods] = config.customManagers;
 const digest = `sha256:${'a'.repeat(64)}`;
 const nextDigest = `sha256:${'b'.repeat(64)}`;
