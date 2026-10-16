@@ -65,10 +65,10 @@ jobs:
       && github.ref == 'refs/heads/main' && ((github.event_name
       == 'workflow_dispatch' && inputs.release_approved == true)
       || github.event_name == 'push')
-    uses: SpencerRWood/workflows/.github/workflows/release.yml@9748b1cd6287d84d55c4277c93ca5dae01fb1787
+    uses: SpencerRWood/workflows/.github/workflows/release.yml@4a3f40661622ae445d6ca231f31a1a6368e60ecf
     with:
       require_approval: true
-      workflow_revision: 9748b1cd6287d84d55c4277c93ca5dae01fb1787
+      workflow_revision: 4a3f40661622ae445d6ca231f31a1a6368e60ecf
       approved: ${{ inputs.release_approved == true }}
       automatic: ${{ github.event_name == 'push' }}
       automatic_policy_command: python3 scripts/main-deployment-policy.py

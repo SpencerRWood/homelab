@@ -118,7 +118,7 @@ class RoutinePolicyTests(unittest.TestCase):
             self.assertFalse(rules[-1]['automerge'])
         self.assertEqual(config['rebaseWhen'], 'behind-base-branch')
         self.assertEqual(config['automergeStrategy'], 'merge-commit')
-        self.assertEqual(config['baseBranchPatterns'], ['development'])
+        self.assertEqual(config['baseBranchPatterns'], ['main'])
 
 
 class RoutineRuntimeTests(unittest.TestCase):

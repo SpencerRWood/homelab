@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "baseBranchPatterns": ["development"],
+  "baseBranchPatterns": ["main"],
   "enabledManagers": ["docker-compose", "dockerfile", "custom.regex"],
   "docker-compose": {
     "managerFilePatterns": ["/^compose/.*\\.ya?ml$/"]
