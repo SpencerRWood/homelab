@@ -1,12 +1,11 @@
 ---
 name: Deploy released homelab configuration
-
 'on':
   workflow_call:
     inputs:
       automatic:
-        description: >-
-          Validated main-push delivery authorized by repository policy.
+        description: Validated main-push delivery authorized by
+          repository policy.
         required: false
         type: boolean
         default: false
@@ -20,8 +19,8 @@ name: Deploy released homelab configuration
         required: true
         type: string
       skip_superseded:
-        description: >-
-          Skip an automated deployment when a newer main commit exists.
+        description: Skip an automated deployment when a newer
+          main commit exists.
         required: false
         type: boolean
         default: false
@@ -33,23 +32,20 @@ name: Deploy released homelab configuration
         type: boolean
         default: false
       release:
-        description: >-
-          Existing release tag; leave empty to deploy the latest release.
+        description: Existing release tag; leave empty to deploy
+          the latest release.
         required: false
         type: string
-
 permissions:
   contents: read
   pull-requests: read
   deployments: write
-
 jobs:
   resolve-release:
-    if: >-
-      github.ref == 'refs/heads/main' &&
-      ((github.event_name == 'workflow_dispatch' &&
-      inputs.deployment_approved == true) ||
-      (github.event_name == 'push' && inputs.automatic == true))
+    if: github.ref == 'refs/heads/main' && ((github.event_name
+      == 'workflow_dispatch' && inputs.deployment_approved ==
+      true) || (github.event_name == 'push' && inputs.automatic
+      == true))
     runs-on: ubuntu-latest
     outputs:
       ref: ${{ steps.resolve.outputs.ref }}
@@ -60,33 +56,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REQUESTED_REF: ${{ inputs.ref || inputs.release }}
           AUTOMATIC: ${{ inputs.automatic }}
-        run: |
-          set -euo pipefail
-          if [[ "$AUTOMATIC" == true &&
-                "$REQUESTED_REF" =~ ^[a-f0-9]{40}$ ]]; then
-            test "$GITHUB_EVENT_NAME" = push
-            test "$GITHUB_REF" = refs/heads/main
-            test "$REQUESTED_REF" = "$GITHUB_SHA"
-            ref="$REQUESTED_REF"
-          elif [[ -n "$REQUESTED_REF" ]]; then
-            ref=$(gh release view "$REQUESTED_REF" --repo "$GITHUB_REPOSITORY" \
-              --json isDraft,tagName \
-              --jq 'select(.isDraft == false) | .tagName')
-          else
-            ref=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" \
-              --jq .tag_name)
-          fi
-          test -n "$ref"
-          printf 'ref=%s\n' "$ref" >> "$GITHUB_OUTPUT"
-
+        run: "set -euo pipefail\nif [[ \"$AUTOMATIC\" == true\
+          \ &&\n      \"$REQUESTED_REF\" =~ ^[a-f0-9]{40}$ ]];\
+          \ then\n  test \"$GITHUB_EVENT_NAME\" = push\n  test\
+          \ \"$GITHUB_REF\" = refs/heads/main\n  test \"$REQUESTED_REF\"\
+          \ = \"$GITHUB_SHA\"\n  ref=\"$REQUESTED_REF\"\nelif\
+          \ [[ -n \"$REQUESTED_REF\" ]]; then\n  ref=$(gh release\
+          \ view \"$REQUESTED_REF\" --repo \"$GITHUB_REPOSITORY\"\
+          \ \\\n    --json isDraft,tagName \\\n    --jq 'select(.isDraft\
+          \ == false) | .tagName')\nelse\n\
+          \  ref=$(gh api \"repos/$GITHUB_REPOSITORY/releases/latest\"\
+          \ \\\n    --jq .tag_name)\nfi\ntest -n \"$ref\"\nprintf\
+          \ 'ref=%s\\n' \"$ref\" >> \"$GITHUB_OUTPUT\"\n"
   deploy:
     needs: resolve-release
-    if: >-
-      github.ref == 'refs/heads/main' &&
-      ((github.event_name == 'workflow_dispatch' &&
-      inputs.deployment_approved == true) ||
-      (github.event_name == 'push' && inputs.automatic == true))
-    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@e41de6348e00285553bb825beba9159ef41b50a5
+    if: github.ref == 'refs/heads/main' && ((github.event_name
+      == 'workflow_dispatch' && inputs.deployment_approved ==
+      true) || (github.event_name == 'push' && inputs.automatic
+      == true))
+    uses: SpencerRWood/workflows/.github/workflows/deploy-ansible.yml@9748b1cd6287d84d55c4277c93ca5dae01fb1787
     with:
       require_approval: true
       approved: ${{ inputs.deployment_approved }}
@@ -102,27 +90,23 @@ jobs:
       deployment_working_directory: .
       concurrency_group: deploy-homelab
       runner: '["self-hosted", "linux", "x64", "beelink", "homelab"]'
-      ansible_extra_vars: >-
-        homelab_local_secrets_file=/home/github-runner-homelab/.secrets/homelab.env
+      ansible_extra_vars: homelab_local_secrets_file=/home/github-runner-homelab/.secrets/homelab.env
       validation_command: scripts/validate-media-compose
-      check_command: >-
-        uv run ansible-playbook -i ansible/inventory/homelab.yml
-        ansible/playbooks/homelab-host.yml --tags storage --check --diff
+      check_command: uv run ansible-playbook -i ansible/inventory/homelab.yml
+        ansible/playbooks/homelab-host.yml --tags storage --check
+        --diff
       privileged_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
-        "$GITHUB_WORKSPACE"
-        release-check
+        "$GITHUB_WORKSPACE" release-check
       health_check_command: bash scripts/health-check.sh
       privileged_deploy_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
-        "$GITHUB_WORKSPACE"
-        release-apply
+        "$GITHUB_WORKSPACE" release-apply
       privileged_health_check_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
-        "$GITHUB_WORKSPACE"
-        release-health
+        "$GITHUB_WORKSPACE" release-health
       privileged_rollback_command: >-
         sudo -n /usr/local/sbin/github-runner-homelab-deploy
         "$GITHUB_WORKSPACE" release-rollback
-      deployment_state_file: >-
-        /var/lib/github-actions-deployments/github-runner-homelab/homelab.json
+      deployment_state_file: /var/lib/github-actions-deployments/github-runner-homelab/homelab.json
+      workflow_revision: 9748b1cd6287d84d55c4277c93ca5dae01fb1787
