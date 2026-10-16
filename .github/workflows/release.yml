@@ -1,22 +1,21 @@
 ---
 name: Release
-
 'on':
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       release_approved:
-        description: Confirm separate approval to publish this main revision.
+        description: Confirm separate approval to publish this
+          main revision.
         required: true
         type: boolean
         default: false
-
 permissions:
   contents: write
   pull-requests: read
   deployments: write
-
 jobs:
   delivery-scope:
     runs-on: ubuntu-latest
@@ -24,7 +23,8 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      automatic_delivery: ${{ steps.scope.outputs.automatic_delivery }}
+      automatic_delivery: ${{ steps.scope.outputs.automatic_delivery
+        }}
     steps:
       - name: Preserve separately gated recovery integrations
         id: scope
@@ -33,63 +33,52 @@ jobs:
           GH_REPO: ${{ github.repository }}
           EVENT_NAME: ${{ github.event_name }}
           REVISION: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          if [[ "$EVENT_NAME" != push ]]; then
-            echo 'automatic_delivery=true' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          integrated_revision="$(gh api "repos/$GH_REPO/pulls/76" \
-            --jq 'if .merged then .merge_commit_sha else "pending" end')"
-          if [[ "$integrated_revision" == pending ||
-                "$integrated_revision" == "$REVISION" ]]; then
-            echo 'automatic_delivery=false' >> "$GITHUB_OUTPUT"
-            echo 'OP-542: backup-only PR #76; automatic delivery held.'
-          elif [[ "$integrated_revision" =~ ^[0-9a-f]{40}$ ]]; then
-            recovery_integration="$(gh api \
-              "repos/$GH_REPO/commits/$REVISION/pulls" \
-              --jq '[.[] | select(.merged_at != null and
-                .base.ref == "main" and
-                .merge_commit_sha == env.REVISION and
-                .head.ref ==
-                  "fix/op-500-comprehensive-recovery-readiness-20261013")]
-                | length')"
-            if [[ "$recovery_integration" == 1 ]]; then
-              echo 'automatic_delivery=false' >> "$GITHUB_OUTPUT"
-              echo 'OP-500: recovery integration; delivery held for approval.'
-              exit 0
-            elif [[ "$recovery_integration" != 0 ]]; then
-              echo 'OP-500 authority unavailable; delivery blocked.' >&2
-              exit 1
-            fi
-            echo 'automatic_delivery=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'OP-542 evidence unavailable; delivery blocked.' >&2
-            exit 1
-          fi
-
+        run: "set -euo pipefail\nif [[ \"$EVENT_NAME\" != push\
+          \ ]]; then\n  echo 'automatic_delivery=true' >> \"$GITHUB_OUTPUT\"\
+          \n  exit 0\nfi\n\
+          integrated_revision=\"$(gh api \"repos/$GH_REPO/pulls/76\"\
+          \ \\\n  --jq 'if .merged then .merge_commit_sha else\
+          \ \"pending\" end')\"\nif [[ \"$integrated_revision\"\
+          \ == pending ||\n      \"$integrated_revision\" == \"\
+          $REVISION\" ]]; then\n  echo 'automatic_delivery=false'\
+          \ >> \"$GITHUB_OUTPUT\"\n  echo 'OP-542: backup-only\
+          \ PR #76; automatic delivery held.'\nelif [[ \"$integrated_revision\"\
+          \ =~ ^[0-9a-f]{40}$ ]]; then\n  recovery_integration=\"\
+          $(gh api \\\n    \"repos/$GH_REPO/commits/$REVISION/pulls\"\
+          \ \\\n    --jq '[.[] | select(.merged_at != null and\n\
+          \      .base.ref == \"main\" and\n      .merge_commit_sha\
+          \ == env.REVISION and\n      .head.ref ==\n        \"\
+          fix/op-500-comprehensive-recovery-readiness-20261013\"\
+          )]\n      | length')\"\n  if [[ \"$recovery_integration\"\
+          \ == 1 ]]; then\n    echo 'automatic_delivery=false'\
+          \ >> \"$GITHUB_OUTPUT\"\n    echo 'OP-500: recovery\
+          \ integration; delivery held for approval.'\n    exit\
+          \ 0\n  elif [[ \"$recovery_integration\" != 0 ]]; then\n\
+          \    echo 'OP-500 authority unavailable; delivery blocked.'\
+          \ >&2\n    exit 1\n  fi\n  echo 'automatic_delivery=true'\
+          \ >> \"$GITHUB_OUTPUT\"\nelse\n  echo 'OP-542 evidence\
+          \ unavailable; delivery blocked.' >&2\n  exit 1\nfi\n"
+    if: github.ref == 'refs/heads/main' && (true)
   release:
     needs: delivery-scope
-    if: >-
-      needs.delivery-scope.outputs.automatic_delivery == 'true' &&
-      github.ref == 'refs/heads/main' &&
-      ((github.event_name == 'workflow_dispatch' &&
-      inputs.release_approved == true) ||
-      github.event_name == 'push')
-    uses: SpencerRWood/workflows/.github/workflows/release.yml@13c34c39c7513342ec0b970c0d23684653000c69
+    if: needs.delivery-scope.outputs.automatic_delivery == 'true'
+      && github.ref == 'refs/heads/main' && ((github.event_name
+      == 'workflow_dispatch' && inputs.release_approved == true)
+      || github.event_name == 'push')
+    uses: SpencerRWood/workflows/.github/workflows/release.yml@9748b1cd6287d84d55c4277c93ca5dae01fb1787
     with:
       require_approval: true
-      workflow_revision: 13c34c39c7513342ec0b970c0d23684653000c69
+      workflow_revision: 9748b1cd6287d84d55c4277c93ca5dae01fb1787
       approved: ${{ inputs.release_approved == true }}
       automatic: ${{ github.event_name == 'push' }}
       automatic_policy_command: python3 scripts/main-deployment-policy.py
-
   deploy:
     needs: release
-    if: >-
-      github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && (github.event_name
+      == 'push')
     uses: ./.github/workflows/deploy.yml
     with:
       automatic: true
-      ref: ${{ needs.release.outputs.release_tag || github.sha }}
+      ref: ${{ needs.release.outputs.release_tag || github.sha
+        }}
       skip_superseded: true
