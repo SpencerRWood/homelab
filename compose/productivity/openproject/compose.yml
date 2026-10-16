@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
 
   projects-seeder:
-    image: openproject/openproject:17-slim@sha256:2beeecac788d4f423c46a95ffbd04e6479491938b9924b610e9f47d81a38303c
+    image: openproject/openproject:17-slim@sha256:7b50be7ff67dd0c7e264b09e15591d5f192bbd5802c0233469ab77eaeabf03ba
     container_name: projects-seeder
     restart: on-failure
     depends_on:
@@ -42,7 +42,7 @@ services:
       - legacy-database
 
   projects-web:
-    image: openproject/openproject:17-slim@sha256:2beeecac788d4f423c46a95ffbd04e6479491938b9924b610e9f47d81a38303c
+    image: openproject/openproject:17-slim@sha256:7b50be7ff67dd0c7e264b09e15591d5f192bbd5802c0233469ab77eaeabf03ba
     container_name: projects-web
     restart: unless-stopped
     depends_on:
@@ -75,7 +75,7 @@ services:
       - legacy-database
 
   projects-worker:
-    image: openproject/openproject:17-slim@sha256:2beeecac788d4f423c46a95ffbd04e6479491938b9924b610e9f47d81a38303c
+    image: openproject/openproject:17-slim@sha256:7b50be7ff67dd0c7e264b09e15591d5f192bbd5802c0233469ab77eaeabf03ba
     container_name: projects-worker
     restart: unless-stopped
     depends_on: [projects-cache, projects-seeder]
@@ -87,7 +87,7 @@ services:
     networks: [default, homelab-postgres, legacy-database]
 
   projects-cron:
-    image: openproject/openproject:17-slim@sha256:2beeecac788d4f423c46a95ffbd04e6479491938b9924b610e9f47d81a38303c
+    image: openproject/openproject:17-slim@sha256:7b50be7ff67dd0c7e264b09e15591d5f192bbd5802c0233469ab77eaeabf03ba
     container_name: projects-cron
     restart: unless-stopped
     depends_on: [projects-cache, projects-seeder]
