@@ -80,10 +80,10 @@ jobs:
       approved: ${{ inputs.deployment_approved }}
       automatic: ${{ inputs.automatic == true }}
       automatic_policy_command: python3 scripts/main-deployment-policy.py
-      allow_main_commit: ${{ inputs.automatic }}
+      allow_main_commit: ${{ inputs.automatic == true }}
       repository: ${{ github.repository }}
       ref: ${{ needs.resolve-release.outputs.ref }}
-      skip_superseded: ${{ inputs.skip_superseded }}
+      skip_superseded: ${{ inputs.skip_superseded == true }}
       inventory_path: ansible/inventory/homelab.yml
       playbook_path: ansible/playbooks/homelab-host.yml
       environment_name: homelab
