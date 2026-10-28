@@ -19,7 +19,7 @@ x-app-environment: &app-environment
 
 services:
   projects-cache:
-    image: memcached:1.6@sha256:1543593babf15b094c08b9ffd531eb527507e6d30c8b50e0cdff03830103b3bf
+    image: memcached:1.6@sha256:9c50e44b81bda45b1214ed4f3e11a4b96721a05728279775c7f76f7b06a804d6
     container_name: projects-cache
     restart: unless-stopped
 
