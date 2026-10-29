@@ -2,6 +2,7 @@
 """Ansible-owned, affected-service deployment with immutable runtime recovery."""
 import argparse
 import datetime
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -11,11 +12,20 @@ import time
 import urllib.error
 import urllib.request
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = json.loads((ROOT / 'routine-updates.json').read_text())
 STATE = Path(POLICY['state_directory'])
 TRANSACTION = STATE / 'routine-update.json'
 ENV = '/home/github-runner-homelab/.secrets/homelab.env'
+CANONICAL = Path('/srv/homelab')
+INIT_HELPERS = {
+    'code-server-init': ('compose/platform/code-server/compose.yml', 'code-server',
+                         r'chown -R [0-9]+:[0-9]+ /home/coder /workspace'),
+    'vikunja-init': ('compose/productivity/vikunja/compose.yml', 'vikunja',
+                    r'chown -R 1000:0 /db /files'),
+}
 
 
 def command(*args):
@@ -92,6 +102,45 @@ def write(plan):
     temp.replace(TRANSACTION)
 
 
+def init_helpers(source, config, base, automatic):
+    previous = yaml.safe_load(command('git', 'show', base + ':' + source))
+    helpers = []
+    for service, (expected_source, consumer, expression) in INIT_HELPERS.items():
+        if source != expected_source:
+            continue
+        definition = config['services'][service]
+        if previous['services'][service]['image'] == definition['image']:
+            continue
+        target = definition['image']
+        if not re.fullmatch(r'busybox:[^@]+@sha256:[a-f0-9]{64}', target):
+            raise ValueError('init_helper_image_must_be_pinned_busybox')
+        if automatic:
+            raise ValueError('protected_service_requires_manual_approval')
+        if (definition.get('entrypoint') or definition.get('user', '0') not in ('0', 'root', '0:0')
+                or definition.get('restart', 'no') != 'no'
+                or definition.get('command', [])[:2] != ['sh', '-c']
+                or len(definition['command']) != 3
+                or not re.fullmatch(expression, definition['command'][2].strip())):
+            raise ValueError('unsupported_init_helper_command')
+        consumer_name = config['services'][consumer].get('container_name', consumer)
+        parent = json_command('docker', 'inspect', consumer_name)[0]
+        disabled = consumer_name in POLICY['disabled_containers']
+        if disabled and parent['State']['Status'] == 'running':
+            raise ValueError('disabled_service_is_running_review_required')
+        if not disabled and parent['State']['Status'] != 'running':
+            raise ValueError('init_consumer_is_not_running')
+        name = definition.get('container_name', service)
+        current = json_command('docker', 'inspect', name)[0]
+        if current['State']['Status'] not in ('exited', 'created'):
+            raise ValueError('init_helper_is_not_stopped')
+        helpers.append({'source': source, 'service': service, 'container': name, 'target': target,
+                        'before_id': current['Image'], 'deferred': disabled,
+                        'consumer': {'container': consumer_name, 'before_id': parent['Image'],
+                                     'expected_id': parent['Image'],
+                                     'restart': parent['HostConfig']['RestartPolicy']['Name']}})
+    return helpers
+
+
 def plan(automatic):
     state = json.loads((STATE / 'homelab.json').read_text())
     base = state['current_release']
@@ -109,11 +158,17 @@ def plan(automatic):
             except ValueError as error:
                 raise ValueError('undeployed_manual_changes_require_manual_approval') from error
     result = {'revision': head, 'base': base, 'automatic': automatic,
-              'services': [], 'sources': [], 'disabled': [], 'rollback_safe': True}
+              'services': [], 'sources': [], 'disabled': [], 'rollback_safe': True,
+              'helpers': [], 'configurations': []}
     for source in files:
         if not source.endswith(('.yml', '.yaml')) or source.endswith('compose.infisical.yml'):
             continue
         config = json.loads(compose(source, 'config', '--format', 'json'))
+        if source in changed and source in {value[0] for value in INIT_HELPERS.values()}:
+            helpers = init_helpers(source, config, base, automatic)
+            result['helpers'].extend(helpers)
+            if helpers:
+                result['sources'].append(source)
         for service, definition in config['services'].items():
             if service.endswith(('init', 'seeder')):
                 continue
@@ -165,10 +220,88 @@ def plan(automatic):
     result['services'].sort(key=lambda r: (POLICY['media_order'].index(r['container'])
                                           if r['container'] in POLICY['media_order'] else 100,
                                           r['container']))
+    if any(helper['consumer']['container'] == row['container']
+           for helper in result['helpers'] for row in result['services']):
+        raise ValueError('init_consumer_update_requires_separate_deployment')
     media_gate([r['container'] for r in result['services']])
-    if result['services']:
+    for source in result['sources']:
+        result['configurations'].append({'source': source,
+                                         'sha256': hashlib.sha256((ROOT / source).read_bytes()).hexdigest()})
+    if result['services'] or any(not row['deferred'] for row in result['helpers']):
         backup_gate()
     return result
+
+
+def prepare(automatic):
+    transaction = plan(automatic)
+    for source in transaction['sources']:
+        destination = STATE / 'rollback-sources' / source
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((CANONICAL / source).read_bytes())
+    write(transaction)
+    return transaction
+
+
+def verify_configurations(transaction, recovering=False):
+    for row in transaction['configurations']:
+        expected = ((STATE / 'rollback-sources' / row['source']).read_bytes() if recovering
+                    else (ROOT / row['source']).read_bytes())
+        if hashlib.sha256(expected).hexdigest() != row['sha256'] and not recovering:
+            raise ValueError('configuration_evidence_mismatch')
+        if (CANONICAL / row['source']).read_bytes() != expected:
+            raise ValueError('canonical_configuration_mismatch')
+
+
+def verify_helper(row):
+    parent = row['consumer']
+    if row['deferred']:
+        if json_command('docker', 'inspect', parent['container'])[0]['State']['Status'] == 'running':
+            raise ValueError('disabled_service_is_running_review_required')
+        return {'status': 'deferred_disabled_consumer'}
+    current = json_command('docker', 'inspect', row['container'])[0]
+    if current['Image'] != row['expected_id'] or current['Config']['Image'] != row['target']:
+        raise ValueError('approved_init_image_identity_mismatch')
+    if current['State']['Status'] != 'exited' or current['State']['ExitCode'] != 0:
+        raise ValueError('init_helper_did_not_complete_successfully')
+    if current['HostConfig']['RestartPolicy']['Name'] != 'no':
+        raise ValueError('init_helper_restart_policy_changed')
+    verify(parent)
+    return {'status': 'exited', 'exit_code': current['State']['ExitCode'], 'image_id': current['Image']}
+
+
+def apply_helpers(transaction):
+    for row in transaction['helpers']:
+        if row['deferred']:
+            row['verification'] = verify_helper(row)
+            row['outcome'] = 'deferred_disabled_consumer'
+            write(transaction)
+            continue
+        backup_gate()
+        verify(row['consumer'])
+        command('docker', 'image', 'tag', row['before_id'],
+                'homelab-rollback/' + row['container'] + ':' + transaction['revision'][:12])
+        command('docker', 'pull', row['target'])
+        candidate = json_command('docker', 'image', 'inspect', row['target'])[0]
+        if row['target'].split('@')[-1] not in ' '.join(candidate.get('RepoDigests', [])):
+            raise ValueError('pulled_digest_mismatch')
+        row['expected_id'] = candidate['Id']
+        # chown can partially modify volumes even if the helper later fails.
+        # Retaining an older image cannot establish safe permission recovery.
+        row['attempted'] = True
+        transaction['rollback_safe'] = False
+        write(transaction)
+        compose(row['source'], 'up', '--no-deps', '--no-build', '--force-recreate', '--pull', 'never',
+                '--abort-on-container-exit', '--exit-code-from', row['service'], row['service'])
+        row['verification'] = verify_helper(row)
+        row['outcome'] = 'completed'
+        write(transaction)
+
+
+def load_transaction(automatic):
+    transaction = json.loads(TRANSACTION.read_text())
+    if transaction['revision'] != command('git', 'rev-parse', 'HEAD') or transaction['automatic'] != automatic:
+        raise ValueError('apply_evidence_revision_or_approval_mismatch')
+    return transaction
 
 
 def endpoint(url):
@@ -211,9 +344,11 @@ def verify(row, recovering=False):
 
 
 def apply(automatic):
-    transaction = plan(automatic)
+    transaction = load_transaction(automatic)
     # Persist before any pull/build/start so the existing recovery step can inspect it.
     write(transaction)
+    verify_configurations(transaction)
+    apply_helpers(transaction)
     for row in transaction['services']:
         command('docker', 'image', 'tag', row['before_id'],
                 'homelab-rollback/' + row['container'] + ':' + transaction['revision'][:12])
@@ -251,7 +386,7 @@ def apply(automatic):
             write(transaction)
         media_gate([row['container']])
         row['applied'] = True
-        transaction['rollback_safe'] = not transaction.get('migration_risk', False) and all(
+        transaction['rollback_safe'] = not any(r.get('attempted') for r in transaction['helpers']) and not transaction.get('migration_risk', False) and all(
             r.get('rollback_safe', True) for r in transaction['services'] if r.get('applied'))
         write(transaction)
         compose(row['source'], 'up', '-d', '--no-deps', '--no-build', '--force-recreate', '--pull', 'never', row['service'])
@@ -262,6 +397,8 @@ def apply(automatic):
 
 def rollback():
     transaction = json.loads(TRANSACTION.read_text())
+    if any(row.get('attempted') for row in transaction['helpers']):
+        raise ValueError('init_permission_recovery_requires_manual_review')
     if not transaction['rollback_safe']:
         raise ValueError('schema_downgrade_safety_unverified_manual_recovery_required')
     if transaction['revision'] != command('git', 'rev-parse', 'HEAD'):
@@ -271,7 +408,7 @@ def rollback():
             continue
         media_gate([row['container']])
         # Exact old tracked definition and old image ID; never a floating tag lookup.
-        previous = command('git', 'show', transaction['base'] + ':' + row['source'])
+        previous = (STATE / 'rollback-sources' / row['source']).read_text()
         original = STATE / 'rollback-compose.yml'
         override = STATE / 'rollback-image.json'
         original.write_text(previous + '\n')
@@ -282,24 +419,21 @@ def rollback():
         verify(row, recovering=True)
     transaction['rolled_back'] = True
     transaction['outcome'] = 'recovered'
-    for source in transaction['sources']:
-        destination = STATE / 'rollback-sources' / source
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        destination.write_text(command('git', 'show', transaction['base'] + ':' + source) + '\n')
     write(transaction)
     print(json.dumps({'sources': transaction['sources']}))
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('operation', choices=['check', 'apply', 'health', 'rollback'])
+    parser.add_argument('operation', choices=['check', 'prepare', 'apply', 'health', 'rollback'])
     parser.add_argument('--manual', action='store_true')
     args = parser.parse_args()
     try:
-        if args.operation == 'check':
-            result = plan(not args.manual)
+        if args.operation in ('check', 'prepare'):
+            result = prepare(not args.manual) if args.operation == 'prepare' else plan(not args.manual)
             print(json.dumps({'revision': result['revision'], 'sources': result['sources'],
                               'affected': [r['container'] for r in result['services']],
+                              'helpers': result['helpers'],
                               'disabled': result['disabled']}))
         elif args.operation == 'apply':
             apply(not args.manual)
@@ -309,8 +443,13 @@ def main():
             transaction = json.loads(TRANSACTION.read_text())
             if transaction['revision'] != command('git', 'rev-parse', 'HEAD'):
                 raise ValueError('health_evidence_revision_mismatch')
+            verify_configurations(transaction, transaction.get('rolled_back', False))
+            for row in transaction['helpers']:
+                verify_helper(row)
             for row in transaction['services']:
                 verify(row, transaction.get('rolled_back', False))
+            transaction['health_verified_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            write(transaction)
         return 0
     except (ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
         # Never print Docker config, environment values or captured subprocess output.
