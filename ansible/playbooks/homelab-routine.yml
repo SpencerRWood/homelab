@@ -12,7 +12,8 @@
       ansible.builtin.command:
         argv: >-
           {{ ['python3',
-              playbook_dir + '/../../scripts/routine-runtime.py', 'check']
+              playbook_dir + '/../../scripts/routine-runtime.py',
+              ('check' if ansible_check_mode else 'prepare')]
              + ([] if routine_automatic | bool else ['--manual']) }}
       register: routine_plan
       changed_when: false
