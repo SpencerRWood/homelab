@@ -170,6 +170,7 @@ class RoutineRuntimeTests(unittest.TestCase):
 
     def transaction(self):
         return {'revision': 'head', 'base': 'v1.0.0', 'rollback_safe': True, 'sources': ['compose/media/plex.yml'],
+                'helpers': [], 'configurations': [],
                 'services': [{'source': 'compose/media/plex.yml', 'service': name, 'container': name,
                               'target': 'example/app:1.2.3@' + NEXT, 'build': False,
                               'before_id': 'sha256:old', 'before_version': '1.2.3', 'restart': 'no'}
@@ -179,7 +180,7 @@ class RoutineRuntimeTests(unittest.TestCase):
         transaction = self.transaction()
         candidate = [{'Id': 'sha256:new', 'RepoDigests': ['example/app@' + NEXT],
                       'Config': {'Labels': {'org.opencontainers.image.version': '1.2.3'}}}]
-        with patch.object(RUNTIME, 'plan', return_value=transaction), patch.object(RUNTIME, 'write'), \
+        with patch.object(RUNTIME, 'load_transaction', return_value=transaction), patch.object(RUNTIME, 'write'), \
                 patch.object(RUNTIME, 'command') as command, patch.object(RUNTIME, 'json_command', return_value=candidate), \
                 patch.object(RUNTIME, 'compose') as compose, patch.object(RUNTIME, 'media_gate') as mount, \
                 patch.object(RUNTIME, 'verify') as verify:
@@ -198,7 +199,7 @@ class RoutineRuntimeTests(unittest.TestCase):
         transaction = self.transaction()
         candidate = [{'Id': 'new', 'RepoDigests': ['example/app@' + NEXT],
                       'Config': {'Labels': {'org.opencontainers.image.version': '1.2.3'}}}]
-        with patch.object(RUNTIME, 'plan', return_value=transaction), patch.object(RUNTIME, 'write'), \
+        with patch.object(RUNTIME, 'load_transaction', return_value=transaction), patch.object(RUNTIME, 'write'), \
                 patch.object(RUNTIME, 'command'), patch.object(RUNTIME, 'json_command', return_value=candidate), \
                 patch.object(RUNTIME, 'compose') as compose, patch.object(RUNTIME, 'media_gate'), \
                 patch.object(RUNTIME, 'verify', side_effect=ValueError('unhealthy')):
@@ -211,7 +212,7 @@ class RoutineRuntimeTests(unittest.TestCase):
     def test_unlabelled_image_uses_version_probe_during_apply(self):
         transaction = self.transaction()
         candidate = [{'Id': 'sha256:new', 'RepoDigests': ['example/app@' + NEXT], 'Config': {}}]
-        with patch.object(RUNTIME, 'plan', return_value=transaction), patch.object(RUNTIME, 'write'), \
+        with patch.object(RUNTIME, 'load_transaction', return_value=transaction), patch.object(RUNTIME, 'write'), \
                 patch.object(RUNTIME, 'command'), patch.object(RUNTIME, 'json_command', return_value=candidate), \
                 patch.object(RUNTIME, 'compose'), patch.object(RUNTIME, 'media_gate'), \
                 patch.object(RUNTIME, 'verify'), patch.object(RUNTIME, 'binary_version', return_value='1.2.3') as probe:
@@ -227,7 +228,7 @@ class RoutineRuntimeTests(unittest.TestCase):
                        target='openproject/openproject:17-slim@' + NEXT)
         candidate = [{'Id': 'sha256:new', 'RepoDigests': ['openproject/openproject@' + NEXT],
                       'Config': {'Labels': {'org.opencontainers.image.version': '17.9.1'}}}]
-        with patch.object(RUNTIME, 'plan', return_value=transaction), patch.object(RUNTIME, 'write'), \
+        with patch.object(RUNTIME, 'load_transaction', return_value=transaction), patch.object(RUNTIME, 'write'), \
                 patch.object(RUNTIME, 'command'), patch.object(RUNTIME, 'json_command', return_value=candidate), \
                 patch.object(RUNTIME, 'compose') as compose, patch.object(RUNTIME, 'media_gate'), \
                 patch.object(RUNTIME, 'verify'):
@@ -253,6 +254,9 @@ class RoutineRuntimeTests(unittest.TestCase):
         transaction['services'][0]['applied'] = True
         with tempfile.TemporaryDirectory() as tmp:
             state = Path(tmp)
+            snapshot = state / 'rollback-sources' / transaction['services'][0]['source']
+            snapshot.parent.mkdir(parents=True)
+            snapshot.write_text('services: {}\n')
             record = state / 'routine-update.json'
             record.write_text(json.dumps(transaction))
             with patch.object(RUNTIME, 'STATE', state), patch.object(RUNTIME, 'TRANSACTION', record), \

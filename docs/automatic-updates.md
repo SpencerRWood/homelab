@@ -54,6 +54,24 @@ downgrade because schema compatibility is unverified; recovery then stops for
 manual investigation. Deployment metadata records apply, health and recovery
 outcomes; root-owned `routine-update.json` retains per-container image evidence.
 
+BusyBox permission-helper updates copy and verify the canonical Compose definition
+even when the application image is unchanged. The reconciler supports only the
+tracked `code-server-init` and `vikunja-init` ownership commands and pinned BusyBox
+images. It snapshots the actual previous canonical definitions before copying,
+then verifies the applied file contents against the prepared transaction.
+For active consumers it checks the fresh recovery backup, retains the old image,
+runs the helper alone with no dependencies, and verifies its exact image,
+successful exit and unchanged consumer health. A disabled consumer receives the
+configuration update with helper execution explicitly deferred in the transaction;
+neither the consumer nor its helper is started. Updating an application image and
+its permission helper together requires separate deployments.
+
+Once an ownership helper starts, unattended rollback is blocked: an older image
+cannot undo partial volume permission changes. A failed helper requires manual
+investigation using the saved configuration, retained image and backup evidence.
+The transaction records the target digest, selected image ID, attempted execution,
+completion or deferral, and the configuration hashes used by health verification.
+
 ## Initial activation
 
 Merge the shared workflow PR first, then the Homelab PR pinned to its exact
