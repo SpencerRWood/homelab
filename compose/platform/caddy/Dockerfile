@@ -1,6 +1,6 @@
 ARG CADDY_VERSION=2.11.7
 
-FROM caddy:${CADDY_VERSION}-builder@sha256:bf6a7d38add2508b7d2e3e3f40cf2af399214f143c0fa3daa51f254e01f8d293 AS builder
+FROM caddy:${CADDY_VERSION}-builder@sha256:c4cd20eaa0b69112fd5d4f721ffc9671687e1d5d0b155c8620cf7546dbef94c0 AS builder
 
 ARG CADDY_VERSION
 
@@ -10,7 +10,7 @@ COPY modules/caddy-dns-cloudflare-patched /src/modules/caddy-dns-cloudflare-patc
 RUN xcaddy build "v${CADDY_VERSION}" \
     --with github.com/caddy-dns/cloudflare=./modules/caddy-dns-cloudflare-patched
 
-FROM caddy:${CADDY_VERSION}-alpine@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f
+FROM caddy:${CADDY_VERSION}-alpine@sha256:e70b164da81ef698b3ad19af799ea6086ce6d9e48ed4079eb9fe26f6fbf14ee5
 
 ARG CADDY_VERSION
 LABEL org.opencontainers.image.version=${CADDY_VERSION}
