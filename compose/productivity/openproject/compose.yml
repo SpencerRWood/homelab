@@ -99,7 +99,7 @@ services:
     networks: [default, homelab-postgres, legacy-database]
 
   projects-hocuspocus:
-    image: openproject/hocuspocus:17.9.4@sha256:4b6a4864a8a3d6f89dc13fcdf9d8e7faa877ca1cd518a5f41dc343b3a2b42bb3
+    image: openproject/hocuspocus:17.9.6@sha256:28c71d8ed88c6b9560909382aab2f50ec550aa4dd4a91f153ba8561ca35ee0db
     container_name: projects-hocuspocus
     restart: unless-stopped
     env_file: *openproject-runtime-env
