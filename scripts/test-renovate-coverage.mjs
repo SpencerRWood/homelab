@@ -20,17 +20,38 @@ for (const [packageName, currentValue, updateType, expected] of [
   ['openproject/openproject', '17.9.2-slim', 'digest', true],
   ['openproject/hocuspocus', '17.9.2', 'digest', true],
   ['openproject/hocuspocus', '17.9.2', 'pinDigest', true],
-  ['openproject/hocuspocus', '17.9.1', 'patch', false],
+  ['openproject/hocuspocus', '17.9.1', 'patch', true],
+  ['openproject/hocuspocus', '17.9.1', 'minor', false],
+  ['openproject/hocuspocus', '17.9.1', 'major', false],
+  ['openproject/hocuspocus', 'latest', 'digest', false],
+  ['ghcr.io/mealie-recipes/mealie', 'v3.30.0', 'digest', true],
+  ['ghcr.io/mealie-recipes/mealie', 'v3.30.0', 'pinDigest', true],
+  ['ghcr.io/mealie-recipes/mealie', 'latest', 'digest', false],
+  ['ghcr.io/mealie-recipes/mealie', 'v3.30.0', 'minor', false],
+  ['vaultwarden/server', '1.35.0', 'digest', true],
+  ['vaultwarden/server', 'latest', 'digest', false],
+  ['vikunja/vikunja', '1.0.0', 'digest', true],
+  ['vikunja/vikunja', 'latest', 'digest', false],
   ['openproject/openproject', '17.9.2-slim', 'minor', false],
   ['openproject/openproject', '17.9.2-slim', 'major', false],
   ['busybox', '1.38', 'digest', false],
   ['pgvector/pgvector', '0.8.7-pg16-bookworm', 'digest', false],
+  ['pgvector/pgvector', '0.8.7-pg16-bookworm', 'patch', false],
+  ['pgvector/pgvector', '0.8.7-pg16-bookworm', 'major', false],
   ['grafana/loki', 'latest', 'digest', true],
+  ['grafana/loki', '3.5.0', 'patch', true],
+  ['grafana/loki', '3.5.0', 'minor', true],
+  ['grafana/loki', '3.5.0', 'major', false],
+  ['grafana/loki', '3.5.0', 'replacement', false],
 ]) {
   const resolved = await applyPackageRules({ ...config, datasource: 'docker',
     depName: packageName, packageName, currentValue, updateType });
   assert.equal(resolved.automerge, expected, `${packageName}:${currentValue} ${updateType}`);
 }
+assert.equal(config.automergeType, 'pr');
+assert.equal(config.platformAutomerge, true);
+assert.equal(config.automergeStrategy, 'merge-commit');
+assert.equal(config.rebaseWhen, 'behind-base-branch');
 const [images, caddyFrom, mods] = config.customManagers;
 const digest = `sha256:${'a'.repeat(64)}`;
 const nextDigest = `sha256:${'b'.repeat(64)}`;
