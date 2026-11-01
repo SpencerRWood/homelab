@@ -1,8 +1,14 @@
 # Automatic main delivery
 
-Renovate groups digest pins, digest refreshes, patch and minor updates. Required CI
-and existing branch protection still govern squash automerge. Renovate rebases
-behind-main branches through its native `behind-base-branch` mechanism.
+Renovate enables GitHub platform PR automerge for eligible Docker digest pins,
+digest refreshes, patch and minor updates. Other update types default to manual
+merge. GitHub merges with a merge commit only after protected-main requirements
+pass: `validation / validation`, `pr-routing`, resolved review threads and a
+branch current with main. Renovate refreshes behind-main branches through its
+native `behind-base-branch` mechanism. Conflicts must be resolved before merging.
+The repository enables platform automerge and currently requires zero approving
+reviews. If a human-review requirement is introduced, automerge must wait for it;
+Renovate does not approve or bypass reviews.
 
 A successful main-push validation triggers deployment for both human and Renovate
 merges. Merge into main is the standing delivery authorization; no additional
@@ -17,9 +23,24 @@ Concurrent releases retain only the newest pending run. Deployment is invoked
 directly; it does not depend on a GITHUB_TOKEN-generated release event triggering
 another workflow.
 
-PostgreSQL, OpenProject (including Hocuspocus), Vaultwarden, Mealie and Vikunja
-retain manual PR review. Once reviewed and merged, they follow the same automatic
-delivery path.
+OpenProject, Vaultwarden, Mealie and Vikunja version upgrades and floating-tag
+digest changes retain compatibility review. A digest-only update to an exact
+`X.Y.Z`, `vX.Y.Z` or `X.Y.Z-slim` application version is eligible for automerge.
+Hocuspocus also permits patch updates from an exact `X.Y.Z` tag within its current
+minor release: it has no database or persistent volume. Its minor and major
+upgrades retain coordinated OpenProject review. PostgreSQL/pgvector changes,
+including digest refreshes, always retain persistent-state and engine
+compatibility review. All major upgrades retain review. Once reviewed and
+merged, these changes follow the same automatic delivery path.
+
+A digest change on `17-slim` or `latest` can hide an application upgrade and
+schema migrations; it is not an exact-version rebuild. Review the target OCI
+version and upstream migrations before authorizing these protected updates.
+Exact-version digest eligibility does not authorize a database-engine change,
+destructive migration, permission change or unsafe schema downgrade. Required
+CI, security checks, backup verification, deployment authorization, recovery and
+health gates remain in force. The pinned release and deployment workflows are
+unchanged by this Renovate policy.
 Permission-changing BusyBox init helpers also require manual review. Changes to
 Caddy's shared version ARG remain a coordinated reviewed build change; its two
 base digest updates are eligible for Renovate automerge.

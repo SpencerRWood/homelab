@@ -45,6 +45,8 @@
   "semanticCommitType": "fix",
   "semanticCommitScope": "deps",
   "pinDigests": true,
+  "automerge": false,
+  "automergeType": "pr",
   "platformAutomerge": true,
   "automergeStrategy": "merge-commit",
   "rebaseWhen": "behind-base-branch",
@@ -75,11 +77,19 @@
       "automerge": false
     },
     {
-      "description": "Exact OpenProject version pins may refresh their digest automatically; floating major channels and version upgrades still require compatibility review.",
-      "matchPackageNames": ["openproject/openproject", "openproject/hocuspocus"],
-      "matchCurrentValue": "/^\\d+\\.\\d+\\.\\d+(?:-slim)?$/",
+      "description": "Exact application versions may refresh their digest after CI; floating channels and application version upgrades retain compatibility review.",
+      "matchPackageNames": ["openproject/openproject", "openproject/hocuspocus", "vaultwarden/server", "ghcr.io/mealie-recipes/mealie", "vikunja/vikunja"],
+      "matchCurrentValue": "/^v?\\d+\\.\\d+\\.\\d+(?:-slim)?$/",
       "matchUpdateTypes": ["pinDigest", "digest"],
       "groupName": "Routine image updates",
+      "automerge": true
+    },
+    {
+      "description": "The stateless Hocuspocus companion may take patches within its current minor release; minor and major changes retain coordinated OpenProject review.",
+      "matchPackageNames": ["openproject/hocuspocus"],
+      "matchCurrentValue": "/^\\d+\\.\\d+\\.\\d+$/",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "{{depName}} image update",
       "automerge": true
     },
     {
