@@ -23,12 +23,15 @@ Concurrent releases retain only the newest pending run. Deployment is invoked
 directly; it does not depend on a GITHUB_TOKEN-generated release event triggering
 another workflow.
 
-OpenProject, Vaultwarden, Mealie and Vikunja version upgrades and floating-tag
+OpenProject, Mealie and Vikunja version upgrades and floating-tag
 digest changes retain compatibility review. A digest-only update to an exact
 `X.Y.Z`, `vX.Y.Z` or `X.Y.Z-slim` application version is eligible for automerge.
 Hocuspocus also permits patch updates from an exact `X.Y.Z` tag within its current
 minor release: it has no database or persistent volume. Its minor and major
-upgrades retain coordinated OpenProject review. PostgreSQL/pgvector changes,
+upgrades retain coordinated OpenProject review. Vaultwarden uses an exact stable
+version plus digest and also permits patch upgrades within its current minor
+release after CI. Its minor, major, prerelease and floating-tag changes retain
+compatibility review. PostgreSQL/pgvector changes,
 including digest refreshes, always retain persistent-state and engine
 compatibility review. All major upgrades retain review. Once reviewed and
 merged, these changes follow the same automatic delivery path.
@@ -41,6 +44,14 @@ destructive migration, permission change or unsafe schema downgrade. Required
 CI, security checks, backup verification, deployment authorization, recovery and
 health gates remain in force. The pinned release and deployment workflows are
 unchanged by this Renovate policy.
+The Vaultwarden default names the existing digest's OCI version, `1.37.4`, without
+changing the selected image. PR #142's `latest` digest moves from `1.37.4` to
+`1.37.5`; Renovate must recalculate it against the exact tag before it qualifies as
+a patch update. Do not manually merge the stale floating-tag proposal.
+Temporary GitHub mergeability results can be retried on subsequent Renovate runs;
+`platformAutomerge` and `behind-base-branch` remain enabled so rebases restore
+platform automerge and rerun required checks. Persistent conflicts or failed
+checks still block merging.
 Permission-changing BusyBox init helpers also require manual review. Changes to
 Caddy's shared version ARG remain a coordinated reviewed build change; its two
 base digest updates are eligible for Renovate automerge.
