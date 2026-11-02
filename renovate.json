@@ -85,6 +85,15 @@
       "automerge": true
     },
     {
+      "description": "Vaultwarden stable patches within the current minor release may merge after CI; floating tags, prereleases, minor and major upgrades retain compatibility review.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["vaultwarden/server"],
+      "matchCurrentValue": "/^\\d+\\.\\d+\\.\\d+$/",
+      "matchUpdateTypes": ["patch"],
+      "groupName": "{{depName}} image update",
+      "automerge": true
+    },
+    {
       "description": "The stateless Hocuspocus companion may take patches within its current minor release; minor and major changes retain coordinated OpenProject review.",
       "matchPackageNames": ["openproject/hocuspocus"],
       "matchCurrentValue": "/^\\d+\\.\\d+\\.\\d+$/",

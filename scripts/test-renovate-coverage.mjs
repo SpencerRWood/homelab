@@ -29,7 +29,15 @@ for (const [packageName, currentValue, updateType, expected] of [
   ['ghcr.io/mealie-recipes/mealie', 'latest', 'digest', false],
   ['ghcr.io/mealie-recipes/mealie', 'v3.30.0', 'minor', false],
   ['vaultwarden/server', '1.35.0', 'digest', true],
+  ['vaultwarden/server', '1.37.4', 'pinDigest', true],
+  ['vaultwarden/server', '1.37.4', 'patch', true],
+  ['vaultwarden/server', '1.37.4', 'minor', false],
+  ['vaultwarden/server', '1.37.4', 'major', false],
+  ['vaultwarden/server', '1.37.4', 'replacement', false],
+  ['vaultwarden/server', '1.37.5-beta.1', 'patch', false],
+  ['vaultwarden/server', '1.37', 'digest', false],
   ['vaultwarden/server', 'latest', 'digest', false],
+  ['vaultwarden/server', 'latest', 'patch', false],
   ['vikunja/vikunja', '1.0.0', 'digest', true],
   ['vikunja/vikunja', 'latest', 'digest', false],
   ['openproject/openproject', '17.9.2-slim', 'minor', false],
@@ -58,6 +66,19 @@ const nextDigest = `sha256:${'b'.repeat(64)}`;
 const extract = (content, rule = images) => regex(content, 'fixture.yml', rule)?.deps ?? [];
 const render = (dep, value, hash) => compile(images.autoReplaceStringTemplate,
   { ...dep, newValue: value, newDigest: hash }, false);
+
+// Exercise the actual protected application reference, not only synthetic tags.
+const [vaultwarden] = extract(readFileSync('compose/platform/vaultwarden/compose.yml', 'utf8'));
+assert.equal(vaultwarden.depName, 'vaultwarden/server');
+assert.equal(vaultwarden.currentValue, '1.37.4');
+assert.equal(vaultwarden.currentDigest,
+  'sha256:efb3cde962015fcc036b2ea625242248611943b27212ebf4392841fb30fad055');
+for (const updateType of ['digest', 'patch']) {
+  assert.equal((await applyPackageRules({ ...config, ...vaultwarden,
+    packageName: vaultwarden.depName, updateType })).automerge, true);
+}
+assert.equal(render(vaultwarden, '1.37.5', nextDigest),
+  `image: vaultwarden/server:\u0024{VAULTWARDEN_IMAGE_TAG:-1.37.5@${nextDigest}}`);
 
 // Pin insertion, digest refresh, and version changes must retain the override
 // variable, registry, tag channel, closing brace, and all repeated occurrences.
