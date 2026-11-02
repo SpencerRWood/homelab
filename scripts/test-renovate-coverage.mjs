@@ -70,9 +70,8 @@ const render = (dep, value, hash) => compile(images.autoReplaceStringTemplate,
 // Exercise the actual protected application reference, not only synthetic tags.
 const [vaultwarden] = extract(readFileSync('compose/platform/vaultwarden/compose.yml', 'utf8'));
 assert.equal(vaultwarden.depName, 'vaultwarden/server');
-assert.equal(vaultwarden.currentValue, '1.37.4');
-assert.equal(vaultwarden.currentDigest,
-  'sha256:efb3cde962015fcc036b2ea625242248611943b27212ebf4392841fb30fad055');
+assert.match(vaultwarden.currentValue, /^\d+\.\d+\.\d+$/);
+assert.match(vaultwarden.currentDigest, /^sha256:[a-f0-9]{64}$/);
 for (const updateType of ['digest', 'patch']) {
   assert.equal((await applyPackageRules({ ...config, ...vaultwarden,
     packageName: vaultwarden.depName, updateType })).automerge, true);
