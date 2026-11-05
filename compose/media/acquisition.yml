@@ -36,7 +36,7 @@ services:
 
   radarr:
     container_name: radarr
-    image: ghcr.io/hotio/radarr:latest@sha256:ba96b2078fb6484805bd035ae94f1d673c1cd7861c456b6f31eaae24cba2d461
+    image: ghcr.io/hotio/radarr:latest@sha256:137e730e5b7469de37331c2beb9ddfdc5f33df0ee2b0e8428aa85a3d3cae66f7
     environment:
       PUID: "1026"
       PGID: "100"
@@ -94,7 +94,7 @@ services:
 
   prowlarr:
     container_name: prowlarr
-    image: ghcr.io/hotio/prowlarr:latest@sha256:01ef0ec08c4eacbc3c1ea901b27a20682dea88420ff67c6cbb68b3b11459a47a
+    image: ghcr.io/hotio/prowlarr:latest@sha256:dfd158a87470d296b6f604a78c3415f48720dd9d468cfb5e8d9c2defba23448f
     environment:
       PUID: "1026"
       PGID: "100"
