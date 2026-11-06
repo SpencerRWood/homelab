@@ -27,7 +27,7 @@ services:
       PUID: "1026"
       PGID: "100"
       TZ: America/New_York
-      DOCKER_MODS: linuxserver/mods:universal-calibre@sha256:14dd61f86be293153ce8822f14f1f473ceea5fce3dd379748860b5494a6fb6a8
+      DOCKER_MODS: linuxserver/mods:universal-calibre@sha256:b7034d05999fcb27a325cbd46cec249bccda81a29709c1c8c3ba22ed40d45979
     volumes:
       - /srv/docker/media-acquisition/config/services/calibre-web:/config
       - /mnt/wood-server-nas/media/books/calibre:/books
