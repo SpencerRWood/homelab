@@ -3,7 +3,7 @@ name: logging
 
 services:
   loki:
-    image: grafana/loki:${LOKI_IMAGE_TAG:-latest@sha256:0db216b630ae1f348a1584c67f3cead8b4c1fc839169a39501db664744158e28}
+    image: grafana/loki:${LOKI_IMAGE_TAG:-latest@sha256:b43c257ccfc925d4a50b8717cac61a3b51df8c48d01847936057e5c4075a24a7}
     container_name: logging-loki
     user: "1000:1000"
     restart: unless-stopped
@@ -45,7 +45,7 @@ services:
       start_period: 30s
 
   alloy:
-    image: grafana/alloy:${ALLOY_IMAGE_TAG:-latest@sha256:8ab871206bd2d8f89277f53abffee5f452a293980788d52f85fa183a87a505a4}
+    image: grafana/alloy:${ALLOY_IMAGE_TAG:-latest@sha256:9acc2529bc1edb7f5b2bd801dd8334ebc80c158e3a9e5526ecd7c9a273d43189}
     container_name: logging-alloy
     restart: unless-stopped
     command:
