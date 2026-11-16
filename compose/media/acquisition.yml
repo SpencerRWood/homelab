@@ -36,7 +36,7 @@ services:
 
   radarr:
     container_name: radarr
-    image: ghcr.io/hotio/radarr:latest@sha256:647739a4986843ce9b73048425e4427772f867ed272fd512e73c6ec67c5ef5cf
+    image: ghcr.io/hotio/radarr:latest@sha256:2d53019fa4a9da7aaff372fa477a666eaecf7a1370b2231ccf1db02b8a0ca305
     environment:
       PUID: "1026"
       PGID: "100"
