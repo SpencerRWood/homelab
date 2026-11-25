@@ -94,7 +94,7 @@ services:
 
   prowlarr:
     container_name: prowlarr
-    image: ghcr.io/hotio/prowlarr:latest@sha256:79f38bcb32d1cd34565e86241ab28fd4aa63420a066c689ed88ef19cb75acf18
+    image: ghcr.io/hotio/prowlarr:latest@sha256:4e2a978af3567158e808fa7683e113cb107b3eed71090151acfaddbbb90d0f02
     environment:
       PUID: "1026"
       PGID: "100"
