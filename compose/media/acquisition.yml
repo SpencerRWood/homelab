@@ -8,7 +8,7 @@ name: media-acquisition
 services:
   sonarr:
     container_name: sonarr
-    image: ghcr.io/hotio/sonarr:latest@sha256:0e0909e87f5d9ceb462b94590e44b1b0a645ed5c7414326bfee9624f44c266bb
+    image: ghcr.io/hotio/sonarr:latest@sha256:88aa99495462ceabe0b010f0cef8ef8f3181f78a501b6acf4deb1cfbcd16dd31
     environment:
       PUID: "1026"
       PGID: "100"
@@ -36,7 +36,7 @@ services:
 
   radarr:
     container_name: radarr
-    image: ghcr.io/hotio/radarr:latest@sha256:b35190aa9714d4e84c99923cf2e95fa6de5b695a8edd935c6c4ffd9bb1dbdc66
+    image: ghcr.io/hotio/radarr:latest@sha256:ffd2d7d23ff3a6153ee96875a8644b027a0273e0b21d3d2782cb6aaa4abaec26
     environment:
       PUID: "1026"
       PGID: "100"
@@ -94,7 +94,7 @@ services:
 
   prowlarr:
     container_name: prowlarr
-    image: ghcr.io/hotio/prowlarr:latest@sha256:4cd7a70bd547dcf11bc85746a55ea80fbf37b0ef506552ff3b379146d6f46c79
+    image: ghcr.io/hotio/prowlarr:latest@sha256:79f38bcb32d1cd34565e86241ab28fd4aa63420a066c689ed88ef19cb75acf18
     environment:
       PUID: "1026"
       PGID: "100"
