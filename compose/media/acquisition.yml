@@ -65,7 +65,7 @@ services:
 
   sabnzbd:
     container_name: sabnzbd
-    image: lscr.io/linuxserver/sabnzbd:latest@sha256:d225bbab93f54784c115a3b1d89711e469b1969c9f32aa6ebb11fb03b5804431
+    image: lscr.io/linuxserver/sabnzbd:latest@sha256:cc7abeeafa20dfba0637d30c60bc70b79656e427c60681cb411fd7b211a39435
     environment:
       PUID: "1026"
       PGID: "100"
@@ -94,7 +94,7 @@ services:
 
   prowlarr:
     container_name: prowlarr
-    image: ghcr.io/hotio/prowlarr:latest@sha256:4e2a978af3567158e808fa7683e113cb107b3eed71090151acfaddbbb90d0f02
+    image: ghcr.io/hotio/prowlarr:latest@sha256:b8c4198fd43d5aee9db3363c26bb942968d6e488ae43b20770d60ca691ab3b6c
     environment:
       PUID: "1026"
       PGID: "100"
